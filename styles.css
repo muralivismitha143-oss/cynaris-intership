@@ -1,0 +1,309 @@
+/* Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f3f6fa;
+  color: #13243a;
+  line-height: 1.6;
+}
+
+/* Navigation bar */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 4%;
+  background: #202a34;
+}
+
+.logo {
+  color: #fff;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 38px;
+  list-style: none;
+}
+
+.nav-links a {
+  display: inline-block;
+  color: #fff;
+  text-decoration: none;
+  font-size: 17px;
+  font-weight: 600;
+  padding: 8px 0;
+  border-bottom: 3px solid transparent;
+  transition:
+    color 0.3s,
+    border-color 0.3s;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  color: #0784ff;
+  border-bottom-color: #0784ff;
+}
+
+/* Main content */
+.page-layout {
+  width: 92%;
+  max-width: 1450px;
+  margin: 35px auto 40px;
+}
+
+.intro {
+  text-align: center;
+  margin-bottom: 42px;
+}
+
+.intro h1 {
+  font-size: clamp(32px, 4vw, 54px);
+  line-height: 1.2;
+  margin-bottom: 12px;
+  color: #102238;
+}
+
+.intro p {
+  font-size: clamp(17px, 2vw, 25px);
+  color: #526780;
+}
+
+/* CSS Grid cards */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 5px 18px rgba(25, 50, 80, 0.09);
+  transition:
+    transform 0.3s,
+    box-shadow 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 28px rgba(25, 50, 80, 0.15);
+}
+
+/* Technology logo blocks */
+.tech-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 76px;
+  height: 76px;
+  margin-bottom: 18px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* Stylized HTML5 shield */
+.html-logo {
+  background: #f04b23;
+  color: #fff;
+  font-size: 55px;
+  clip-path: polygon(8% 0, 92% 0, 82% 88%, 50% 100%, 18% 88%);
+  padding-bottom: 8px;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.12);
+}
+
+/* Stylized CSS3 shield */
+.css-logo {
+  background: #087de1;
+  color: #fff;
+  font-size: 55px;
+  clip-path: polygon(8% 0, 92% 0, 82% 88%, 50% 100%, 18% 88%);
+  padding-bottom: 8px;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.12);
+}
+
+/* JavaScript logo */
+.js-logo {
+  background: #ffdf32;
+  color: #172337;
+  border-radius: 7px;
+  font-size: 38px;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 7px;
+}
+
+/* Card text */
+.card h2 {
+  color: #087cf5;
+  font-size: 29px;
+  line-height: 1.3;
+  margin-bottom: 10px;
+}
+
+.card p {
+  color: #465b75;
+  font-size: 18px;
+  margin-bottom: 24px;
+}
+
+/* Blue buttons */
+.card a {
+  display: inline-flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: auto;
+  padding: 12px 22px;
+  background: #087cf5;
+  color: #fff;
+  border-radius: 10px;
+  text-decoration: none;
+  font-size: 17px;
+  font-weight: 700;
+  transition:
+    background 0.3s,
+    transform 0.3s;
+}
+
+.card a span {
+  font-size: 25px;
+  line-height: 1;
+}
+
+.card a:hover {
+  background: #0056b3;
+  transform: translateY(-2px);
+}
+
+/* About section */
+.about {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  margin-top: 42px;
+  padding: 30px 38px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 5px 18px rgba(25, 50, 80, 0.08);
+}
+
+.about-icon {
+  color: #087cf5;
+  font-size: 75px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.about h2 {
+  color: #13243a;
+  font-size: 29px;
+  margin-bottom: 8px;
+}
+
+.about p {
+  color: #526780;
+  font-size: 18px;
+}
+
+/* Footer */
+.footer {
+  padding: 25px 15px;
+  background: #202a34;
+  color: #fff;
+  text-align: center;
+  font-size: 16px;
+}
+
+/* Tablet and mobile layout */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    gap: 12px;
+    padding: 18px;
+  }
+
+  .logo {
+    font-size: 30px;
+  }
+
+  .nav-links {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 22px;
+  }
+
+  .nav-links a {
+    font-size: 15px;
+  }
+
+  .page-layout {
+    width: 92%;
+    margin-top: 28px;
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .card {
+    padding: 24px;
+  }
+
+  .card h2 {
+    font-size: 25px;
+  }
+
+  .card p {
+    font-size: 16px;
+  }
+
+  .about {
+    align-items: flex-start;
+    gap: 18px;
+    padding: 24px;
+  }
+
+  .about-icon {
+    font-size: 48px;
+  }
+
+  .about h2 {
+    font-size: 23px;
+  }
+
+  .about p {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 400px) {
+  .nav-links {
+    gap: 8px 14px;
+  }
+
+  .card {
+    padding: 20px;
+  }
+
+  .about {
+    flex-direction: column;
+  }
+}

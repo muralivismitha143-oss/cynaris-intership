@@ -1,0 +1,74 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Cynaris - CSS Flexbox &amp; Grid</title>
+    <meta name="description" content="Learning responsive web design with CSS Flexbox and Grid.">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <header>
+        <nav class="navbar" aria-label="Main navigation">
+            <div class="logo">Cynaris</div>
+
+            <ul class="nav-links">
+                <li><a class="active" href="#home">Home</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="page-layout" id="home">
+
+        <section class="intro">
+            <h1>CSS Flexbox &amp; Grid</h1>
+            <p>Learning responsive web design with Cynaris.</p>
+        </section>
+
+        <section class="card-grid" id="services" aria-label="Web technologies">
+
+            <article class="card">
+                <div class="tech-logo html-logo" aria-label="HTML5 logo">5</div>
+                <h2>HTML5</h2>
+                <p>Build structured web pages using semantic HTML elements.</p>
+                <a href="#about">Learn more <span aria-hidden="true">→</span></a>
+            </article>
+
+            <article class="card">
+                <div class="tech-logo css-logo" aria-label="CSS3 logo">3</div>
+                <h2>CSS3</h2>
+                <p>Create attractive and responsive layouts using Flexbox and Grid.</p>
+                <a href="#about">Learn more <span aria-hidden="true">→</span></a>
+            </article>
+
+            <article class="card">
+                <div class="tech-logo js-logo" aria-label="JavaScript logo">JS</div>
+                <h2>JavaScript</h2>
+                <p>Add interactivity and useful functionality to websites.</p>
+                <a href="#about">Learn more <span aria-hidden="true">→</span></a>
+            </article>
+
+        </section>
+
+        <section class="about" id="about">
+            <div class="about-icon" aria-hidden="true">▱</div>
+            <div>
+                <h2>About This Project</h2>
+                <p>This project demonstrates CSS Flexbox navigation, CSS Grid cards, hover effects, and responsive design.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="footer" id="contact">
+        <p>&copy; 2026 Cynaris Internship. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>
