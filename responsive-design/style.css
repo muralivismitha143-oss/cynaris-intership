@@ -1,0 +1,61 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  font-size: 1rem;
+  background: #f1f5f9;
+}
+
+header {
+  padding: 1.5rem;
+  background: #17365d;
+  color: white;
+}
+
+nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+}
+
+main {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.card {
+  padding: 1.25rem;
+  background: white;
+  border-radius: 0.75rem;
+}
+
+/* Tablet: 768px and above */
+@media (min-width: 48rem) {
+  nav {
+    flex-direction: row;
+    gap: 1.5rem;
+  }
+
+  main {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 2rem;
+  }
+}
+
+/* Desktop: 1200px and above */
+@media (min-width: 75rem) {
+  main {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 3rem;
+  }
+}
