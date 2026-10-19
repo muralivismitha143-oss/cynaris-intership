@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Interview pipeline dashboard" />
+    <title>Interview Pipeline</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main id="app" class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">CYNARIS · RECRUITING</p>
+          <h1>Interview pipeline</h1>
+          <p class="subheading">Track every candidate from first review to final decision.</p>
+        </div>
+        <button class="refresh-button" type="button" @click="loadApplicants" :disabled="loading">
+          {{ loading ? 'Refreshing…' : 'Refresh' }}
+        </button>
+      </header>
+
+      <section class="summary" aria-label="Today's applicant counts">
+        <div class="summary-copy">
+          <span class="eyebrow">TODAY</span>
+          <strong>{{ totalToday }}</strong>
+          <span>applicants updated</span>
+        </div>
+        <div class="stage-summary">
+          <div v-for="stage in stages" :key="stage" class="summary-stage">
+            <span class="stage-dot" :class="stageClass(stage)"></span>
+            <span>{{ stage }}</span>
+            <strong>{{ todayCounts[stage] || 0 }}</strong>
+          </div>
+        </div>
+      </section>
+
+      <p v-if="error" class="notice error" role="alert">{{ error }}</p>
+      <p v-if="success" class="notice success" role="status">{{ success }}</p>
+
+      <section class="board" aria-label="Applicants by pipeline stage">
+        <article v-for="stage in stages" :key="stage" class="column">
+          <header class="column-heading">
+            <div class="column-title">
+              <span class="stage-dot" :class="stageClass(stage)"></span>
+              <h2>{{ stage }}</h2>
+            </div>
+            <span class="count">{{ applicantsFor(stage).length }}</span>
+          </header>
+          <div class="cards">
+            <article v-for="applicant in applicantsFor(stage)" :key="applicant.id" class="applicant-card">
+              <div class="applicant-avatar" :class="stageClass(stage)">{{ initials(applicant.name) }}</div>
+              <div class="applicant-info">
+                <h3>{{ applicant.name }}</h3>
+                <p>Applicant #{{ applicant.id }}</p>
+              </div>
+              <label class="sr-only" :for="`stage-${applicant.id}`">Update {{ applicant.name }} stage</label>
+              <select :id="`stage-${applicant.id}`" :value="applicant.pipeline_stage" :disabled="updatingId === applicant.id" @change="updateStage(applicant, $event.target.value)">
+                <option v-for="option in stages" :key="option" :value="option">{{ option }}</option>
+              </select>
+            </article>
+            <p v-if="!applicantsFor(stage).length" class="empty">No applicants at this stage.</p>
+          </div>
+        </article>
+      </section>
+      <footer>Stage changes are saved to the interview tracking API.</footer>
+    </main>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>
