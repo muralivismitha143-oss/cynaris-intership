@@ -1,9 +1,11 @@
 const express = require("express");
+const path = require("path");
 
 const app = express();
 const PORT = 3000;
 
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
 
 const validStages = [
   "Screening",
@@ -43,9 +45,39 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+// Get available pipeline stages
+app.get("/api/stages", (req, res) => {
+  res.json({ stages: validStages });
+});
+
 // Get all applicants
 app.get("/api/applicants", (req, res) => {
   res.json(applicants);
+});
+
+// Add a new applicant
+app.post("/api/applicants", (req, res) => {
+  const { name, stage } = req.body;
+  if (!name || typeof name !== "string" || !name.trim()) {
+    return res.status(400).json({
+      error: "Applicant name is required"
+    });
+  }
+
+  const targetStage = stage && validStages.includes(stage) ? stage : "Screening";
+  const newId = applicants.length > 0 ? Math.max(...applicants.map(a => a.id)) + 1 : 1;
+  const newApplicant = {
+    id: newId,
+    name: name.trim(),
+    pipeline_stage: targetStage,
+    updated_at: new Date().toISOString()
+  };
+
+  applicants.push(newApplicant);
+  res.status(201).json({
+    message: "Applicant created successfully",
+    applicant: newApplicant
+  });
 });
 
 // Update interview stage
