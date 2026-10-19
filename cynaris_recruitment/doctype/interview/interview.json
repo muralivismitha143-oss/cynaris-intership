@@ -1,0 +1,77 @@
+{
+  "name": "Interview",
+  "doctype": "DocType",
+  "module": "Cynaris Recruitment",
+  "custom": 0,
+  "is_submittable": 0,
+  "track_changes": 1,
+  "fields": [
+    {
+      "fieldname": "applicant_name",
+      "fieldtype": "Data",
+      "label": "Applicant Name",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "job_applicant",
+      "fieldtype": "Link",
+      "label": "Job Applicant",
+      "options": "Job Applicant",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "pipeline_stage",
+      "fieldtype": "Select",
+      "label": "Pipeline Stage",
+      "options": "Screening\nTechnical Round 1\nTechnical Round 2\nHR Round\nOffered\nRejected",
+      "default": "Screening",
+      "reqd": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "interview_round",
+      "fieldtype": "Select",
+      "label": "Interview Round",
+      "options": "Screening\nTechnical 1\nTechnical 2\nHR Final",
+      "default": "Screening"
+    },
+    {
+      "fieldname": "status",
+      "fieldtype": "Select",
+      "label": "Status",
+      "options": "Pending\nCleared\nRejected",
+      "default": "Pending",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "scheduled_date",
+      "fieldtype": "Datetime",
+      "label": "Scheduled Date"
+    },
+    {
+      "fieldname": "feedback",
+      "fieldtype": "Small Text",
+      "label": "Interviewer Feedback"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "HR Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1
+    },
+    {
+      "role": "Interviewer",
+      "read": 1,
+      "write": 1,
+      "create": 0,
+      "delete": 0
+    }
+  ]
+}
