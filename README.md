@@ -1,23 +1,33 @@
-# Cynaris Internship
+﻿# Cynaris Internship
 
 This repository contains my Cynaris internship projects and assignments.
 
-## Week 2 Day 1 — Interview Status Tracking API
+## Week 2 — Interview Status Pipeline
 
-### Features
+The app uses the repository's Express API and a Vue 3 frontend. The frontend is served from `backend/public` and groups applicants into pipeline columns. Updating a candidate's stage calls the API and refreshes today's dashboard counts.
 
-- Health check endpoint
-- List applicants and pipeline stages
-- Update an applicant's pipeline stage
-- Dashboard counts by pipeline stage for today
+### Run locally
 
-### API Endpoints
+```powershell
+cd backend
+npm start
+```
 
-- GET /api/health
-- GET /api/applicants
-- PATCH /api/applicants/:id/stage
-- GET /api/dashboard/stages-today
+Open `http://localhost:3000`. Vue 3 is loaded from unpkg, so the browser needs internet access to load the frontend framework.
 
-### Testing
+### API endpoints
 
-Tested locally using curl.exe in PowerShell.
+- `GET /api/health`
+- `GET /api/applicants`
+- `PATCH /api/applicants/:applicant_id/stage`
+- `GET /api/dashboard/stages-today`
+
+### Verify with curl.exe
+
+```powershell
+curl.exe http://localhost:3000/api/applicants
+curl.exe http://localhost:3000/api/dashboard/stages-today
+curl.exe -X PATCH http://localhost:3000/api/applicants/1/stage -H "Content-Type: application/json" -d "{\"stage\":\"Technical Round 1\"}"
+```
+
+This repository does not contain a Frappe app or `Interview` doctype. The existing in-memory Express API provides the equivalent pipeline stages and validation.
