@@ -3,43 +3,109 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Interview pipeline dashboard" />
-    <title>Interview Pipeline</title>
+    <meta name="description" content="Interview Pipeline - Vue.js Frontend Pipeline Component" />
+    <title>Interview Pipeline | Cynaris Recruitment</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
     <main id="app" class="shell">
       <header class="topbar">
         <div>
-          <p class="eyebrow">CYNARIS · RECRUITING</p>
-          <h1>Interview pipeline</h1>
-          <p class="subheading">Track every candidate from first review to final decision.</p>
+          <p class="eyebrow">CYNARIS · RECRUITMENT PIPELINE</p>
+          <h1>Interview Status Pipeline</h1>
+          <p class="subheading">Track and transition candidate interview stages in real-time.</p>
         </div>
-        <button class="refresh-button" type="button" @click="loadApplicants" :disabled="loading">
-          {{ loading ? 'Refreshing…' : 'Refresh' }}
-        </button>
+        <div class="header-actions">
+          <button class="btn btn-secondary" type="button" @click="toggleAddForm">
+            {{ showAddForm ? '✕ Close Form' : '+ Add Candidate' }}
+          </button>
+          <button class="btn btn-primary" type="button" @click="loadApplicants" :disabled="loading">
+            {{ loading ? 'Refreshing…' : '↻ Refresh' }}
+          </button>
+        </div>
       </header>
 
-      <section class="summary" aria-label="Today's applicant counts">
+      <!-- Add Candidate Panel -->
+      <section v-if="showAddForm" class="add-candidate-panel" aria-label="Add new candidate">
+        <h3>Add Candidate to Pipeline</h3>
+        <form @submit.prevent="createApplicant" class="add-candidate-form">
+          <div class="form-group">
+            <label for="candidateNameInput">Candidate Name</label>
+            <input
+              id="candidateNameInput"
+              v-model="newCandidateName"
+              type="text"
+              placeholder="e.g. Ananya Verma"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="candidateStageInput">Initial Stage</label>
+            <select id="candidateStageInput" v-model="newCandidateStage">
+              <option v-for="stage in stages" :key="stage" :value="stage">{{ stage }}</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary btn-submit" :disabled="submitting">
+            {{ submitting ? 'Adding…' : 'Add Candidate' }}
+          </button>
+        </form>
+      </section>
+
+      <!-- Filter and Metrics Banner -->
+      <section class="summary" aria-label="Today's interview metrics">
         <div class="summary-copy">
           <span class="eyebrow">TODAY</span>
-          <strong>{{ totalToday }}</strong>
-          <span>applicants updated</span>
+          <strong id="statSummary">{{ totalToday }}</strong>
+          <span>candidates updated</span>
         </div>
         <div class="stage-summary">
-          <div v-for="stage in stages" :key="stage" class="summary-stage">
+          <div
+            v-for="stage in stages"
+            :key="stage"
+            class="summary-stage"
+            :class="{ active: selectedFilter === stage }"
+            @click="filterByStage(stage)"
+          >
             <span class="stage-dot" :class="stageClass(stage)"></span>
             <span>{{ stage }}</span>
-            <strong>{{ todayCounts[stage] || 0 }}</strong>
+            <strong class="stage-count">{{ todayCounts[stage] || 0 }}</strong>
           </div>
         </div>
       </section>
 
+      <!-- Search & Controls Bar -->
+      <div class="controls-bar">
+        <div class="search-box">
+          <label for="applicantSearchInput" class="sr-only">Search candidates</label>
+          <input
+            id="applicantSearchInput"
+            type="search"
+            class="search-input"
+            placeholder="Search candidates by name..."
+            v-model="searchQuery"
+          />
+        </div>
+        <div class="filter-indicators" v-if="selectedFilter">
+          <span>Filtering by: <strong>{{ selectedFilter }}</strong></span>
+          <button class="btn-clear-filter" @click="clearFilter">Clear Filter</button>
+        </div>
+      </div>
+
+      <!-- Alert Notices -->
       <p v-if="error" class="notice error" role="alert">{{ error }}</p>
       <p v-if="success" class="notice success" role="status">{{ success }}</p>
 
+      <!-- Kanban Board -->
       <section class="board" aria-label="Applicants by pipeline stage">
-        <article v-for="stage in stages" :key="stage" class="column">
+        <article
+          v-for="stage in stages"
+          :key="stage"
+          class="column"
+          :data-stage="stage"
+          :class="{ 'dimmed': selectedFilter && selectedFilter !== stage }"
+        >
           <header class="column-heading">
             <div class="column-title">
               <span class="stage-dot" :class="stageClass(stage)"></span>
@@ -47,24 +113,59 @@
             </div>
             <span class="count">{{ applicantsFor(stage).length }}</span>
           </header>
-          <div class="cards">
-            <article v-for="applicant in applicantsFor(stage)" :key="applicant.id" class="applicant-card">
-              <div class="applicant-avatar" :class="stageClass(stage)">{{ initials(applicant.name) }}</div>
+
+          <div class="cards" :id="`cards-${stageClass(stage)}`">
+            <article
+              v-for="applicant in applicantsFor(stage)"
+              :key="applicant.id"
+              class="applicant-card"
+              :data-id="applicant.id"
+            >
+              <div class="applicant-avatar" :class="stageClass(stage)">
+                {{ initials(applicant.name) }}
+              </div>
               <div class="applicant-info">
                 <h3>{{ applicant.name }}</h3>
                 <p>Applicant #{{ applicant.id }}</p>
               </div>
-              <label class="sr-only" :for="`stage-${applicant.id}`">Update {{ applicant.name }} stage</label>
-              <select :id="`stage-${applicant.id}`" :value="applicant.pipeline_stage" :disabled="updatingId === applicant.id" @change="updateStage(applicant, $event.target.value)">
-                <option v-for="option in stages" :key="option" :value="option">{{ option }}</option>
-              </select>
+              <div class="card-stage-wrapper">
+                <label class="sr-only" :for="`stage-${applicant.id}`">Update {{ applicant.name }} stage</label>
+                <select
+                  :id="`stage-${applicant.id}`"
+                  :value="applicant.pipeline_stage"
+                  :disabled="updatingId === applicant.id"
+                  @change="updateStage(applicant, $event.target.value)"
+                  class="stage-select"
+                >
+                  <option v-for="option in stages" :key="option" :value="option">{{ option }}</option>
+                </select>
+              </div>
             </article>
+
             <p v-if="!applicantsFor(stage).length" class="empty">No applicants at this stage.</p>
           </div>
         </article>
       </section>
-      <footer>Stage changes are saved to the interview tracking API.</footer>
+
+      <!-- Real-time DOM Activity Feed -->
+      <section class="activity-section" aria-label="Live DOM pipeline audit log">
+        <div class="activity-header">
+          <h3>Live Activity & DOM Audit Log</h3>
+          <span class="activity-badge">DOM Manipulated</span>
+        </div>
+        <p class="activity-subtitle">
+          Demonstrating JavaScript DOM manipulation (<code>querySelector</code>, <code>getElementById</code>, <code>innerHTML</code>, <code>classList</code>, <code>createElement</code>) on stage updates.
+        </p>
+        <ul id="activityFeedList" class="activity-list">
+          <!-- Dynamically inserted by createElement / innerHTML / appendChild -->
+        </ul>
+      </section>
+
+      <footer>
+        <p>Cynaris Recruitment Pipeline — Vue.js Frontend Component & REST API</p>
+      </footer>
     </main>
+
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="/app.js"></script>
   </body>
