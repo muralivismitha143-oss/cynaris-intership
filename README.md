@@ -4,36 +4,49 @@ This repository contains my Cynaris internship projects, assignments, and practi
 
 ---
 
-## Week 2 Day 2 — Interview Status: Vue.js Frontend Pipeline Component & Controller
+## Week 2 Day 3 — AI Resume Analysis: Groq + OpenRouter Integration
 
-An end-to-end full-stack recruitment tracking system featuring a Python / Frappe Interview controller, Jinja list view override with Kanban status badges, daily metrics dashboard query, and an interactive Vue 3 Kanban Pipeline component with native JavaScript DOM manipulation.
+A production-ready full-stack AI resume screening pipeline integrating **Groq** (`llama-3.3-70b-versatile`) as the primary ultra-fast LLM and **OpenRouter** (`meta-llama/llama-3.3-70b-instruct`) as the automatic secondary fallback, complemented by native JavaScript DOM event delegation and bubbling.
 
 ### Core Features
 
-1. **Interview DocType & Schema:**
-   - Field `pipeline_stage` Select field (`Screening`, `Technical Round 1`, `Technical Round 2`, `HR Round`, `Offered`, `Rejected`).
-   - Located in `cynaris_recruitment/doctype/interview/interview.json`.
+1. **Job Applicant DocType Schema:**
+   - Field `ai_resume_summary` (`Long Text`) for storing structured AI assessments.
+   - Additional tracking fields: `ai_summary_provider` and `ai_analyzed_at`.
+   - File: `cynaris_recruitment/doctype/job_applicant/job_applicant.json`.
 
-2. **Python Controller & Validation:**
-   - `update_pipeline_stage(applicant_id, stage)` controller method with validation for applicant existence, stage validity, and audit trail logging.
-   - Located in `cynaris_recruitment/doctype/interview/interview.py`.
-   - Comprehensive unit tests: `tests/test_interview_controller.py` (Run with `py tests/test_interview_controller.py`).
+2. **Python Controller & Structured Prompting:**
+   - Method `generate_resume_summary(applicant_id)` with Groq primary and OpenRouter fallback.
+   - Structured prompt enforcing 4 clean sections: Executive Summary, Technical Competencies, Interview Probe Points, and Hiring Recommendation.
+   - File: `cynaris_recruitment/doctype/job_applicant/job_applicant.py`.
+   - Unit tests: `tests/test_ai_resume_analysis.py` (Run via `py tests/test_ai_resume_analysis.py`).
 
-3. **Kanban Status Badges (Jinja + CSS Override):**
-   - Jinja list view template override: `cynaris_recruitment/doctype/job_applicant/job_applicant_list.html`.
-   - CSS styling with distinct color coding and dot indicators: `cynaris_recruitment/doctype/job_applicant/job_applicant_list.css`.
+3. **Frappe Form Script Button:**
+   - Added "Generate AI Summary" custom button on Job Applicant form using `frappe.call`.
+   - File: `cynaris_recruitment/doctype/job_applicant/job_applicant.js`.
 
-4. **Dashboard Aggregation Query:**
-   - Aggregates applicants per pipeline stage updated today: `cynaris_recruitment/dashboard.py` and `GET /api/dashboard/stages-today`.
+4. **REST API & Failover Simulation:**
+   - `POST /api/applicants/:applicant_id/ai-summary` — Generates summary with Groq primary and OpenRouter fallback.
+   - Supports `?simulate_groq_failure=true` to demonstrate OpenRouter fallback and `?simulate_both_failure=true` to test 502 error handling.
+   - `GET /api/applicants/:applicant_id` — Returns candidate profile with persisted AI resume summary.
+   - File: `backend/server.js`.
 
-5. **Vue 3 Frontend Pipeline Component & Native DOM Manipulation:**
-   - Interactive Kanban board served from `backend/public/`.
-   - Demonstrates DOM manipulation methods:
-     - `querySelector`: targeting containers and columns for pulse animations.
-     - `getElementById`: targeting activity feed and stats counters.
-     - `innerHTML`: generating sanitized rich badge and notification markup.
-     - `classList`: handling animation states (`toast-leaving`, `column-highlight`, `active`).
-     - `createElement`: dynamically constructing toast notifications and live audit entries.
+5. **Frontend User Interaction & DOM Event Mastery:**
+   - **`addEventListener`:** Attached to delegated board containers, forms, inputs, and modal dismiss buttons.
+   - **Event Object (`e`):** Extracting `e.target`, `e.currentTarget`, `e.type`, calling `e.preventDefault()` on forms and `e.stopPropagation()` on buttons.
+   - **Event Bubbling:** Visualized in the live Event Delegation Monitor as clicks bubble from card buttons up to the parent container.
+   - **Event Delegation:** Single event listener on `#delegatedBoardContainer` handles all card actions via `e.target.closest('[data-action]')`.
+   - **Form Events:** Handles `submit` (candidate creation), `input` (real-time candidate search), and `change` (outage simulation checkboxes).
+   - **AI Resume Modal:** Clean modal view showing model badges, provider source, timestamp, and one-click clipboard copy.
+
+---
+
+## Week 2 Day 2 — Interview Status: Vue.js Pipeline Component & Controller
+
+- **Kanban Board & Stage Management:** `Screening`, `Technical Round 1`, `Technical Round 2`, `HR Round`, `Offered`, `Rejected`.
+- **Python Controller:** `update_pipeline_stage(applicant_id, stage)` in `cynaris_recruitment/doctype/interview/interview.py`.
+- **Kanban Status Badges:** Jinja template override and CSS in `cynaris_recruitment/doctype/job_applicant/`.
+- **Dashboard Query:** `GET /api/dashboard/stages-today` counting applicants updated today per stage.
 
 ---
 
@@ -44,10 +57,14 @@ An end-to-end full-stack recruitment tracking system featuring a Python / Frappe
 cd backend
 npm start
 ```
-Then navigate to `http://localhost:3000` in your browser.
+Open `http://localhost:3000` in your web browser.
 
 #### 2. Run Python Unit Tests
 ```powershell
+# Week 2 Day 3: AI Resume Analysis Tests
+py tests/test_ai_resume_analysis.py
+
+# Week 2 Day 2: Interview Controller Tests
 py tests/test_interview_controller.py
 ```
 
@@ -55,40 +72,40 @@ py tests/test_interview_controller.py
 
 ### API Endpoints
 
-- `GET /api/health` — Check server health
+- `GET /api/health` — Check server health and registered AI providers
 - `GET /api/stages` — List allowed pipeline stages
-- `GET /api/applicants` — Retrieve all candidates and their current stage
+- `GET /api/applicants` — Retrieve all candidates
+- `GET /api/applicants/:id` — Retrieve candidate profile with AI resume summary
 - `POST /api/applicants` — Add a new candidate
-- `PATCH /api/applicants/:applicant_id/stage` — Update candidate stage
+- `PATCH /api/applicants/:id/stage` — Update candidate stage
+- `POST /api/applicants/:id/ai-summary` — Trigger AI resume analysis (Groq primary + OpenRouter fallback)
 - `GET /api/dashboard/stages-today` — Aggregated counts by stage for today
 
 ---
 
-### Test Endpoints via `curl.exe`
+### Test AI Endpoints via `curl.exe`
 
 ```powershell
-# Health check
+# 1. Health check
 curl.exe -s http://localhost:3000/api/health
 
-# List stages
-curl.exe -s http://localhost:3000/api/stages
+# 2. Generate AI resume summary (Groq primary)
+curl.exe -s -X POST http://localhost:3000/api/applicants/1/ai-summary
 
-# List applicants
-curl.exe -s http://localhost:3000/api/applicants
+# 3. Test OpenRouter fallback by simulating Groq outage
+curl.exe -s -X POST "http://localhost:3000/api/applicants/2/ai-summary?simulate_groq_failure=true"
 
-# Add a candidate
-curl.exe -s -X POST http://localhost:3000/api/applicants -H "Content-Type: application/json" --% -d "{\"name\":\"Karan Mehta\",\"stage\":\"Offered\"}"
+# 4. Test error handling when both providers fail (HTTP 502)
+curl.exe -s -X POST "http://localhost:3000/api/applicants/3/ai-summary?simulate_both_failure=true"
 
-# Update applicant stage
-curl.exe -s -X PATCH http://localhost:3000/api/applicants/1/stage -H "Content-Type: application/json" --% -d "{\"stage\":\"Technical Round 1\"}"
-
-# Today's dashboard counts
-curl.exe -s http://localhost:3000/api/dashboard/stages-today
+# 5. Verify persisted AI resume summary
+curl.exe -s http://localhost:3000/api/applicants/1
 ```
 
 ---
 
-### Additional Documentation
+### Documentation & Deliverables
 
-- [CIA Interaction Log](docs/CIA_LOG.md) — Mentor Mode and Code Mode prompts and reviews.
-- [Week 2 Day 2 Submission & Viva Guide](docs/WEEK2_DAY2_SUBMISSION.md) — Complete walkthrough, test evidence, checklist, and viva answers.
+- [CIA Interaction Log](docs/CIA_LOG.md) — Mentor Mode, AI Engineer Mode, and Code Mode interaction logs.
+- [Week 2 Day 3 Submission & Viva Guide](docs/WEEK2_DAY3_SUBMISSION.md) — Complete walkthrough, test evidence, architecture, checklist, and viva answers.
+- [Week 2 Day 2 Submission & Viva Guide](docs/WEEK2_DAY2_SUBMISSION.md) — Interview pipeline implementation guide.
