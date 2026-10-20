@@ -303,14 +303,16 @@ app.post("/api/applicants/:applicant_id/ai-summary", async (req, res) => {
     return res.status(404).json({ error: "Applicant not found" });
   }
 
+  const body = req.body || {};
+
   // Simulation flags for testing fallback & error handling
   const simulateGroqFailure =
     req.query.simulate_groq_failure === "true" ||
-    req.body.simulate_groq_failure === true;
+    body.simulate_groq_failure === true;
 
   const simulateBothFailure =
     req.query.simulate_both_failure === "true" ||
-    req.body.simulate_both_failure === true;
+    body.simulate_both_failure === true;
 
   const { systemPrompt, userPrompt } = buildResumePrompt(applicant);
   const errorsLogged = [];
@@ -319,7 +321,7 @@ app.post("/api/applicants/:applicant_id/ai-summary", async (req, res) => {
   // 1. Try Groq (Primary)
   if (!simulateGroqFailure && !simulateBothFailure) {
     try {
-      result = await callGroq(systemPrompt, userPrompt, req.body.groq_api_key);
+      result = await callGroq(systemPrompt, userPrompt, body.groq_api_key);
     } catch (err) {
       errorsLogged.push(`Groq Primary Error: ${err.message}`);
     }
@@ -330,7 +332,7 @@ app.post("/api/applicants/:applicant_id/ai-summary", async (req, res) => {
   // 2. Try OpenRouter (Fallback)
   if (!result && !simulateBothFailure) {
     try {
-      result = await callOpenRouter(systemPrompt, userPrompt, req.body.openrouter_api_key);
+      result = await callOpenRouter(systemPrompt, userPrompt, body.openrouter_api_key);
     } catch (err) {
       errorsLogged.push(`OpenRouter Fallback Error: ${err.message}`);
     }
