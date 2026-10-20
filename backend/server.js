@@ -22,19 +22,28 @@ app.use((req, res, next) => {
   const startTime = process.hrtime.bigint();
 
   req.requestId = requestId;
-  res.setHeader("X-Request-ID", requestId);
+  if (!res.headersSent) {
+    res.setHeader("X-Request-ID", requestId);
+  }
+
+  // Intercept res.end to safely set X-Response-Time header before transmission
+  const originalEnd = res.end;
+  let durationMs = 0;
+
+  res.end = function (...args) {
+    const endTime = process.hrtime.bigint();
+    durationMs = Math.round((Number(endTime - startTime) / 1e6) * 100) / 100;
+    if (!res.headersSent) {
+      res.setHeader("X-Response-Time", `${durationMs}ms`);
+    }
+    return originalEnd.apply(this, args);
+  };
 
   res.on("finish", () => {
-    const endTime = process.hrtime.bigint();
-    const durationMs = Number(endTime - startTime) / 1e6;
-    const roundedDuration = Math.round(durationMs * 100) / 100;
-
-    res.setHeader("X-Response-Time", `${roundedDuration}ms`);
-
     performanceMetrics.totalRequests++;
-    performanceMetrics.totalDurationMs += roundedDuration;
+    performanceMetrics.totalDurationMs += durationMs;
 
-    const isSlow = roundedDuration > 50;
+    const isSlow = durationMs > 50;
     if (isSlow) {
       performanceMetrics.slowRequestsCount++;
     }
@@ -45,7 +54,7 @@ app.use((req, res, next) => {
       method: req.method,
       path: req.originalUrl || req.url,
       statusCode: res.statusCode,
-      durationMs: roundedDuration,
+      durationMs,
       isSlow,
       userAgent: req.headers["user-agent"] || "unknown",
       ip: req.ip || req.socket.remoteAddress
@@ -56,10 +65,9 @@ app.use((req, res, next) => {
       performanceLogs.pop();
     }
 
-    // Console output with performance formatting
     const level = res.statusCode >= 500 ? "ERROR" : isSlow ? "WARN" : "INFO";
     console.log(
-      `[${level}] ${req.method} ${req.url} ${res.statusCode} ${roundedDuration}ms [${requestId}]`
+      `[${level}] ${req.method} ${req.url} ${res.statusCode} ${durationMs}ms [${requestId}]`
     );
   });
 
@@ -524,11 +532,9 @@ app.get("/api/dashboard/stages-today", (req, res) => {
 
   performanceMetrics.cacheMisses++;
 
-  // Timezone-aware date resolution:
-  // Client can send ?client_date=YYYY-MM-DD or header X-Client-Timezone
+  // Timezone-aware date resolution
   let clientDateStr = req.query.client_date;
   if (!clientDateStr) {
-    // Resolve localized calendar date based on server / client offset
     const clientTz = req.headers["x-client-timezone"] || "Asia/Kolkata";
     try {
       clientDateStr = new Intl.DateTimeFormat("en-CA", { timeZone: clientTz }).format(new Date());
@@ -542,7 +548,6 @@ app.get("/api/dashboard/stages-today", (req, res) => {
   );
 
   applicants.forEach(applicant => {
-    // Check if updated within client's localized calendar date
     const updatedDate = applicant.updated_at ? applicant.updated_at.slice(0, 10) : "";
     if (updatedDate === clientDateStr) {
       if (counts[applicant.pipeline_stage] !== undefined) {

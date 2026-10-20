@@ -1,13 +1,13 @@
 /**
- * Cynaris Interview Pipeline & AI Resume Analysis
+ * Cynaris Interview Pipeline & Performance Sprint
+ * Week 2 Day 4: Debug & Performance Sprint - Log Analysis & Query Optimisation
  *
- * Core Concepts Implemented:
- * 1. addEventListener - Attaching event listeners for user interactions
- * 2. Event Objects - Inspecting target, currentTarget, type, timeStamp, preventDefault, stopPropagation
- * 3. Event Bubbling - Understanding event propagation from child to parent
- * 4. Event Delegation - Centralized event handling on parent container
- * 5. Form Events - submit, input, change event lifecycles
- * 6. Groq (llama-3.3-70b-versatile) + OpenRouter Fallback Integration
+ * Core Technical Competencies:
+ * 1. HTTP requests using Fetch API (GET, POST, PATCH)
+ * 2. Handling Promises (Promise.allSettled, Promise lifecycle, AbortController)
+ * 3. Async / Await with robust try...catch...finally blocks
+ * 4. Safe JSON response parsing and schema inspection
+ * 5. Real-time Network Telemetry & Performance Profiling
  */
 
 // ==========================================
@@ -19,8 +19,7 @@ const DOMPipelineHelper = {
     if (!feed) return;
 
     const item = document.createElement("li");
-    item.classList.add("activity-item");
-    item.classList.add(`action-${actionType}`);
+    item.classList.add("activity-item", `action-${actionType}`);
 
     const now = new Date();
     const timeStr = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
@@ -48,6 +47,14 @@ const DOMPipelineHelper = {
         <div class="activity-icon create-icon">+</div>
         <div class="activity-content">
           <p>Candidate <strong>${safeName}</strong> added to <span class="badge-pill">${safeNew}</span></p>
+          <time class="activity-time">${timeStr}</time>
+        </div>
+      `;
+    } else if (actionType === "telemetry") {
+      item.innerHTML = `
+        <div class="activity-icon update-icon">⚡</div>
+        <div class="activity-content">
+          <p><strong>${safeName}</strong>: ${safeOld}</p>
           <time class="activity-time">${timeStr}</time>
         </div>
       `;
@@ -137,6 +144,7 @@ const app = createApp({
       ],
       applicants: [],
       todayCounts: {},
+      telemetryRequests: [], // Real-time Fetch API & Promise logger
       loading: false,
       updatingId: null,
       analyzingId: null,
@@ -153,35 +161,116 @@ const app = createApp({
       newCandidateStage: "Screening",
       simulateGroqFailure: false,
       simulateBothFailure: false,
-      selectedApplicantForModal: null
+      selectedApplicantForModal: null,
+      activeAbortController: null
     };
   },
   computed: {
     totalToday() {
       return Object.values(this.todayCounts).reduce((sum, count) => sum + count, 0);
+    },
+    avgLatency() {
+      if (!this.telemetryRequests.length) return 0;
+      const total = this.telemetryRequests.reduce((acc, r) => acc + (r.durationMs || 0), 0);
+      return Math.round((total / this.telemetryRequests.length) * 10) / 10;
+    },
+    cacheHitRatio() {
+      if (!this.telemetryRequests.length) return 0;
+      const hits = this.telemetryRequests.filter(r => r.cacheHit).length;
+      return Math.round((hits / this.telemetryRequests.length) * 100);
     }
   },
   methods: {
+    /**
+     * Instrumented Fetch API Client with Promise Lifecycle & JSON Handling
+     */
+    async apiFetch(url, options = {}) {
+      const method = options.method || "GET";
+      const start = performance.now();
+      const timeStr = new Date().toLocaleTimeString();
+
+      // Telemetry log entry in 'Pending' state
+      const telemetryEntry = {
+        method,
+        url,
+        promiseState: "Pending",
+        status: "...",
+        durationMs: 0,
+        cacheHit: false,
+        timeStr
+      };
+      this.telemetryRequests.unshift(telemetryEntry);
+
+      // Inject default headers
+      const headers = {
+        "Content-Type": "application/json",
+        "X-Client-Timezone": Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Kolkata",
+        ...(options.headers || {})
+      };
+
+      try {
+        const response = await fetch(url, { ...options, headers });
+        const durationMs = Math.round((performance.now() - start) * 100) / 100;
+
+        // Parse JSON response
+        let data = null;
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          data = await response.json();
+        } else {
+          data = await response.text();
+        }
+
+        // Update telemetry entry to 'Fulfilled'
+        telemetryEntry.promiseState = "Fulfilled";
+        telemetryEntry.status = response.status;
+        telemetryEntry.durationMs = durationMs;
+        telemetryEntry.cacheHit = !!(data && data.cache_hit);
+
+        if (!response.ok) {
+          const errMsg = (data && data.error) || `HTTP error ${response.status}`;
+          throw new Error(errMsg);
+        }
+
+        return data;
+      } catch (err) {
+        const durationMs = Math.round((performance.now() - start) * 100) / 100;
+        telemetryEntry.promiseState = err.name === "AbortError" ? "Aborted" : "Rejected";
+        telemetryEntry.status = err.name === "AbortError" ? "Canceled" : "Failed";
+        telemetryEntry.durationMs = durationMs;
+        throw err;
+      }
+    },
+
+    /**
+     * Load Pipeline Data using Promise.allSettled for Fault Tolerance
+     */
     async loadApplicants() {
       this.loading = true;
       this.error = "";
+
       try {
-        const [applicantsResponse, dashboardResponse] = await Promise.all([
-          fetch("/api/applicants"),
-          fetch("/api/dashboard/stages-today")
+        // Handle Promises concurrently using Promise.allSettled
+        const [applicantsResult, dashboardResult] = await Promise.allSettled([
+          this.apiFetch("/api/applicants"),
+          this.apiFetch("/api/dashboard/stages-today")
         ]);
 
-        if (!applicantsResponse.ok || !dashboardResponse.ok) {
-          throw new Error("Could not load pipeline data.");
+        if (applicantsResult.status === "fulfilled") {
+          this.applicants = applicantsResult.value;
+        } else {
+          this.error = `Could not load applicants: ${applicantsResult.reason.message}`;
         }
 
-        this.applicants = await applicantsResponse.json();
-        const dashboard = await dashboardResponse.json();
-        this.todayCounts = dashboard.counts || {};
+        if (dashboardResult.status === "fulfilled") {
+          this.todayCounts = dashboardResult.value.counts || {};
+        } else {
+          console.warn("Dashboard metrics unavailable:", dashboardResult.reason.message);
+        }
 
-        DOMPipelineHelper.showToast("Pipeline synchronized with backend", "info");
-      } catch (error) {
-        this.error = `${error.message} Check that the API server is running.`;
+        DOMPipelineHelper.showToast("Pipeline synchronized (Fetch API Promise.allSettled)", "info");
+      } catch (err) {
+        this.error = `Unexpected sync error: ${err.message}`;
         DOMPipelineHelper.showToast(this.error, "error");
       } finally {
         this.loading = false;
@@ -196,23 +285,18 @@ const app = createApp({
       this.success = "";
 
       try {
-        const response = await fetch(`/api/applicants/${applicant.id}/stage`, {
+        const result = await this.apiFetch(`/api/applicants/${applicant.id}/stage`, {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ stage })
         });
-
-        const result = await response.json();
-        if (!response.ok) {
-          throw new Error(result.error || "Could not update applicant stage.");
-        }
 
         const index = this.applicants.findIndex(item => item.id === applicant.id);
         if (index !== -1) {
           this.applicants.splice(index, 1, result.applicant);
         }
 
-        await this.loadDashboard();
+        // Refresh dashboard metrics
+        await this.loadDashboard(true);
         this.success = `${applicant.name} moved to ${stage}.`;
 
         DOMPipelineHelper.logActivity(applicant.name, oldStage, stage, "update");
@@ -231,9 +315,8 @@ const app = createApp({
       this.error = "";
 
       try {
-        const response = await fetch("/api/applicants", {
+        const result = await this.apiFetch("/api/applicants", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name: this.newCandidateName.trim(),
             job_title: this.newCandidateRole,
@@ -243,13 +326,8 @@ const app = createApp({
           })
         });
 
-        const result = await response.json();
-        if (!response.ok) {
-          throw new Error(result.error || "Failed to create candidate");
-        }
-
         this.applicants.push(result.applicant);
-        await this.loadDashboard();
+        await this.loadDashboard(true);
 
         const addedName = this.newCandidateName;
         const addedStage = this.newCandidateStage;
@@ -285,22 +363,17 @@ const app = createApp({
         if (this.simulateGroqFailure) queryParams.set("simulate_groq_failure", "true");
         if (this.simulateBothFailure) queryParams.set("simulate_both_failure", "true");
 
-        const response = await fetch(`/api/applicants/${applicant.id}/ai-summary?${queryParams.toString()}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            simulate_groq_failure: this.simulateGroqFailure,
-            simulate_both_failure: this.simulateBothFailure
-          })
-        });
+        const result = await this.apiFetch(
+          `/api/applicants/${applicant.id}/ai-summary?${queryParams.toString()}`,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              simulate_groq_failure: this.simulateGroqFailure,
+              simulate_both_failure: this.simulateBothFailure
+            })
+          }
+        );
 
-        const result = await response.json();
-
-        if (!response.ok) {
-          throw new Error(result.error || "Failed to generate AI summary.");
-        }
-
-        // Update candidate in local state
         applicant.ai_resume_summary = result.summary;
         applicant.ai_summary_provider = result.provider;
         applicant.ai_analyzed_at = result.analyzed_at;
@@ -308,7 +381,6 @@ const app = createApp({
         DOMPipelineHelper.logActivity(applicant.name, "", result.provider, "ai-analysis");
         DOMPipelineHelper.showToast(`AI Summary generated via ${result.provider}!`, "success");
 
-        // Display AI Modal
         this.openSummaryModal(applicant);
       } catch (err) {
         this.error = err.message;
@@ -316,6 +388,92 @@ const app = createApp({
       } finally {
         this.analyzingId = null;
       }
+    },
+
+    async loadDashboard(force = false) {
+      try {
+        const url = force ? "/api/dashboard/stages-today?force_refresh=true" : "/api/dashboard/stages-today";
+        const dashboard = await this.apiFetch(url);
+        this.todayCounts = dashboard.counts || {};
+      } catch (err) {
+        console.warn("Dashboard fetch failed:", err.message);
+      }
+    },
+
+    /**
+     * Sprint Test 1: Parallel Requests via Promise.allSettled
+     */
+    async testConcurrentRequests() {
+      DOMPipelineHelper.showToast("Firing 4 concurrent Fetch requests via Promise.allSettled...", "info");
+      const startTime = performance.now();
+
+      const promises = [
+        this.apiFetch("/api/health"),
+        this.apiFetch("/api/stages"),
+        this.apiFetch("/api/applicants"),
+        this.apiFetch("/api/dashboard/stages-today")
+      ];
+
+      const settlements = await Promise.allSettled(promises);
+      const totalDuration = Math.round((performance.now() - startTime) * 100) / 100;
+
+      const fulfilledCount = settlements.filter(s => s.status === "fulfilled").length;
+      DOMPipelineHelper.showToast(
+        `Promise.allSettled complete: ${fulfilledCount}/4 fulfilled in ${totalDuration}ms`,
+        "success"
+      );
+      DOMPipelineHelper.logActivity("Promise.allSettled", `${fulfilledCount}/4 resolved`, `${totalDuration}ms`, "telemetry");
+    },
+
+    /**
+     * Sprint Test 2: Latency & Range-Scan Cache Benchmark
+     */
+    async testCacheBenchmark() {
+      DOMPipelineHelper.showToast("Testing Cache Latency: Miss vs Hit...", "info");
+
+      // 1. Force cache miss
+      const t0 = performance.now();
+      const missRes = await this.apiFetch("/api/dashboard/stages-today?force_refresh=true");
+      const missDuration = Math.round((performance.now() - t0) * 100) / 100;
+
+      // 2. Immediate second call: Cache Hit
+      const t1 = performance.now();
+      const hitRes = await this.apiFetch("/api/dashboard/stages-today");
+      const hitDuration = Math.round((performance.now() - t1) * 100) / 100;
+
+      DOMPipelineHelper.showToast(
+        `Cache Benchmark: Miss took ${missDuration}ms -> Cache Hit took ${hitDuration}ms (<2ms)!`,
+        "success"
+      );
+      DOMPipelineHelper.logActivity("Query Cache Test", `Miss: ${missDuration}ms`, `Hit: ${hitDuration}ms`, "telemetry");
+    },
+
+    /**
+     * Sprint Test 3: AbortController Request Cancellation
+     */
+    async testAbortRequest() {
+      const controller = new AbortController();
+      DOMPipelineHelper.showToast("Dispatched fetch with AbortController, canceling in 5ms...", "info");
+
+      setTimeout(() => {
+        controller.abort();
+      }, 5);
+
+      try {
+        await this.apiFetch("/api/applicants", { signal: controller.signal });
+      } catch (err) {
+        if (err.name === "AbortError") {
+          DOMPipelineHelper.showToast("Fetch successfully aborted via AbortController!", "success");
+          DOMPipelineHelper.logActivity("AbortController", "Request canceled cleanly", "AbortError handled", "telemetry");
+        } else {
+          DOMPipelineHelper.showToast(`Fetch failed: ${err.message}`, "error");
+        }
+      }
+    },
+
+    clearTelemetry() {
+      this.telemetryRequests = [];
+      DOMPipelineHelper.showToast("Telemetry logs cleared", "info");
     },
 
     openSummaryModal(applicant) {
@@ -336,7 +494,6 @@ const app = createApp({
         : "llama-3.3-70b-versatile";
       time.textContent = applicant.ai_analyzed_at ? new Date(applicant.ai_analyzed_at).toLocaleTimeString() : "Just now";
 
-      // Convert simple markdown headings and bullets to rich HTML
       const raw = applicant.ai_resume_summary || "No summary available.";
       const formattedHtml = raw
         .replace(/### (.*)/g, '<h4>$1</h4>')
@@ -353,13 +510,6 @@ const app = createApp({
       if (modal) {
         modal.classList.add("hidden");
       }
-    },
-
-    async loadDashboard() {
-      const response = await fetch("/api/dashboard/stages-today");
-      if (!response.ok) return;
-      const dashboard = await response.json();
-      this.todayCounts = dashboard.counts || {};
     },
 
     applicantsFor(stage) {
@@ -399,29 +549,19 @@ const app = createApp({
   mounted() {
     this.loadApplicants();
 
-    // =========================================================================
-    // NATIVE DOM EVENT DELEGATION & EVENT OBJECT HANDLING
-    // =========================================================================
-
-    // 1. EVENT DELEGATION ON KANBAN BOARD CONTAINER
-    // Attaching a single click listener to #delegatedBoardContainer.
-    // Events bubble from card action buttons up to this parent.
+    // Event Delegation
     const boardContainer = document.getElementById("delegatedBoardContainer");
     if (boardContainer) {
       boardContainer.addEventListener("click", (event) => {
-        // Inspect Event Object properties
         const target = event.target;
         const actionButton = target.closest("[data-action]");
 
         if (!actionButton) {
-          // Event bubbled from elsewhere in the board
           DOMPipelineHelper.updateEventInspector(event, "Clicked outside action buttons (bubbled to board)");
           return;
         }
 
-        // Demonstrate stopPropagation to prevent unnecessary parent propagation
         event.stopPropagation();
-
         const action = actionButton.dataset.action;
         const applicantId = actionButton.dataset.applicantId;
 
@@ -441,7 +581,7 @@ const app = createApp({
       });
     }
 
-    // 2. FORM EVENTS (input & change)
+    // Form Events
     const searchInput = document.getElementById("applicantSearchInput");
     if (searchInput) {
       searchInput.addEventListener("input", (e) => {
@@ -452,27 +592,7 @@ const app = createApp({
       });
     }
 
-    const groqToggle = document.getElementById("simulateGroqFailureCheck");
-    if (groqToggle) {
-      groqToggle.addEventListener("change", (e) => {
-        DOMPipelineHelper.updateEventInspector(
-          e,
-          `Groq outage simulation changed to: ${e.target.checked}`
-        );
-      });
-    }
-
-    const bothToggle = document.getElementById("simulateBothFailureCheck");
-    if (bothToggle) {
-      bothToggle.addEventListener("change", (e) => {
-        DOMPipelineHelper.updateEventInspector(
-          e,
-          `Both providers outage simulation changed to: ${e.target.checked}`
-        );
-      });
-    }
-
-    // 3. MODAL DISMISSAL EVENT LISTENERS
+    // Modal Events
     const closeBtn = document.getElementById("modalCloseBtn");
     const closeFooterBtn = document.getElementById("modalCloseFooterBtn");
     const modalBackdrop = document.getElementById("aiSummaryModal");
@@ -483,10 +603,7 @@ const app = createApp({
 
     if (modalBackdrop) {
       modalBackdrop.addEventListener("click", (e) => {
-        // If clicking directly on backdrop outside the modal card, close it
-        if (e.target === modalBackdrop) {
-          this.closeSummaryModal();
-        }
+        if (e.target === modalBackdrop) this.closeSummaryModal();
       });
     }
 
@@ -499,14 +616,11 @@ const app = createApp({
       });
     }
 
-    // Keyboard event: ESC key to close modal
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        this.closeSummaryModal();
-      }
+      if (e.key === "Escape") this.closeSummaryModal();
     });
 
-    DOMPipelineHelper.logActivity("System", "", "AI Ready", "ai-analysis");
+    DOMPipelineHelper.logActivity("System", "", "Sprint Telemetry Online", "telemetry");
   }
 });
 

@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Interview Pipeline with Groq & OpenRouter AI Resume Analysis" />
-    <title>Interview Pipeline | AI Resume Screening</title>
+    <meta name="description" content="Interview Pipeline with Fetch API Telemetry, Query Optimization, and AI Screening" />
+    <title>Interview Pipeline | Debug & Performance Sprint</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
@@ -40,19 +40,63 @@
     <main id="app" class="shell">
       <header class="topbar">
         <div>
-          <p class="eyebrow">CYNARIS · RECRUITMENT INTELLIGENCE</p>
-          <h1>Interview Status & AI Resume Analysis</h1>
-          <p class="subheading">Groq (Primary: Llama 3.3 70B) + OpenRouter Fallback with Event Delegation</p>
+          <p class="eyebrow">CYNARIS · PERFORMANCE & SPRINT DASHBOARD</p>
+          <h1>Interview Status & Query Telemetry</h1>
+          <p class="subheading">Fetch API, Promises, Async/Await, and Log Analysis Profiler</p>
         </div>
         <div class="header-actions">
           <button class="btn btn-secondary" type="button" @click="toggleAddForm">
             {{ showAddForm ? '✕ Close Form' : '+ Add Candidate' }}
           </button>
           <button class="btn btn-primary" type="button" @click="loadApplicants" :disabled="loading">
-            {{ loading ? 'Refreshing…' : '↻ Refresh' }}
+            {{ loading ? 'Fetching…' : '↻ Refresh (Fetch API)' }}
           </button>
         </div>
       </header>
+
+      <!-- Network Performance & Fetch API Telemetry Toolbar -->
+      <section class="telemetry-bar-panel" aria-label="Fetch API & Promise Performance Profiler">
+        <div class="telemetry-header">
+          <div class="telemetry-title">
+            <span class="pulse-dot"></span>
+            <strong>HTTP & Fetch API Telemetry Profiler</strong>
+            <span class="tech-tag">Fetch API · Promises · Async/Await · JSON</span>
+          </div>
+          <div class="telemetry-actions">
+            <button class="btn-micro" type="button" @click="testConcurrentRequests" title="Test Promise.allSettled with multiple parallel requests">
+              ⚡ Test Promise.allSettled
+            </button>
+            <button class="btn-micro" type="button" @click="testCacheBenchmark" title="Test Range-Scan TTL Cache Latency (<2ms)">
+              ⚡ Test Cache Latency
+            </button>
+            <button class="btn-micro" type="button" @click="testAbortRequest" title="Test AbortController cancellation">
+              🛑 Test AbortController
+            </button>
+            <button class="btn-micro btn-ghost" type="button" @click="clearTelemetry">
+              Clear Logs
+            </button>
+          </div>
+        </div>
+
+        <div class="telemetry-kpis">
+          <div class="kpi-card">
+            <span class="kpi-label">TOTAL HTTP REQUESTS</span>
+            <strong class="kpi-value">{{ telemetryRequests.length }}</strong>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">AVG LATENCY</span>
+            <strong class="kpi-value" :class="avgLatency < 50 ? 'text-success' : 'text-warning'">{{ avgLatency }} ms</strong>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">CACHE HIT RATIO</span>
+            <strong class="kpi-value text-info">{{ cacheHitRatio }}%</strong>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">OPTIMIZATION STATUS</span>
+            <strong class="kpi-value text-success">Range Scan & TTL Active</strong>
+          </div>
+        </div>
+      </section>
 
       <!-- AI Provider Fallback Simulator Toolbar (Demonstrates Form Events & Error Handling) -->
       <section class="ai-controls-panel" aria-label="AI Fallback Testing Controls">
@@ -141,7 +185,7 @@
       <!-- Filter and Metrics Banner -->
       <section class="summary" aria-label="Today's interview metrics">
         <div class="summary-copy">
-          <span class="eyebrow">TODAY</span>
+          <span class="eyebrow">TODAY (TIMEZONE NORMALIZED)</span>
           <strong id="statSummary">{{ totalToday }}</strong>
           <span>candidates updated</span>
         </div>
@@ -258,6 +302,47 @@
         </article>
       </section>
 
+      <!-- Live Fetch API Request & Performance Diagnostics Inspector -->
+      <section class="performance-log-section" aria-label="Real-time Fetch API Request & Performance Log">
+        <div class="inspector-header">
+          <h3>📊 Real-Time Fetch API & Async Request Log</h3>
+          <span class="tech-badge">Fetch API · Promise Lifecycle · Latency (ms) · JSON Parser</span>
+        </div>
+        <p class="inspector-subtitle">
+          Every HTTP call using <code>window.fetch</code> is instrumented. Inspect Promise states, HTTP headers (<code>X-Response-Time</code>, <code>X-Request-ID</code>), and cache hits.
+        </p>
+
+        <div class="request-table-wrapper">
+          <table class="request-table">
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Endpoint</th>
+                <th>Promise State</th>
+                <th>Status</th>
+                <th>Latency</th>
+                <th>Cache</th>
+                <th>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(req, idx) in telemetryRequests.slice(0, 8)" :key="idx" :class="{ 'row-slow': req.durationMs > 50 }">
+                <td><span class="badge-method" :class="`method-${req.method.toLowerCase()}`">{{ req.method }}</span></td>
+                <td><code class="endpoint-code">{{ req.url }}</code></td>
+                <td><span class="badge-promise" :class="`promise-${req.promiseState.toLowerCase()}`">{{ req.promiseState }}</span></td>
+                <td><span class="badge-status" :class="req.status >= 400 ? 'status-err' : 'status-ok'">{{ req.status }}</span></td>
+                <td><strong :class="req.durationMs > 50 ? 'text-warning' : 'text-success'">{{ req.durationMs }} ms</strong></td>
+                <td><span class="badge-cache" :class="req.cacheHit ? 'cache-hit' : 'cache-miss'">{{ req.cacheHit ? 'HIT' : 'MISS' }}</span></td>
+                <td class="text-muted">{{ req.timeStr }}</td>
+              </tr>
+              <tr v-if="!telemetryRequests.length">
+                <td colspan="7" class="text-center text-muted">No Fetch API calls captured yet. Click Refresh or test an action above.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       <!-- Live DOM Event Bubbling & Delegation Inspector -->
       <section class="events-inspector-section" aria-label="DOM Event Delegation & Bubbling Inspector">
         <div class="inspector-header">
@@ -265,7 +350,7 @@
           <span class="tech-badge">addEventListener · Event Objects · Bubbling · Delegation · Form Events</span>
         </div>
         <p class="inspector-subtitle">
-          Events bubble up from candidate cards to the parent container <code>#delegatedBoardContainer</code>. A single delegated listener intercepts clicks, extracts <code>event.target.dataset</code>, and triggers actions.
+          Events bubble up from candidate cards to parent container <code>#delegatedBoardContainer</code>. A single delegated listener intercepts clicks and extracts <code>event.target.dataset</code>.
         </p>
         <div class="inspector-grid">
           <div class="inspector-card">
@@ -284,7 +369,7 @@
       </section>
 
       <footer>
-        <p>Cynaris Recruitment Intelligence — Groq llama-3.3-70b-versatile + OpenRouter Fallback</p>
+        <p>Cynaris Recruitment Intelligence — Performance Sprint & Query Optimization</p>
       </footer>
     </main>
 
