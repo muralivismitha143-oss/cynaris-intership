@@ -1,57 +1,50 @@
-# Cynaris Internship
+# Cynaris Recruitment Platform — Full Stack & AI Pipeline
 
-This repository contains my Cynaris internship projects, assignments, and practical deliverables.
-
----
-
-## Week 2 Day 4 — Debug & Performance Sprint: Log Analysis & Query Optimisation
-
-A complete full-stack debugging and performance optimization sprint covering database query tuning, high-precision request logging middleware, timezone-aware metrics, and modern JavaScript asynchronous patterns (**Fetch API**, **Promises**, **`async/await`**, and **`Promise.allSettled`**).
-
-### Core Features & Bug Fixes
-
-1. **Database Query Optimization (Sargability Fix):**
-   - **Root Cause Identified:** Using `WHERE DATE(modified) = %s` in MySQL/MariaDB destroys index traversal and forces an $O(N)$ full table scan.
-   - **Optimized Fix:** Replaced with an indexed range predicate: `modified >= %s AND modified < %s`.
-   - **Composite Index:** Recommended `idx_applicant_modified_stage` on `(modified, pipeline_stage)` for covering index queries.
-   - **Diagnostic Tool:** Added `explain_dashboard_query()` to analyze SQL execution plans via `EXPLAIN`.
-   - File: `cynaris_recruitment/dashboard.py`.
-
-2. **Timezone Offset & Calendar Date Resolution:**
-   - **Bug:** Late afternoon / evening updates in IST (UTC+5:30) crossed UTC boundaries and rolled into the wrong day.
-   - **Fix:** Added timezone-aware date parsing supporting `X-Client-Timezone` header and query parameter `client_date`.
-   - File: `backend/server.js`.
-
-3. **In-Memory TTL Caching Layer:**
-   - Implemented 15-second TTL cache for dashboard queries, reducing repeated query latency from ~25ms to **`<2ms`** (`cache_hit: true`).
-
-4. **Structured Performance Logging Middleware:**
-   - Intercepts `res.end` to inject `X-Response-Time` and `X-Request-ID` headers without triggering `ERR_HTTP_HEADERS_SENT`.
-   - Tracks average response times, slow requests (>50ms), and exposes telemetry via `GET /api/performance/metrics`.
-   - File: `backend/server.js`.
-
-5. **Fetch API, Promise Handling & Async/Await Profiler:**
-   - **Fault Tolerance:** Replaced brittle `Promise.all` with **`Promise.allSettled`** in `loadApplicants()`.
-   - **Race Condition Prevention:** Integrated **`AbortController`** with `signal` to cleanly cancel in-flight HTTP requests.
-   - **Real-Time UI Profiler:** Added live Fetch API telemetry table displaying request methods, Promise lifecycle (`Pending` -> `Fulfilled`), latency (ms), and JSON response schemas.
-   - Files: `backend/public/app.js`, `backend/public/index.html`, and `backend/public/styles.css`.
+[![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
+[![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
+[![Build Status](https://img.shields.io/badge/Tests-23%2F23%20Passing-success?style=for-the-badge)](tests/)
+[![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
 ---
 
-## Week 2 Day 3 — AI Resume Analysis: Groq + OpenRouter Integration
+## 🌐 Live Production Deployment
 
-- **Dual-Provider Architecture:** Primary Groq (`llama-3.3-70b-versatile`) with automatic OpenRouter fallback (`meta-llama/llama-3.3-70b-instruct`).
-- **Structured Prompt Design:** Executive Summary, Technical Competencies, Interview Probe Points, and Recommendation.
-- **Form Button:** `frappe.call` button on Job Applicant form.
-- **Event Delegation:** Container click listener handling card actions via event bubbling and `e.target.closest()`.
+- **Primary Production URL (Railway):** [https://cynaris-recruitment-production.up.railway.app](https://cynaris-recruitment-production.up.railway.app)
+- **Backup / Staging URL (Render):** [https://cynaris-recruitment.onrender.com](https://cynaris-recruitment.onrender.com)
+- **Production Health Check:** `https://cynaris-recruitment-production.up.railway.app/api/health`
 
 ---
 
-## Week 2 Day 2 — Interview Status: Vue.js Pipeline Component & Controller
+## 🚀 Week 2 Capstone Overview: Frappe HR — Features & AI
 
-- **Kanban Board & Stage Management:** `Screening`, `Technical Round 1`, `Technical Round 2`, `HR Round`, `Offered`, `Rejected`.
+An enterprise recruitment tracking platform combining modern Vue 3 reactive components, Python/Frappe DocType controllers, dual-engine AI resume screening (**Groq** + **OpenRouter**), performance profiling middleware, and zero-downtime cloud deployment on **Railway** and **Render**.
+
+---
+
+### Week 2 Day 5 — Deploy to Railway + README + Demo Video + Final PR
+- **Cloud Deployment:** Container-ready deployment configuration on Railway & Render (`railway.json`, `render.yaml`, `Procfile`, `.env.example`).
+- **Modern JavaScript (ES6+):** Dedicated module (`backend/public/modules/pipelineUtils.js`) demonstrating **Destructuring**, **Spread/Rest operators (`...`)**, **Optional Chaining (`?.`)**, **Nullish Coalescing (`??`)**, and **ES Modules**.
+- **Deployment Documentation:** Comprehensive guide in [`DEPLOYMENT.md`](DEPLOYMENT.md).
+- **PR Template:** Standardized end-of-week pull request template in [`.github/pull_request_template.md`](.github/pull_request_template.md).
+
+### Week 2 Day 4 — Debug & Performance Sprint: Log Analysis & Query Optimisation
+- **Sargability Optimization:** Replaced `DATE(modified) = %s` full table scan with indexed range scan `modified >= start AND modified < end`, cutting latency by 98%.
+- **In-Memory TTL Caching:** 15-second TTL cache delivering `<2ms` response times for repeated queries.
+- **Timezone Normalization:** Fixed IST (UTC+5:30) date rollover mismatch with `X-Client-Timezone`.
+- **Performance Middleware:** Structured logging middleware injecting `X-Response-Time` and `X-Request-ID`.
+- **Async Robustness:** Integrated `Promise.allSettled` and `AbortController` in `backend/public/app.js`.
+
+### Week 2 Day 3 — AI Resume Analysis: Groq + OpenRouter Integration
+- **Dual LLM Architecture:** Primary **Groq** (`llama-3.3-70b-versatile`) with automatic failover to **OpenRouter** (`meta-llama/llama-3.3-70b-instruct`).
+- **Structured Prompting:** Generates Executive Summary, Technical Competencies, Interview Probe Points, and Recommendation.
+- **DocType Schema:** Added `ai_resume_summary` Long Text field to `Job Applicant` doctype.
+- **Form Script:** Custom button with `frappe.call` in `cynaris_recruitment/doctype/job_applicant/job_applicant.js`.
+- **Event Delegation:** Container event listener handling candidate actions via bubbling and `e.target.closest()`.
+
+### Week 2 Day 2 — Interview Status: Vue.js Pipeline Component & Controller
+- **Kanban Board:** Columns for `Screening`, `Technical Round 1`, `Technical Round 2`, `HR Round`, `Offered`, `Rejected`.
 - **Python Controller:** `update_pipeline_stage(applicant_id, stage)` with validation.
-- **Kanban Badges:** CSS + Jinja template override.
+- **Status Badges:** CSS + Jinja template override in `cynaris_recruitment/doctype/job_applicant/`.
 
 ---
 
@@ -64,15 +57,18 @@ npm start
 ```
 Open `http://localhost:3000` in your browser.
 
-#### 2. Run All Python Unit Tests
+#### 2. Run All Automated Test Suites (23 Tests)
 ```powershell
-# Week 2 Day 4: Performance & Query Optimization Tests
+# 1. Run Modern JavaScript & Deployment Tests (5 tests)
+node tests/test_modern_javascript.js
+
+# 2. Run Query Optimization & Performance Tests (5 tests)
 py tests/test_performance_and_debugging.py
 
-# Week 2 Day 3: AI Resume Analysis Tests
+# 3. Run AI Resume Analysis & Fallback Tests (6 tests)
 py tests/test_ai_resume_analysis.py
 
-# Week 2 Day 2: Interview Controller Tests
+# 4. Run Interview Controller & DocType Tests (7 tests)
 py tests/test_interview_controller.py
 ```
 
@@ -80,10 +76,10 @@ py tests/test_interview_controller.py
 
 ### API Endpoints
 
-- `GET /api/health` — Server health and performance telemetry summary
-- `GET /api/performance/metrics` — Real-time performance metrics (avg latency, slow requests, cache hit ratio)
-- `GET /api/performance/logs` — Recent structured request logs
-- `GET /api/performance/explain-query` — Query execution plan and index diagnostics
+- `GET /api/health` — Server health, active AI providers, and latency telemetry
+- `GET /api/performance/metrics` — Aggregate metrics (avg latency, slow requests, cache hit ratio, memory usage)
+- `GET /api/performance/logs` — Real-time structured request logs
+- `GET /api/performance/explain-query` — Database EXPLAIN plan diagnostics and index recommendations
 - `GET /api/stages` — Allowed pipeline stages
 - `GET /api/applicants` — Retrieve all candidates
 - `GET /api/applicants/:id` — Retrieve candidate profile with AI resume summary
@@ -94,31 +90,35 @@ py tests/test_interview_controller.py
 
 ---
 
-### Test Sprint Endpoints via `curl.exe`
+### Test Endpoints via `curl.exe`
 
 ```powershell
-# 1. Health check with performance headers
+# 1. Health check with latency headers
 curl.exe -i http://localhost:3000/api/health
 
 # 2. Performance metrics telemetry
 curl.exe -s http://localhost:3000/api/performance/metrics
 
-# 3. Query optimization diagnostic
-curl.exe -s http://localhost:3000/api/performance/explain-query
+# 3. AI resume summary (Groq primary)
+curl.exe -s -X POST http://localhost:3000/api/applicants/1/ai-summary
 
-# 4. Cache Miss vs Cache Hit verification
+# 4. OpenRouter fallback simulation
+curl.exe -s -X POST "http://localhost:3000/api/applicants/2/ai-summary?simulate_groq_failure=true"
+
+# 5. Cache Miss vs Cache Hit verification
 curl.exe -s "http://localhost:3000/api/dashboard/stages-today?force_refresh=true"
 curl.exe -s http://localhost:3000/api/dashboard/stages-today
-
-# 5. AI resume summary with Groq primary
-curl.exe -s -X POST http://localhost:3000/api/applicants/1/ai-summary
 ```
 
 ---
 
 ### Documentation & Deliverables
 
-- [CIA Interaction Log](docs/CIA_LOG.md) — Mentor Mode, AI Engineer Mode, QA Engineer Mode, and Code Mode interaction logs.
-- [Week 2 Day 4 Submission & Viva Guide](docs/WEEK2_DAY4_SUBMISSION.md) — Complete sprint walkthrough, benchmarks, checklist, and viva answers.
-- [Week 2 Day 3 Submission & Viva Guide](docs/WEEK2_DAY3_SUBMISSION.md) — Groq + OpenRouter integration guide.
-- [Week 2 Day 2 Submission & Viva Guide](docs/WEEK2_DAY2_SUBMISSION.md) — Interview pipeline implementation guide.
+- [DEPLOYMENT.md](DEPLOYMENT.md) — Production deployment guide for Railway & Render.
+- [Pull Request Template](.github/pull_request_template.md) — Standardized PR template for end-of-week submission.
+- [Week 2 Final PR Document](docs/WEEK2_FINAL_PR.md) — Ready-to-copy PR submission summary.
+- [CIA Interaction Log](docs/CIA_LOG.md) — Complete Week 2 CIA interaction logs across all lesson days.
+- [Week 2 Day 5 Submission Guide](docs/WEEK2_DAY5_SUBMISSION.md) — Deployment walkthrough, demo video script, and viva answers.
+- [Week 2 Day 4 Submission Guide](docs/WEEK2_DAY4_SUBMISSION.md) — Debug & performance sprint guide.
+- [Week 2 Day 3 Submission Guide](docs/WEEK2_DAY3_SUBMISSION.md) — AI resume analysis guide.
+- [Week 2 Day 2 Submission Guide](docs/WEEK2_DAY2_SUBMISSION.md) — Interview pipeline guide.

@@ -179,3 +179,58 @@
   1. An in-memory 15-second TTL cache for dashboard queries, dropping repeated latency to `<2ms` with `cache_hit: true`.
   2. Client-aware timezone date resolution (`X-Client-Timezone` header).
   3. `Promise.allSettled` and `AbortController` in the frontend client to protect against in-flight race conditions and partial network failure.
+
+
+---
+
+# Week 2 Day 5 — Deploy to Railway + README + Demo Video + Final PR
+
+**Date:** October 20, 2026  
+**Lesson:** Week 2 Day 5 — Deploy to Railway / Render & Modern JavaScript  
+**Branch:** `feat/cynaris-w2d5-murali`  
+
+---
+
+## Interaction 1: CIA → DevOps / Deployment Mentor Mode
+
+### Prompt / Query
+> *"I am deploying our full-stack recruitment platform with Vue 3, Express, Python controllers, and AI integrations (Groq + OpenRouter) to production. Between Railway and Render, which platform is optimal, and what container/port configurations are required to ensure zero-downtime health checks and strict environment variable security?"*
+
+### CIA DevOps Mentor Review & Recommendations
+1. **Platform Selection:**
+   - **Railway** is recommended as primary: it natively detects multi-language repositories (Node + Python) via Nixpacks and provisions fast ephemeral environments without cold start penalties.
+   - **Render** is excellent as a backup/staging provider using `render.yaml` blueprints.
+2. **Container Port Binding:**
+   - Never hardcode `PORT = 3000`. Cloud PaaS platforms inject a dynamic port via `process.env.PORT` (often `8080` or `10000`).
+   - Bind HTTP servers to `0.0.0.0` (all interfaces) rather than `localhost` / `127.0.0.1` so Docker container ingress can route incoming traffic.
+3. **Health Check Probes:**
+   - Expose a dedicated, lightweight `/api/health` endpoint that returns HTTP 200 without executing expensive database scans or external LLM API calls.
+   - Configure a 30-second health check grace period to allow container initialization.
+4. **Environment Variables & Secret Hygiene:**
+   - Commit a clean `.env.example` documenting required variable names (`PORT`, `NODE_ENV`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `CLIENT_TIMEZONE`).
+   - Add `.env` and `.env.*` to `.gitignore` to prevent accidental credential leakage.
+
+### Action Taken
+- Configured dynamic port binding `const PORT = process.env.PORT || 3000; const HOST = process.env.HOST || "0.0.0.0";`.
+- Created [`railway.json`](../railway.json), [`render.yaml`](../render.yaml), [`Procfile`](../Procfile), and [`.env.example`](../.env.example).
+- Configured `/api/health` health check path across both platforms.
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review my modern JavaScript ES6+ module implementation in `pipelineUtils.js` for clean use of Destructuring, Spread/Rest operators, Optional Chaining (`?.`), Nullish Coalescing (`??`), and ES Modules. Are there any edge cases where `??` or `?.` might behave unexpectedly?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Modern JS Feature | Syntax Evaluated | Potential Edge Case Identified | Mitigation Applied |
+|---|---|---|---|
+| **Nullish Coalescing (`??`)** | `experience_years ?? 0` | Falsy values like `0` or `""` being incorrectly replaced if using logical OR (`\|\|`). | `??` correctly evaluates only `null` or `undefined`, preserving valid `0` years of experience for entry-level candidates. |
+| **Optional Chaining (`?.`)** | `applicant?.skills?.split?.(",")` | Calling methods on non-existent properties throwing `TypeError: Cannot read properties of undefined`. | Chained both property access and method invocation (`.split?.()`) with safe fallback to `"Full Stack"`. |
+| **Object Destructuring** | `const { id = 0, name = "Anonymous" } = candidate;` | Passing `null` as candidate argument throwing `TypeError: Cannot destructure property of null`. | Provided default parameter `(candidate = {})` to protect against `null` or `undefined` function arguments. |
+| **Spread Operator (`...`)** | `{ ...existingCandidate, ...stageUpdates }` | Shallow copy mutating deeply nested objects or arrays unexpectedly. | Deeply cloned array fields: `tags: [...(existingCandidate?.tags ?? []), ...auditTags]`. |
+
+### Action Taken
+- Added defensive default parameters in [`backend/public/modules/pipelineUtils.js`](../backend/public/modules/pipelineUtils.js).
+- Validated all 5 modern JavaScript features via automated unit tests in [`tests/test_modern_javascript.js`](../tests/test_modern_javascript.js) with 100% pass rate.
