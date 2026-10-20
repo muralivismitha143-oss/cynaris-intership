@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Interview Pipeline with Groq & OpenRouter AI Resume Analysis" />
+    <title>Interview Pipeline | AI Resume Screening</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+    <!-- AI Resume Summary Modal -->
+    <div id="aiSummaryModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-card">
+        <header class="modal-header">
+          <div class="modal-title-group">
+            <span class="eyebrow">AI RESUME ANALYSIS</span>
+            <h2 id="modalTitle">Candidate Summary</h2>
+            <div class="modal-meta">
+              <span id="modalProviderBadge" class="provider-badge">Groq</span>
+              <span id="modalModelLabel" class="model-badge">llama-3.3-70b-versatile</span>
+              <span id="modalTimestamp" class="time-badge">Just now</span>
+            </div>
+          </div>
+          <button id="modalCloseBtn" type="button" class="modal-close-btn" aria-label="Close modal">&times;</button>
+        </header>
+
+        <div id="modalBody" class="modal-body markdown-body">
+          <!-- Populated dynamically via DOM innerHTML / textContent -->
+        </div>
+
+        <footer class="modal-footer">
+          <button id="modalCopyBtn" type="button" class="btn btn-secondary">📋 Copy Summary</button>
+          <button id="modalCloseFooterBtn" type="button" class="btn btn-primary">Close</button>
+        </footer>
+      </div>
+    </div>
+
+    <main id="app" class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">CYNARIS · RECRUITMENT INTELLIGENCE</p>
+          <h1>Interview Status & AI Resume Analysis</h1>
+          <p class="subheading">Groq (Primary: Llama 3.3 70B) + OpenRouter Fallback with Event Delegation</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary" type="button" @click="toggleAddForm">
+            {{ showAddForm ? '✕ Close Form' : '+ Add Candidate' }}
+          </button>
+          <button class="btn btn-primary" type="button" @click="loadApplicants" :disabled="loading">
+            {{ loading ? 'Refreshing…' : '↻ Refresh' }}
+          </button>
+        </div>
+      </header>
+
+      <!-- AI Provider Fallback Simulator Toolbar (Demonstrates Form Events & Error Handling) -->
+      <section class="ai-controls-panel" aria-label="AI Fallback Testing Controls">
+        <div class="ai-controls-header">
+          <span class="ai-icon">⚡</span>
+          <div>
+            <strong>AI Engine Fallback Simulator (Groq + OpenRouter)</strong>
+            <p>Toggle provider states to test runtime failover and error recovery.</p>
+          </div>
+        </div>
+        <div class="ai-toggles">
+          <label class="toggle-control">
+            <input
+              id="simulateGroqFailureCheck"
+              type="checkbox"
+              v-model="simulateGroqFailure"
+            />
+            <span class="toggle-label">Simulate Groq Outage <em class="badge-hint">(Triggers OpenRouter Fallback)</em></span>
+          </label>
+          <label class="toggle-control">
+            <input
+              id="simulateBothFailureCheck"
+              type="checkbox"
+              v-model="simulateBothFailure"
+            />
+            <span class="toggle-label">Simulate Both Providers Outage <em class="badge-hint text-danger">(Tests 502 Error)</em></span>
+          </label>
+        </div>
+      </section>
+
+      <!-- Add Candidate Form (Demonstrating Form Events: submit, input, change) -->
+      <section v-if="showAddForm" class="add-candidate-panel" aria-label="Add new candidate">
+        <h3>Add Candidate to Pipeline</h3>
+        <form id="addCandidateForm" @submit.prevent="createApplicant" class="add-candidate-form">
+          <div class="form-group">
+            <label for="candidateNameInput">Candidate Name *</label>
+            <input
+              id="candidateNameInput"
+              v-model="newCandidateName"
+              type="text"
+              placeholder="e.g. Ananya Verma"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="candidateRoleInput">Target Role</label>
+            <input
+              id="candidateRoleInput"
+              v-model="newCandidateRole"
+              type="text"
+              placeholder="e.g. Full Stack Developer"
+            />
+          </div>
+          <div class="form-group">
+            <label for="candidateExpInput">Experience (Years)</label>
+            <input
+              id="candidateExpInput"
+              v-model="newCandidateExp"
+              type="number"
+              step="0.5"
+              min="0"
+              placeholder="e.g. 2"
+            />
+          </div>
+          <div class="form-group">
+            <label for="candidateSkillsInput">Key Skills</label>
+            <input
+              id="candidateSkillsInput"
+              v-model="newCandidateSkills"
+              type="text"
+              placeholder="e.g. Vue.js, Node.js, Python, PostgreSQL"
+            />
+          </div>
+          <div class="form-group">
+            <label for="candidateStageInput">Initial Stage</label>
+            <select id="candidateStageInput" v-model="newCandidateStage">
+              <option v-for="stage in stages" :key="stage" :value="stage">{{ stage }}</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary btn-submit" :disabled="submitting">
+            {{ submitting ? 'Adding…' : 'Add Candidate' }}
+          </button>
+        </form>
+      </section>
+
+      <!-- Filter and Metrics Banner -->
+      <section class="summary" aria-label="Today's interview metrics">
+        <div class="summary-copy">
+          <span class="eyebrow">TODAY</span>
+          <strong id="statSummary">{{ totalToday }}</strong>
+          <span>candidates updated</span>
+        </div>
+        <div class="stage-summary">
+          <div
+            v-for="stage in stages"
+            :key="stage"
+            class="summary-stage"
+            :class="{ active: selectedFilter === stage }"
+            @click="filterByStage(stage)"
+          >
+            <span class="stage-dot" :class="stageClass(stage)"></span>
+            <span>{{ stage }}</span>
+            <strong class="stage-count">{{ todayCounts[stage] || 0 }}</strong>
+          </div>
+        </div>
+      </section>
+
+      <!-- Search & Controls Bar -->
+      <div class="controls-bar">
+        <div class="search-box">
+          <label for="applicantSearchInput" class="sr-only">Search candidates</label>
+          <input
+            id="applicantSearchInput"
+            type="search"
+            class="search-input"
+            placeholder="Search candidates by name or skill..."
+            v-model="searchQuery"
+          />
+        </div>
+        <div class="filter-indicators" v-if="selectedFilter">
+          <span>Filtering by: <strong>{{ selectedFilter }}</strong></span>
+          <button class="btn-clear-filter" @click="clearFilter">Clear Filter</button>
+        </div>
+      </div>
+
+      <!-- Alert Notices -->
+      <p v-if="error" class="notice error" role="alert">{{ error }}</p>
+      <p v-if="success" class="notice success" role="status">{{ success }}</p>
+
+      <!-- Kanban Board (With Delegated Click Listener on #delegatedBoardContainer) -->
+      <section id="delegatedBoardContainer" class="board" aria-label="Applicants by pipeline stage">
+        <article
+          v-for="stage in stages"
+          :key="stage"
+          class="column"
+          :data-stage="stage"
+          :class="{ 'dimmed': selectedFilter && selectedFilter !== stage }"
+        >
+          <header class="column-heading">
+            <div class="column-title">
+              <span class="stage-dot" :class="stageClass(stage)"></span>
+              <h2>{{ stage }}</h2>
+            </div>
+            <span class="count">{{ applicantsFor(stage).length }}</span>
+          </header>
+
+          <div class="cards" :id="`cards-${stageClass(stage)}`">
+            <article
+              v-for="applicant in applicantsFor(stage)"
+              :key="applicant.id"
+              class="applicant-card"
+              :data-id="applicant.id"
+            >
+              <div class="applicant-avatar" :class="stageClass(stage)">
+                {{ initials(applicant.name) }}
+              </div>
+              <div class="applicant-info">
+                <h3>{{ applicant.name }}</h3>
+                <p class="role-text">{{ applicant.job_title || 'Software Engineer' }} ({{ applicant.experience_years || 1 }}y exp)</p>
+                <p class="skills-text">{{ applicant.skills || 'JavaScript, Git' }}</p>
+              </div>
+
+              <!-- AI Analysis Status & Action Buttons (Delegated Event Targets) -->
+              <div class="card-ai-actions">
+                <button
+                  type="button"
+                  class="btn-ai-analyze"
+                  data-action="analyze-resume"
+                  :data-applicant-id="applicant.id"
+                  :disabled="analyzingId === applicant.id"
+                >
+                  <span class="sparkle-icon">✨</span>
+                  {{ analyzingId === applicant.id ? 'Analyzing...' : (applicant.ai_resume_summary ? 'Re-Analyze AI' : 'AI Resume Summary') }}
+                </button>
+
+                <button
+                  v-if="applicant.ai_resume_summary"
+                  type="button"
+                  class="btn-ai-view"
+                  data-action="view-summary"
+                  :data-applicant-id="applicant.id"
+                >
+                  📄 View AI Summary
+                </button>
+              </div>
+
+              <div class="card-stage-wrapper">
+                <label class="sr-only" :for="`stage-${applicant.id}`">Update {{ applicant.name }} stage</label>
+                <select
+                  :id="`stage-${applicant.id}`"
+                  :value="applicant.pipeline_stage"
+                  :disabled="updatingId === applicant.id"
+                  @change="updateStage(applicant, $event.target.value)"
+                  class="stage-select"
+                >
+                  <option v-for="option in stages" :key="option" :value="option">{{ option }}</option>
+                </select>
+              </div>
+            </article>
+
+            <p v-if="!applicantsFor(stage).length" class="empty">No applicants at this stage.</p>
+          </div>
+        </article>
+      </section>
+
+      <!-- Live DOM Event Bubbling & Delegation Inspector -->
+      <section class="events-inspector-section" aria-label="DOM Event Delegation & Bubbling Inspector">
+        <div class="inspector-header">
+          <h3>⚡ DOM Interaction & Event Delegation Monitor</h3>
+          <span class="tech-badge">addEventListener · Event Objects · Bubbling · Delegation · Form Events</span>
+        </div>
+        <p class="inspector-subtitle">
+          Events bubble up from candidate cards to the parent container <code>#delegatedBoardContainer</code>. A single delegated listener intercepts clicks, extracts <code>event.target.dataset</code>, and triggers actions.
+        </p>
+        <div class="inspector-grid">
+          <div class="inspector-card">
+            <h4>Last Captured DOM Event</h4>
+            <div id="lastEventDisplay" class="event-details-box">
+              Waiting for user interaction (click on card, analyze resume, or type in search)...
+            </div>
+          </div>
+          <div class="inspector-card">
+            <h4>Live Activity & Pipeline Feed</h4>
+            <ul id="activityFeedList" class="activity-list">
+              <!-- Populated dynamically via DOM manipulation -->
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <p>Cynaris Recruitment Intelligence — Groq llama-3.3-70b-versatile + OpenRouter Fallback</p>
+      </footer>
+    </main>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>
