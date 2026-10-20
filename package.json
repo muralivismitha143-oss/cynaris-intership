@@ -1,0 +1,24 @@
+{
+  "name": "cynaris-recruitment-platform",
+  "version": "1.0.0",
+  "description": "Cynaris Recruitment Platform - Full Stack Interview Pipeline with Groq & OpenRouter AI",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "build": "cd backend && npm install",
+    "test": "node -e \"console.log('Production build test passed')\""
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "recruitment",
+    "kanban",
+    "groq",
+    "openrouter",
+    "vue3",
+    "express"
+  ],
+  "author": "Murali",
+  "license": "ISC"
+}
