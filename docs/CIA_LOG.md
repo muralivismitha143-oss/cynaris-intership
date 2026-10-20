@@ -115,3 +115,67 @@
 - Added comprehensive fallback pipeline in both Python controller and Node/Express backend.
 - Implemented `simulate_groq_failure` and `simulate_both_failure` flags to test failure recovery deterministically.
 - Hardened event delegation with `event.target.closest('[data-action]')` and `event.stopPropagation()`.
+
+
+---
+
+# Week 2 Day 4 — Debug & Performance Sprint: Log Analysis & Query Optimisation
+
+**Date:** October 20, 2026  
+**Lesson:** Week 2 Day 4 — Debug & Performance Sprint  
+**Branch:** `feat/cynaris-w2d4-murali`  
+
+---
+
+## Interaction 1: CIA → QA Engineer Mode
+
+### Bug Description Submitted to QA Engineer
+> *"We noticed two critical issues in the recruitment platform during stress testing:*
+> *1. High database CPU utilization and query latency spikes on the recruitment dashboard under load.*
+> *2. Candidates moved between interview stages after 5:30 PM IST (UTC 12:00 PM) disappear from the 'Updated Today' dashboard metric or roll over into tomorrow's count.*
+> *What are the most probable root cause hypotheses for these bugs?"*
+
+### CIA QA Engineer Mode Hypotheses & Diagnostic Plan
+1. **Hypothesis 1 (Function Call on Indexed Column):**
+   - In SQL, applying a function like `DATE(modified) = %s` forces the storage engine to compute the date for every single record in `tabJob Applicant`, causing an $O(N)$ Full Table Scan. Standard B-tree indexes cannot index the output of scalar functions unless a virtual/functional index is explicitly declared.
+2. **Hypothesis 2 (Timezone Date Boundary Mismatch):**
+   - The backend server generates a date timestamp using `new Date().toISOString().slice(0, 10)`, which is anchored to UTC (GMT+0). For users located in IST (UTC+5:30), late afternoon/evening hours (after 5:30 PM local) cross the UTC midnight line on certain edge conditions, or conversely, candidate updates in local time fail to match server-side UTC date boundaries.
+3. **Hypothesis 3 (Redundant Polling Overhead):**
+   - High-frequency frontend polling without a caching layer or HTTP ETag revalidation triggers repeated table scans even when candidate statuses have not changed.
+
+### Diagnostic Verification
+- Ran `explain_dashboard_query()` in Python: confirmed `type: ALL` (full table scan) when using `DATE(modified)`.
+- Replaced query with indexed range scan: `modified >= %s AND modified < %s`.
+- Added timezone parameter support (`client_date` / `X-Client-Timezone` header) to align local calendar dates with database filters.
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Broken Code Submitted to Code Mode
+> *"Review this broken code from our Express logging middleware and query aggregation method:*
+> ```javascript
+> // Snippet A:
+> res.on('finish', () => {
+>   const durationMs = Number(process.hrtime.bigint() - startTime) / 1e6;
+>   res.setHeader('X-Response-Time', `${durationMs}ms`); // Throws ERR_HTTP_HEADERS_SENT
+> });
+>
+> // Snippet B:
+> SELECT pipeline_stage, COUNT(*) FROM `tabJob Applicant` WHERE DATE(modified) = %s GROUP BY pipeline_stage;
+> ```
+> *What is wrong with this code and how do I fix it?"*
+
+### CIA Code Mode Analysis & Suggested Fixes
+
+| Snippet | Identified Defect | CIA's Recommended Fix | Actual Implementation & Enhancement |
+|---|---|---|---|
+| **Snippet A** | Calling `res.setHeader()` in `"finish"` event throws `ERR_HTTP_HEADERS_SENT` because HTTP headers have already been flushed to the network socket. | Calculate timing before response ends by wrapping `res.end()` or using the `on-headers` library. | Intercepted `res.end()` directly in middleware to calculate `process.hrtime.bigint()`, set `X-Response-Time` and `X-Request-ID` before calling `originalEnd()`, and logged telemetry in `"finish"`. |
+| **Snippet B** | `DATE(modified) = %s` destroys index sargability (Search Argument Ability), preventing MySQL/MariaDB from using B-tree index on `modified`. | Convert to range condition `WHERE modified >= %s AND modified < %s` spanning from midnight of today to midnight of tomorrow. | Implemented range boundaries with start/end datetimes (`YYYY-MM-DD 00:00:00` to `YYYY-MM-DD 00:00:00` next day), added composite index definition `idx_applicant_modified_stage`, and introduced a 15-second TTL in-memory cache layer. |
+
+### Documenting: CIA Suggestion vs. Actual Fix
+- **Where CIA was right:** CIA correctly diagnosed the `ERR_HTTP_HEADERS_SENT` lifecycle boundary and identified the sargability defect of the `DATE()` scalar function.
+- **Where our actual fix went further:** Beyond CIA's recommendation, we added:
+  1. An in-memory 15-second TTL cache for dashboard queries, dropping repeated latency to `<2ms` with `cache_hit: true`.
+  2. Client-aware timezone date resolution (`X-Client-Timezone` header).
+  3. `Promise.allSettled` and `AbortController` in the frontend client to protect against in-flight race conditions and partial network failure.
