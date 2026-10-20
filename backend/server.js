@@ -2,7 +2,8 @@ const express = require("express");
 const path = require("path");
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || "0.0.0.0";
 
 // =============================================================================
 // PERFORMANCE & STRUCTURED REQUEST LOGGING MIDDLEWARE
@@ -578,6 +579,6 @@ app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
 
-app.listen(PORT, () => {
-  console.log(`Interview API running at http://localhost:${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`Interview API running at http://${HOST}:${PORT}`);
 });
