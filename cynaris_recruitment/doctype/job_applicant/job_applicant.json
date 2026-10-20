@@ -39,6 +39,7 @@
       "label": "Pipeline Stage",
       "options": "Screening\nTechnical Round 1\nTechnical Round 2\nHR Round\nOffered\nRejected",
       "default": "Screening",
+      "search_index": 1,
       "in_list_view": 1,
       "in_standard_filter": 1
     },
