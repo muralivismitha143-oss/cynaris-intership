@@ -1,0 +1,28 @@
+{
+  "name": "cynaris-recruitment-platform",
+  "version": "1.0.0",
+  "description": "Cynaris Recruitment Platform - Full Stack Interview Pipeline with EspoCRM & React",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "build": "cd backend && npm install",
+    "test": "node tests/test_espocrm_setup.js && node tests/test_react_virtual_dom.js",
+    "test:espocrm": "node tests/test_espocrm_setup.js",
+    "test:react": "node tests/test_react_virtual_dom.js",
+    "test:w2": "node tests/test_modern_javascript.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "espocrm",
+    "recruitment",
+    "kanban",
+    "react",
+    "virtual-dom",
+    "groq",
+    "openrouter"
+  ],
+  "author": "Murali",
+  "license": "ISC"
+}
