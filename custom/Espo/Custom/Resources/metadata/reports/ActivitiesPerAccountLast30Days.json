@@ -1,0 +1,27 @@
+{
+  "name": "Activities per Account (Last 30 Days)",
+  "type": "Grid",
+  "entityType": "Account",
+  "groupBy": [
+    "name",
+    "activityType"
+  ],
+  "columns": [
+    "name",
+    "activityType",
+    "COUNT:id"
+  ],
+  "filters": {
+    "dateStart": {
+      "type": "todayMinusDays",
+      "value": 30
+    },
+    "status": {
+      "type": "in",
+      "value": ["Held", "Completed", "Sent"]
+    }
+  },
+  "chartType": "bar",
+  "orderBy": "name",
+  "orderDirection": "asc"
+}

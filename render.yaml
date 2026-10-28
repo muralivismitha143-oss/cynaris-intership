@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: cynaris-recruitment-platform
+    env: node
+    plan: free
+    buildCommand: "cd backend && npm install"
+    startCommand: "node backend/server.js"
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: GROQ_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: CLIENT_TIMEZONE
+        value: Asia/Kolkata
