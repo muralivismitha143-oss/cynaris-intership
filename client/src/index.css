@@ -1172,3 +1172,318 @@ input:checked + .slider:before {
   border-radius: 6px;
   color: var(--text-muted);
 }
+
+
+/* ==============================================================================
+ * Week 3 Day 4: Activity Dashboard & Bar Chart Dashlet Styling
+ * ============================================================================== */
+
+.activity-dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.activity-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  padding: 1.25rem 1.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.banner-titles h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--text-main);
+}
+
+.banner-titles .subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.tab-pill-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Activity Summary Dashlet */
+.activity-summary-dashlet {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.dashlet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.dashlet-title-box h4 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--text-main);
+}
+
+.dashlet-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.dashlet-controls {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.dashlet-controls select {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  background: #ffffff;
+}
+
+.btn-auto-refresh {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: #f1f5f9;
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+
+.btn-auto-refresh.refresh-active {
+  background: #dcfce7;
+  color: #15803d;
+  border-color: #86efac;
+}
+
+.dashlet-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.kpi-badge {
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.kpi-badge.kpi-total { border-left: 4px solid var(--text-main); }
+.kpi-badge.kpi-calls { border-left: 4px solid #2563eb; }
+.kpi-badge.kpi-meetings { border-left: 4px solid #7c3aed; }
+.kpi-badge.kpi-emails { border-left: 4px solid #d97706; }
+
+.kpi-num {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.kpi-txt {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.dashlet-loading-state, .dashlet-error-state, .dashlet-empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted);
+}
+
+.btn-retry {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Multi-Bar Chart Visualization */
+.barchart-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.barchart-row {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  align-items: center;
+  gap: 1rem;
+}
+
+.bar-label-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.bar-account-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bar-total-tag {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.bar-track-col {
+  background: #f1f5f9;
+  border-radius: 6px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  overflow: hidden;
+}
+
+.stacked-bar-fill {
+  height: 100%;
+  display: flex;
+  border-radius: 4px;
+  overflow: hidden;
+  transition: width 0.4s ease;
+}
+
+.bar-seg {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  min-width: 16px;
+  transition: width 0.3s;
+}
+
+.seg-calls { background: #2563eb; }
+.seg-meetings { background: #7c3aed; }
+.seg-emails { background: #d97706; }
+
+.dashlet-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border-color);
+  padding-top: 1rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.chart-legend {
+  display: flex;
+  gap: 1.25rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.dot-calls { background: #2563eb; }
+.dot-meetings { background: #7c3aed; }
+.dot-emails { background: #d97706; }
+
+/* SQL Inspector View */
+.sql-inspector-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.inspector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.inspector-header h4 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.badge-tag {
+  background: #e0e7ff;
+  color: #3730a3;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.code-block {
+  background: #0f172a;
+  color: #f8fafc;
+  padding: 1.25rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  font-family: 'Consolas', 'Courier New', monospace;
+}
+
+.query-notes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.note-card {
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.note-card h5 {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-main);
+}
+
+.note-card p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}

@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import CandidatePortal from './components/CandidatePortal';
 import LeadPipelineContainer from './components/LeadToClosure/LeadPipelineContainer';
 import WorkflowReportingDashboard from './components/WorkflowReportingStudio/WorkflowReportingDashboard';
+import ActivityDashboardContainer from './components/ActivityDashboard/ActivityDashboardContainer';
 
 export function App() {
-  const [activeTab, setActiveTab] = useState('workflow-reporting');
+  const [activeTab, setActiveTab] = useState('activity-dashboard');
 
   return (
     <div className="app-root">
@@ -14,6 +15,12 @@ export function App() {
           <span className="brand-title">Cynaris Recruitment &bull; EspoCRM Bridge</span>
         </div>
         <div className="nav-tabs">
+          <button
+            className={`nav-tab-btn ${activeTab === 'activity-dashboard' ? 'tab-active' : ''}`}
+            onClick={() => setActiveTab('activity-dashboard')}
+          >
+            📈 Activity Dashlet (W3D4)
+          </button>
           <button
             className={`nav-tab-btn ${activeTab === 'workflow-reporting' ? 'tab-active' : ''}`}
             onClick={() => setActiveTab('workflow-reporting')}
@@ -34,11 +41,12 @@ export function App() {
           </button>
         </div>
         <div className="nav-status">
-          <span className="live-dot"></span> React 18 / Controlled Inputs Active
+          <span className="live-dot"></span> React 18 / useEffect Active
         </div>
       </nav>
 
       <main className="main-content">
+        {activeTab === 'activity-dashboard' && <ActivityDashboardContainer />}
         {activeTab === 'workflow-reporting' && <WorkflowReportingDashboard />}
         {activeTab === 'lead-to-closure' && <LeadPipelineContainer />}
         {activeTab === 'candidate-portal' && <CandidatePortal />}
