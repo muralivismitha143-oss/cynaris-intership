@@ -415,3 +415,57 @@
 - Added division-by-zero guards in [`application/Espo/Core/Reporting/ReportEngine.php`](../application/Espo/Core/Reporting/ReportEngine.php).
 - Implemented pre-flight whitespace validation and action payload sanitization in [`client/src/components/WorkflowReportingStudio/WorkflowRuleBuilder.jsx`](../client/src/components/WorkflowReportingStudio/WorkflowRuleBuilder.jsx).
 - Verified all edge case scenarios via automated tests in [`tests/test_crm_workflow_engine.js`](../tests/test_crm_workflow_engine.js) and [`tests/test_react_state_and_forms.js`](../tests/test_react_state_and_forms.js).
+
+
+---
+
+# Week 3 Day 4 — Activity Dashboard: SQL Queries + Reporting Engine Extension
+
+**Date:** October 24, 2026  
+**Lesson:** Week 3 Day 4 — Activity Dashboard — SQL Queries + Reporting Engine Extension  
+**Branch:** `feat/cynaris-w3d4-murali`  
+
+---
+
+## Interaction 1: CIA → Full Stack Mentor Mode
+
+### Prompt / Query
+> *"I have implemented Week 3 Day 4: Activity Dashboard (SQL Queries + Reporting Engine Extension) and developed a React dashboard component using `useEffect`. The implementation includes: (1) an optimized MySQL query joining the Account table with a polymorphic UNION ALL subquery across Call, Meeting, and Email filtered by `date_start >= DATE_SUB(NOW(), INTERVAL 30 DAY)`; (2) registering the custom dashlet in `custom/Espo/Custom/Resources/metadata/dashlets/ActivitySummary.json` and report in `custom/Espo/Custom/Resources/metadata/reports/ActivitiesPerAccountLast30Days.json`; (3) a PHP backend service in `application/Espo/Core/Reporting/ActivityReportService.php`; and (4) a React dashlet (`ActivitySummaryDashlet.jsx`) demonstrating `useEffect` fetching on mount, `AbortController` request cancellation in cleanup, dependency array updates `[timeRange, filterAccount]`, and a 30s polling timer with `clearInterval`. Could you review my query performance, index utilization, and React lifecycle handling before I commit?"*
+
+### CIA Mentor Review & Guidance
+1. **Polymorphic SQL Query Optimization:**
+   - Excellent use of `UNION ALL` over `UNION`. In polymorphic data models where activities are stored in separate tables (`call`, `meeting`, `email`), standard `UNION` creates an internal temporary table to deduplicate rows, which causes heavy disk I/O on large CRM datasets. `UNION ALL` streams the unioned rows directly to the join buffer.
+   - Ensuring `date_start >= DATE_SUB(NOW(), INTERVAL 30 DAY)` is applied *inside* each subquery guarantees sargability: MySQL will use the B-Tree index on `date_start` in each table, eliminating records older than 30 days before they are joined to `account`.
+2. **React `useEffect` Lifecycle & Cleanup Mechanics:**
+   - Your `useEffect` design follows React 18 production best practices:
+     - **Fetch on Mount:** The effect fires upon component mounting and initializes the loading state.
+     - **AbortController Cleanup:** Passing `{ signal }` to the fetch operation and invoking `abortController.abort()` in the cleanup return function prevents the classic *"Can't perform a React state update on an unmounted component"* warning if the user switches tabs while data is in transit.
+     - **Dependency Array Reactivity:** Declaring `[timeRange, filterAccount]` in the dependency array ensures that changing a dropdown automatically aborts any pending request and triggers a fresh query.
+     - **Timer Cleanup:** Setting up the auto-refresh interval in a separate `useEffect` and clearing it with `clearInterval(timer)` prevents rogue background timers from running indefinitely.
+
+### Action Taken
+- Applied sargable `DATE_SUB` constraints inside subqueries in [`application/Espo/Core/Reporting/ActivityReportService.php`](../application/Espo/Core/Reporting/ActivityReportService.php).
+- Implemented `AbortController` signal handling and error suppression for `AbortError` in [`client/src/components/ActivityDashboard/ActivitySummaryDashlet.jsx`](../client/src/components/ActivityDashboard/ActivitySummaryDashlet.jsx).
+- Documented query optimization in [`docs/ACTIVITY_DASHBOARD_SQL_REPORT.md`](../docs/ACTIVITY_DASHBOARD_SQL_REPORT.md).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"What edge cases should I safeguard against during polymorphic activity joins in MySQL, and what subtle bugs can occur when managing timers and asynchronous fetch cleanup in React?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Layer | Component Inspected | Identified Risk / Edge Case | Architectural Mitigation Applied |
+|---|---|---|---|
+| **SQL Sargability** | `ActivityReportService.php` | Using `DATEDIFF(NOW(), date_start) <= 30` invalidating index lookups. | Enforced sargable comparison `date_start >= DATE_SUB(NOW(), INTERVAL :days DAY)` directly against the raw column. |
+| **Request Race Condition** | `ActivitySummaryDashlet.jsx` | User rapidly toggling between 'Last 7 Days' and 'Last 90 Days', causing out-of-order response overwrites. | `AbortController.abort()` cancels the previous in-flight promise before initializing the next one, ensuring only the latest response writes to state. |
+| **Timer Stacking** | `ActivitySummaryDashlet.jsx` | Toggling auto-refresh button on/off spawning multiple concurrent intervals in background memory. | Placed interval logic in its own `useEffect` with `[autoRefreshEnabled, autoRefreshIntervalSec]` dependencies and `clearInterval` in cleanup. |
+| **Division by Zero** | `ActivitySummaryDashlet.jsx` | Max activities calculation yielding `0`, causing `(total / maxActivities) * 100` to yield `NaN%` bar widths. | Added fallback guard: `const maxActivities = activities.length > 0 ? Math.max(...activities.map(a => a.totalActivities)) : 1`. |
+| **Empty Accounts** | `ActivityReportService.php` | Accounts with 0 activity records in the last 30 days cluttering the dashlet chart. | Filtered out accounts with 0 total activities (`$total > 0`) prior to chart array output. |
+
+### Action Taken
+- Applied `AbortController` cancellation in [`client/src/components/ActivityDashboard/ActivitySummaryDashlet.jsx`](../client/src/components/ActivityDashboard/ActivitySummaryDashlet.jsx).
+- Added `maxActivities` non-zero fallback guard and `clearInterval` subscription cleanup.
+- Validated all lifecycle cases and query grammar via automated unit tests in [`tests/test_activity_dashboard_sql.js`](../tests/test_activity_dashboard_sql.js) and [`tests/test_react_use_effect.js`](../tests/test_react_use_effect.js).
