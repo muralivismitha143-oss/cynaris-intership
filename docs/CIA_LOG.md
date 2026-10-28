@@ -294,3 +294,64 @@
 - Implemented `e.stopPropagation()` in [`client/src/components/PipelineCard.jsx`](../client/src/components/PipelineCard.jsx).
 - Added normalized header lookup and bearer token extraction regex in [`application/Espo/Core/Api/Request.php`](../application/Espo/Core/Api/Request.php).
 - Validated Virtual DOM diffing algorithm and state transitions in [`tests/test_react_virtual_dom.js`](../tests/test_react_virtual_dom.js).
+
+
+---
+
+# Week 3 Day 2 — Business Process Mapping: Lead to Closure & API Inspection
+
+**Date:** October 22, 2026  
+**Lesson:** Week 3 Day 2 — Business Process Mapping — Lead to Closure + API Inspection  
+**Branch:** `feat/cynaris-w3d2-murali`  
+
+---
+
+## Interaction 1: CIA → Full Stack Mentor Mode
+
+### Prompt / Query
+> *"I am implementing Week 3 Day 2: Business Process Mapping (Lead to Closure + API Inspection) and developing a React component suite modeling this pipeline. The architecture includes: (1) mapping the complete Lead -> Opportunity -> Account/Contact -> Activity -> Closed Won lifecycle; (2) inspecting and documenting the `/api/v1/` endpoints for Lead, Contact, and Activity; (3) analyzing 3 Workflow rules, 2 BPM automation process flows, and 2 reporting engine configurations in EspoCRM; and (4) creating a composed React functional component system (`ClosureSummaryMetrics`, `LeadCard`, `OpportunityCard`, `ActivityFeed`, and `LeadPipelineContainer`) demonstrating unidirectional data flow and props passing. Could you review my architecture, component hierarchy, and unidirectional flow design before I commit?"*
+
+### CIA Mentor Review & Feedback
+1. **Business Process Mapping & Data Integrity:**
+   - Great enterprise perspective. In systems like EspoCRM and Salesforce, keeping `Lead` separate from `Account`/`Contact` is fundamental to maintaining clean CRM data.
+   - Ensuring the conversion event is atomic is essential: when a lead converts, creating the `Account`, `Contact`, and initial `Opportunity` should happen in a single transactional unit so partial failures never orphan records.
+2. **Component Composition & Props Passing:**
+   - Your division of responsibilities is exemplary:
+     - `ClosureSummaryMetrics`: Pure presentation component receiving pre-calculated metrics strictly through props.
+     - `LeadCard` & `OpportunityCard`: Presentational cards receiving domain models via props and delegating user interactions to callback props (`onConvert`, `onStageChange`).
+     - `ActivityFeed`: Modular list rendering polymorphic engagement streams without caring about the parent entity's internal implementation.
+     - `LeadPipelineContainer`: Central smart container that maintains state and coordinates unidirectional data flow.
+3. **Unidirectional Data Flow (State Down, Events Up):**
+   - By hoisting all mutable state (`leads`, `opportunities`, `activities`) into `LeadPipelineContainer`, you guarantee a Single Source of Truth.
+   - Child components receive immutable props and never attempt to reassign `opportunity.stage = 'Closed Won'` directly. Instead, they invoke `onStageChange(id, 'Closed Won')`, allowing the parent container to compute the next immutable state with updated probabilities and audit logs.
+4. **API Contract Hygiene:**
+   - Documenting exact HTTP verbs (`POST /api/v1/Lead`, `POST /api/v1/Lead/action/convert`, `POST /api/v1/Meeting`, `PUT /api/v1/Opportunity/{id}`) with headers and standard JSON payloads establishes a clear contract between backend services and decoupled React clients.
+
+### Action Taken
+- Hoisted all pipeline state in [`client/src/components/LeadToClosure/LeadPipelineContainer.jsx`](../client/src/components/LeadToClosure/LeadPipelineContainer.jsx).
+- Implemented pure functional components with read-only props in `ClosureSummaryMetrics.jsx`, `LeadCard.jsx`, `OpportunityCard.jsx`, and `ActivityFeed.jsx`.
+- Authored the comprehensive business process and API contract specification in [`docs/BUSINESS_PROCESS_MAPPING.md`](../docs/BUSINESS_PROCESS_MAPPING.md).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"What edge cases should I safeguard against during Lead conversion, deal stage transitions to Closed Won, and props passing across composed React functional components?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Layer | Component Inspected | Identified Risk / Edge Case | Architectural Mitigation Applied |
+|---|---|---|---|
+| **Business Logic** | `LeadPipelineContainer.jsx` | Re-converting an already converted Lead, generating duplicate Accounts and Opportunities. | Added status check `if (lead.status === 'Converted') return;` and disabled the convert button once converted. |
+| **Stage Progression** | `OpportunityCard.jsx` | User attempting to transition a deal that is already `Closed Won` or `Closed Lost`. | Disabled the stage `<select>` element when `isWon` or `isLost` is true, locking terminal deal stages. |
+| **Probability Sync** | `LeadPipelineContainer.jsx` | Stage changed to `Closed Won` without updating win probability to 100%, causing inaccurate pipeline forecasts. | Automated deterministic probability recalculation inside `handleStageChange` (100% for Won, 0% for Lost). |
+| **Synthetic Events** | `LeadCard.jsx` | Clicking 'Convert to Deal' button bubbling up and triggering card selection (`onSelect`). | Invoked `e.stopPropagation()` inside the action button click handler. |
+| **Props Defaults** | `ClosureSummaryMetrics.jsx` | Passing `totalLeads = 0` causing `0 / 0` division resulting in `NaN%` display. | Implemented ternary guard: `totalLeads > 0 ? ((converted / total) * 100).toFixed(1) : '0.0'`. |
+| **Currency Display** | `OpportunityCard.jsx` | Large deal amounts rendering as unformatted numbers (e.g. `1250000`), reducing readability. | Formatted values using `Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' })`. |
+
+### Action Taken
+- Applied defensive defaults and zero-division guards in [`client/src/components/LeadToClosure/ClosureSummaryMetrics.jsx`](../client/src/components/LeadToClosure/ClosureSummaryMetrics.jsx).
+- Locked terminal stages (`Closed Won`, `Closed Lost`) in [`client/src/components/LeadToClosure/OpportunityCard.jsx`](../client/src/components/LeadToClosure/OpportunityCard.jsx).
+- Added `e.stopPropagation()` to all card action buttons.
+- Validated all edge cases and unidirectional state transitions via automated unit tests in [`tests/test_react_props_unidirectional.js`](../tests/test_react_props_unidirectional.js) and [`tests/test_business_process_mapping.js`](../tests/test_business_process_mapping.js).

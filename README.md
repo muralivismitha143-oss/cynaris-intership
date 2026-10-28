@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-32%2F32%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-39%2F39%20Passing-success?style=for-the-badge)](tests/)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
 ---
@@ -15,24 +15,31 @@
 
 ---
 
-## 🚀 Week 3: Project 2 — EspoCRM Architecture, Setup & React Virtual DOM
+## 🚀 Week 3: Project 2 — EspoCRM Architecture, Business Processes & React
+
+### Week 3 Day 2 — Business Process Mapping: Lead to Closure + API Inspection & Unidirectional Data Flow
+- **Lead-to-Closure Process Mapping:** Complete enterprise lifecycle specification in [`docs/BUSINESS_PROCESS_MAPPING.md`](docs/BUSINESS_PROCESS_MAPPING.md) tracing `Lead` &rarr; `Opportunity` &rarr; `Account` & `Contact` &rarr; `Activity` &rarr; `Closed Won`.
+- **Workflow & Automation Analysis:**
+  - Evaluated **3 core Workflow rules** (`Lead Auto-Routing`, `High-Value Deal Alert`, `Stale Lead Inactivity Reminder`).
+  - Analyzed **2 BPM process flows** with a comprehensive Mermaid BPMN flowchart.
+  - Deconstructed **2 enterprise reports** across Entity, Filters, Columns, and Group By.
+- **REST API Inspection:** Documented `/api/v1/` endpoints for `POST /api/v1/Lead`, `POST /api/v1/Lead/action/convert`, and `POST /api/v1/Meeting`.
+- **React Functional Components & Unidirectional Data Flow:**
+  - Composed component hierarchy in [`client/src/components/LeadToClosure/`](client/src/components/LeadToClosure/):
+    - `LeadPipelineContainer.jsx`: Smart state orchestrator managing immutable updates.
+    - `ClosureSummaryMetrics.jsx`: Functional KPI presenter receiving computed props.
+    - `LeadCard.jsx`: Presentational lead card with conversion action triggers.
+    - `OpportunityCard.jsx`: Controlled deal progression card with stage transitions.
+    - `ActivityFeed.jsx`: Chronological engagement feed for calls, meetings, and tasks.
+- **Documentation & Viva Guide:** Comprehensive day walkthrough in [`docs/WEEK3_DAY2_SUBMISSION.md`](docs/WEEK3_DAY2_SUBMISSION.md).
 
 ### Week 3 Day 1 — Fork, Clone & Local Setup: EspoCRM & React Virtual DOM
-- **EspoCRM Multi-Container Stack:** Complete Docker Compose environment ([`docker-compose.espocrm.yml`](docker-compose.espocrm.yml)) orchestrating **MySQL 8.0**, **EspoCRM App (Port 8080)**, **EspoCRM Daemon**, and **phpMyAdmin (Port 8081)**.
+- **EspoCRM Multi-Container Stack:** Docker Compose environment ([`docker-compose.espocrm.yml`](docker-compose.espocrm.yml)) orchestrating **MySQL 8.0**, **EspoCRM App (Port 8080)**, **EspoCRM Daemon**, and **phpMyAdmin (Port 8081)**.
 - **Environment Template:** Zero-secret configuration template in [`.env.espocrm.example`](.env.espocrm.example).
-- **Architecture Study & Anatomy:** Deep dive into the 4 core repository components in [`docs/ESPOCRM_ARCHITECTURE.md`](docs/ESPOCRM_ARCHITECTURE.md):
-  1. `application/Espo/Core/` — Kernel, Container DI, and MetadataManager
-  2. `application/Espo/Modules/` — Modular package extensions and metadata inheritance
-  3. `application/Espo/Core/Api/` — REST API layer and Bearer token request handling
-  4. `application/Espo/ORM/` — Entity Manager, Repositories, and lifecycle hooks
-- **3 Key Architectural Decisions:**
-  1. *Metadata-Driven Architecture:* Declarative JSON schemas in `Resources/metadata/` enabling runtime customization without code compilation.
-  2. *Decoupled SPA REST API:* Pure JSON REST API (`/api/v1/`) decoupled from the frontend client.
-  3. *Custom Lightweight ORM:* High-performance repository pattern with native entity hooks and granular ACL.
-- **React Virtual DOM & JSX Client:**
-  - Modern React portal component in [`client/src/components/CandidatePortal.jsx`](client/src/components/CandidatePortal.jsx) and [`client/src/components/PipelineCard.jsx`](client/src/components/PipelineCard.jsx).
-  - Virtual DOM Engine simulation in [`client/src/utils/virtualDomEngine.js`](client/src/utils/virtualDomEngine.js) demonstrating JSX compilation, $O(n)$ heuristic diffing, and batched real DOM mutations.
-- **Documentation & Viva Guide:** Comprehensive day walkthrough in [`docs/WEEK3_DAY1_SUBMISSION.md`](docs/WEEK3_DAY1_SUBMISSION.md).
+- **Architecture Study & Anatomy:** Deep dive into the 4 core repository components in [`docs/ESPOCRM_ARCHITECTURE.md`](docs/ESPOCRM_ARCHITECTURE.md) (`Core/`, `Modules/`, `Core/Api/`, `ORM/`).
+- **3 Key Architectural Decisions:** Metadata-driven architecture, decoupled SPA REST API, custom lightweight ORM.
+- **React Virtual DOM Client:** Candidate Portal in [`client/src/components/CandidatePortal.jsx`](client/src/components/CandidatePortal.jsx) and Virtual DOM diffing engine in [`client/src/utils/virtualDomEngine.js`](client/src/utils/virtualDomEngine.js).
+- **Day 1 Submission Guide:** [`docs/WEEK3_DAY1_SUBMISSION.md`](docs/WEEK3_DAY1_SUBMISSION.md).
 
 ---
 
@@ -70,12 +77,16 @@ npm start
 
 ### 3. Run Automated Unit Test Suites
 ```powershell
-# Run Week 3 Tests (EspoCRM setup + React Virtual DOM)
+# Run All Week 3 Unit Tests (16 tests)
 npm test
 
-# Run individual test suites
-npm run test:espocrm
-npm run test:react
+# Run Week 3 Day 2 Tests (Business Process & Unidirectional Flow)
+npm run test:w3d2
+
+# Run Week 3 Day 1 Tests (EspoCRM Setup & Virtual DOM)
+npm run test:w3d1
+
+# Run Week 2 Modern JavaScript Tests
 npm run test:w2
 ```
 
@@ -83,7 +94,9 @@ npm run test:w2
 
 ## 📁 Key Documentation Files
 
-- [docs/WEEK3_DAY1_SUBMISSION.md](docs/WEEK3_DAY1_SUBMISSION.md) — Week 3 Day 1 submission walkthrough, installer verification, and Viva answers.
+- [docs/WEEK3_DAY2_SUBMISSION.md](docs/WEEK3_DAY2_SUBMISSION.md) — Week 3 Day 2 submission report, visual walkthrough, workflows, and Viva guide.
+- [docs/BUSINESS_PROCESS_MAPPING.md](docs/BUSINESS_PROCESS_MAPPING.md) — Enterprise Lead-to-Closure process mapping and API specifications.
+- [docs/WEEK3_DAY1_SUBMISSION.md](docs/WEEK3_DAY1_SUBMISSION.md) — Week 3 Day 1 setup walkthrough and installer verification.
 - [docs/ESPOCRM_ARCHITECTURE.md](docs/ESPOCRM_ARCHITECTURE.md) — In-depth architectural analysis and 3 key decisions.
 - [docs/CIA_LOG.md](docs/CIA_LOG.md) — CIA interaction logs across Week 2 and Week 3.
 - [DEPLOYMENT.md](DEPLOYMENT.md) — Production deployment guide for Railway & Render.
