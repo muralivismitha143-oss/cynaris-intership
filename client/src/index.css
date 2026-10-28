@@ -276,3 +276,423 @@ body {
   border-radius: 6px;
   cursor: pointer;
 }
+
+
+/* ==============================================================================
+ * Week 3 Day 2: Lead to Closure Component Styling
+ * ============================================================================== */
+
+.nav-tabs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.nav-tab-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  padding: 0.45rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.nav-tab-btn:hover {
+  background: #f1f5f9;
+}
+
+.nav-tab-btn.tab-active {
+  background: var(--primary-color);
+  color: #ffffff;
+  border-color: var(--primary-color);
+}
+
+.closure-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.metric-card {
+  background: #ffffff;
+  padding: 1.25rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.metric-leads { border-left: 4px solid var(--info-color); }
+.metric-pipeline { border-left: 4px solid var(--warning-color); }
+.metric-won { border-left: 4px solid var(--success-color); }
+
+.metric-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.metric-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.metric-subtext {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.pipeline-columns-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr 1fr;
+  gap: 1.5rem;
+}
+
+.pipeline-column {
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 500px;
+}
+
+.column-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--text-main);
+}
+
+.column-header .subtext {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.cards-scroll-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  overflow-y: auto;
+}
+
+/* Lead Cards */
+.lead-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.lead-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.07);
+}
+
+.lead-card.selected {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(37,99,235,0.2);
+}
+
+.lead-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.lead-name {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.lead-company {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: block;
+}
+
+.status-pill {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+}
+
+.badge-new { background: #e0f2fe; color: #0284c7; }
+.badge-assigned { background: #ede9fe; color: #7c3aed; }
+.badge-in-process { background: #fef3c7; color: #d97706; }
+.badge-converted { background: #dcfce7; color: #16a34a; }
+.badge-dead { background: #fee2e2; color: #dc2626; }
+
+.lead-contact-line {
+  margin: 0.2rem 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.lead-source-tag {
+  display: inline-block;
+  margin-top: 0.35rem;
+  font-size: 0.7rem;
+  background: #f1f5f9;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+}
+
+.lead-card-footer {
+  margin-top: 0.75rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-convert {
+  background: var(--primary-color);
+  color: #ffffff;
+  border: none;
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-convert:hover {
+  background: var(--primary-hover);
+}
+
+.converted-badge {
+  font-size: 0.75rem;
+  color: var(--success-color);
+  font-weight: 600;
+}
+
+/* Opportunity Cards */
+.opportunity-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.opportunity-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.07);
+}
+
+.opportunity-card.selected {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(37,99,235,0.2);
+}
+
+.opportunity-card.card-won {
+  border-left: 4px solid var(--success-color);
+  background: #f0fdf4;
+}
+
+.opp-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.opp-account {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: block;
+}
+
+.opp-metrics-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.75rem 0;
+  background: #f8fafc;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.metric-item .label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  display: block;
+}
+
+.metric-item .value-amount {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.metric-item .value-prob {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.opp-stage-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+
+.opp-stage-selector label {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.opp-stage-selector select {
+  flex: 1;
+  padding: 0.35rem;
+  font-size: 0.8rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+}
+
+.opp-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.close-date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.btn-activity {
+  background: #f1f5f9;
+  border: 1px solid var(--border-color);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.btn-activity:hover {
+  background: #e2e8f0;
+}
+
+/* Activity Feed */
+.activity-feed-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  height: 100%;
+}
+
+.feed-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.feed-header h4 {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.count-badge {
+  font-size: 0.75rem;
+  background: #e2e8f0;
+  padding: 0.15rem 0.4rem;
+  border-radius: 10px;
+}
+
+.feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.activity-item {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.75rem;
+  display: flex;
+  gap: 0.6rem;
+}
+
+.activity-icon {
+  font-size: 1.1rem;
+}
+
+.activity-details {
+  flex: 1;
+}
+
+.activity-top-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.activity-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.activity-status {
+  font-size: 0.7rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+}
+
+.status-held, .status-completed {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.status-planned {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.activity-description {
+  margin: 0.3rem 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.activity-meta {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  display: flex;
+  gap: 0.3rem;
+}
+
+.feed-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.btn-quick-call, .btn-quick-meeting {
+  flex: 1;
+  padding: 0.45rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: #ffffff;
+  font-size: 0.75rem;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-quick-call:hover, .btn-quick-meeting:hover {
+  background: #f1f5f9;
+}
