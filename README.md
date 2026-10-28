@@ -1,8 +1,8 @@
-# Cynaris Recruitment Platform — Full Stack & AI Pipeline
+# Cynaris Recruitment Platform — Full Stack, EspoCRM & AI Pipeline
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-23%2F23%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-32%2F32%20Passing-success?style=for-the-badge)](tests/)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
 ---
@@ -15,110 +15,76 @@
 
 ---
 
-## 🚀 Week 2 Capstone Overview: Frappe HR — Features & AI
+## 🚀 Week 3: Project 2 — EspoCRM Architecture, Setup & React Virtual DOM
+
+### Week 3 Day 1 — Fork, Clone & Local Setup: EspoCRM & React Virtual DOM
+- **EspoCRM Multi-Container Stack:** Complete Docker Compose environment ([`docker-compose.espocrm.yml`](docker-compose.espocrm.yml)) orchestrating **MySQL 8.0**, **EspoCRM App (Port 8080)**, **EspoCRM Daemon**, and **phpMyAdmin (Port 8081)**.
+- **Environment Template:** Zero-secret configuration template in [`.env.espocrm.example`](.env.espocrm.example).
+- **Architecture Study & Anatomy:** Deep dive into the 4 core repository components in [`docs/ESPOCRM_ARCHITECTURE.md`](docs/ESPOCRM_ARCHITECTURE.md):
+  1. `application/Espo/Core/` — Kernel, Container DI, and MetadataManager
+  2. `application/Espo/Modules/` — Modular package extensions and metadata inheritance
+  3. `application/Espo/Core/Api/` — REST API layer and Bearer token request handling
+  4. `application/Espo/ORM/` — Entity Manager, Repositories, and lifecycle hooks
+- **3 Key Architectural Decisions:**
+  1. *Metadata-Driven Architecture:* Declarative JSON schemas in `Resources/metadata/` enabling runtime customization without code compilation.
+  2. *Decoupled SPA REST API:* Pure JSON REST API (`/api/v1/`) decoupled from the frontend client.
+  3. *Custom Lightweight ORM:* High-performance repository pattern with native entity hooks and granular ACL.
+- **React Virtual DOM & JSX Client:**
+  - Modern React portal component in [`client/src/components/CandidatePortal.jsx`](client/src/components/CandidatePortal.jsx) and [`client/src/components/PipelineCard.jsx`](client/src/components/PipelineCard.jsx).
+  - Virtual DOM Engine simulation in [`client/src/utils/virtualDomEngine.js`](client/src/utils/virtualDomEngine.js) demonstrating JSX compilation, $O(n)$ heuristic diffing, and batched real DOM mutations.
+- **Documentation & Viva Guide:** Comprehensive day walkthrough in [`docs/WEEK3_DAY1_SUBMISSION.md`](docs/WEEK3_DAY1_SUBMISSION.md).
+
+---
+
+## 📋 Week 2 Capstone Overview: Frappe HR — Features & AI
 
 An enterprise recruitment tracking platform combining modern Vue 3 reactive components, Python/Frappe DocType controllers, dual-engine AI resume screening (**Groq** + **OpenRouter**), performance profiling middleware, and zero-downtime cloud deployment on **Railway** and **Render**.
 
----
-
-### Week 2 Day 5 — Deploy to Railway + README + Demo Video + Final PR
-- **Cloud Deployment:** Container-ready deployment configuration on Railway & Render (`railway.json`, `render.yaml`, `Procfile`, `.env.example`).
-- **Modern JavaScript (ES6+):** Dedicated module (`backend/public/modules/pipelineUtils.js`) demonstrating **Destructuring**, **Spread/Rest operators (`...`)**, **Optional Chaining (`?.`)**, **Nullish Coalescing (`??`)**, and **ES Modules**.
-- **Deployment Documentation:** Comprehensive guide in [`DEPLOYMENT.md`](DEPLOYMENT.md).
-- **PR Template:** Standardized end-of-week pull request template in [`.github/pull_request_template.md`](.github/pull_request_template.md).
-
-### Week 2 Day 4 — Debug & Performance Sprint: Log Analysis & Query Optimisation
-- **Sargability Optimization:** Replaced `DATE(modified) = %s` full table scan with indexed range scan `modified >= start AND modified < end`, cutting latency by 98%.
-- **In-Memory TTL Caching:** 15-second TTL cache delivering `<2ms` response times for repeated queries.
-- **Timezone Normalization:** Fixed IST (UTC+5:30) date rollover mismatch with `X-Client-Timezone`.
-- **Performance Middleware:** Structured logging middleware injecting `X-Response-Time` and `X-Request-ID`.
-- **Async Robustness:** Integrated `Promise.allSettled` and `AbortController` in `backend/public/app.js`.
-
-### Week 2 Day 3 — AI Resume Analysis: Groq + OpenRouter Integration
-- **Dual LLM Architecture:** Primary **Groq** (`llama-3.3-70b-versatile`) with automatic failover to **OpenRouter** (`meta-llama/llama-3.3-70b-instruct`).
-- **Structured Prompting:** Generates Executive Summary, Technical Competencies, Interview Probe Points, and Recommendation.
-- **DocType Schema:** Added `ai_resume_summary` Long Text field to `Job Applicant` doctype.
-- **Form Script:** Custom button with `frappe.call` in `cynaris_recruitment/doctype/job_applicant/job_applicant.js`.
-- **Event Delegation:** Container event listener handling candidate actions via bubbling and `e.target.closest()`.
-
-### Week 2 Day 2 — Interview Status: Vue.js Pipeline Component & Controller
-- **Kanban Board:** Columns for `Screening`, `Technical Round 1`, `Technical Round 2`, `HR Round`, `Offered`, `Rejected`.
-- **Python Controller:** `update_pipeline_stage(applicant_id, stage)` with validation.
-- **Status Badges:** CSS + Jinja template override in `cynaris_recruitment/doctype/job_applicant/`.
+- **Week 2 Day 5:** Deploy to Railway + README + Demo Video + Final PR & Modern ES6+ JavaScript.
+- **Week 2 Day 4:** Debug & Performance Sprint: Sargable indexing, 15s TTL cache, timezone normalization.
+- **Week 2 Day 3:** AI Resume Analysis: Primary Groq (`llama-3.3-70b-versatile`) with OpenRouter fallback.
+- **Week 2 Day 2:** Interview Status: Kanban board and Python controller stage transitions.
 
 ---
 
-### How to Run Locally
+## 🛠️ How to Run Locally
 
-#### 1. Start the API & Frontend Server
+### 1. EspoCRM Docker Environment (Week 3)
+```powershell
+# Copy environment configuration
+cp .env.espocrm.example .env.espocrm
+
+# Start EspoCRM + MySQL 8.0 + phpMyAdmin
+docker compose -f docker-compose.espocrm.yml up -d
+
+# Open EspoCRM Web Installer: http://localhost:8080
+# Open phpMyAdmin Database UI: http://localhost:8081
+```
+
+### 2. Express Backend & Vue 3 Pipeline (Week 2)
 ```powershell
 cd backend
 npm start
+# Open http://localhost:3000
 ```
-Open `http://localhost:3000` in your browser.
 
-#### 2. Run All Automated Test Suites (23 Tests)
+### 3. Run Automated Unit Test Suites
 ```powershell
-# 1. Run Modern JavaScript & Deployment Tests (5 tests)
-node tests/test_modern_javascript.js
+# Run Week 3 Tests (EspoCRM setup + React Virtual DOM)
+npm test
 
-# 2. Run Query Optimization & Performance Tests (5 tests)
-py tests/test_performance_and_debugging.py
-
-# 3. Run AI Resume Analysis & Fallback Tests (6 tests)
-py tests/test_ai_resume_analysis.py
-
-# 4. Run Interview Controller & DocType Tests (7 tests)
-py tests/test_interview_controller.py
+# Run individual test suites
+npm run test:espocrm
+npm run test:react
+npm run test:w2
 ```
 
 ---
 
-### API Endpoints
+## 📁 Key Documentation Files
 
-- `GET /api/health` — Server health, active AI providers, and latency telemetry
-- `GET /api/performance/metrics` — Aggregate metrics (avg latency, slow requests, cache hit ratio, memory usage)
-- `GET /api/performance/logs` — Real-time structured request logs
-- `GET /api/performance/explain-query` — Database EXPLAIN plan diagnostics and index recommendations
-- `GET /api/stages` — Allowed pipeline stages
-- `GET /api/applicants` — Retrieve all candidates
-- `GET /api/applicants/:id` — Retrieve candidate profile with AI resume summary
-- `POST /api/applicants` — Add a new candidate
-- `PATCH /api/applicants/:id/stage` — Update candidate stage
-- `POST /api/applicants/:id/ai-summary` — Trigger AI resume analysis (Groq primary + OpenRouter fallback)
-- `GET /api/dashboard/stages-today` — Timezone-normalized daily metrics with 15s TTL cache
-
----
-
-### Test Endpoints via `curl.exe`
-
-```powershell
-# 1. Health check with latency headers
-curl.exe -i http://localhost:3000/api/health
-
-# 2. Performance metrics telemetry
-curl.exe -s http://localhost:3000/api/performance/metrics
-
-# 3. AI resume summary (Groq primary)
-curl.exe -s -X POST http://localhost:3000/api/applicants/1/ai-summary
-
-# 4. OpenRouter fallback simulation
-curl.exe -s -X POST "http://localhost:3000/api/applicants/2/ai-summary?simulate_groq_failure=true"
-
-# 5. Cache Miss vs Cache Hit verification
-curl.exe -s "http://localhost:3000/api/dashboard/stages-today?force_refresh=true"
-curl.exe -s http://localhost:3000/api/dashboard/stages-today
-```
-
----
-
-### Documentation & Deliverables
-
+- [docs/WEEK3_DAY1_SUBMISSION.md](docs/WEEK3_DAY1_SUBMISSION.md) — Week 3 Day 1 submission walkthrough, installer verification, and Viva answers.
+- [docs/ESPOCRM_ARCHITECTURE.md](docs/ESPOCRM_ARCHITECTURE.md) — In-depth architectural analysis and 3 key decisions.
+- [docs/CIA_LOG.md](docs/CIA_LOG.md) — CIA interaction logs across Week 2 and Week 3.
 - [DEPLOYMENT.md](DEPLOYMENT.md) — Production deployment guide for Railway & Render.
-- [Pull Request Template](.github/pull_request_template.md) — Standardized PR template for end-of-week submission.
-- [Week 2 Final PR Document](docs/WEEK2_FINAL_PR.md) — Ready-to-copy PR submission summary.
-- [CIA Interaction Log](docs/CIA_LOG.md) — Complete Week 2 CIA interaction logs across all lesson days.
-- [Week 2 Day 5 Submission Guide](docs/WEEK2_DAY5_SUBMISSION.md) — Deployment walkthrough, demo video script, and viva answers.
-- [Week 2 Day 4 Submission Guide](docs/WEEK2_DAY4_SUBMISSION.md) — Debug & performance sprint guide.
-- [Week 2 Day 3 Submission Guide](docs/WEEK2_DAY3_SUBMISSION.md) — AI resume analysis guide.
-- [Week 2 Day 2 Submission Guide](docs/WEEK2_DAY2_SUBMISSION.md) — Interview pipeline guide.
+- [.github/pull_request_template.md](.github/pull_request_template.md) — Standardized PR template for end-of-week submission.

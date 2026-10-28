@@ -234,3 +234,63 @@
 ### Action Taken
 - Added defensive default parameters in [`backend/public/modules/pipelineUtils.js`](../backend/public/modules/pipelineUtils.js).
 - Validated all 5 modern JavaScript features via automated unit tests in [`tests/test_modern_javascript.js`](../tests/test_modern_javascript.js) with 100% pass rate.
+
+
+---
+
+# Week 3 Day 1 — Fork, Clone & Local Setup: EspoCRM & React Virtual DOM
+
+**Date:** October 21, 2026  
+**Lesson:** Week 3 Day 1 — Fork, Clone & Local Setup — EspoCRM  
+**Branch:** `feat/cynaris-w3d1-murali`  
+
+---
+
+## Interaction 1: CIA → Full Stack Mentor Mode
+
+### Prompt / Query
+> *"I have forked, cloned, and configured EspoCRM via Docker Compose for Week 3 Day 1. The codebase is organized into `application/Espo/Core/`, `application/Espo/Modules/`, `application/Espo/Core/Api/`, and `application/Espo/ORM/`. Could you explain the high-level architecture of these four directories, identify the 3 key architectural decisions that differentiate EspoCRM from monolithic CRMs, and outline the top 3 files I should study first to understand its request and data lifecycle?"*
+
+### CIA Mentor Review & Guidance
+1. **Architecture Breakdown:**
+   - **`Core/` (Application Kernel & DI Container):** Acts as the foundational backbone. It initializes system configuration, boots modules, and registers services in a lightweight Dependency Injection container ([`application/Espo/Core/Container.php`](../application/Espo/Core/Container.php)).
+   - **`Modules/` (Modular Domain Packages):** Enforces strict package boundaries. Instead of editing core source files, domain capabilities (e.g. Sales, Recruitment) live in independent directories with their own metadata, controllers, and hooks.
+   - **`Core/Api/` (REST Controller & Dispatcher Layer):** EspoCRM is an API-first application. The API layer ([`application/Espo/Core/Api/Request.php`](../application/Espo/Core/Api/Request.php)) transforms HTTP verbs and query parameters into controller invocations and returns standard JSON payloads.
+   - **`ORM/` (Custom Entity Manager & Repositories):** Instead of bloated third-party ORMs like Doctrine, EspoCRM employs a purpose-built, metadata-driven ORM ([`application/Espo/ORM/EntityManager.php`](../application/Espo/ORM/EntityManager.php)) with built-in entity lifecycle hooks (`beforeSave`, `afterSave`) and field-level ACL enforcement.
+
+2. **The 3 Key Architectural Decisions:**
+   - **1. Metadata-Driven Declarative Engine:** JSON files in `Resources/metadata/` define schemas, relations, and form layouts dynamically. Schema changes can be made at runtime without code generation or compilation.
+   - **2. Decoupled Single-Page Application (SPA):** The PHP backend serves zero server-side rendered HTML; it operates purely as a headless JSON REST API consumed by a frontend client (such as our React Candidate Portal).
+   - **3. Proprietary Lightweight ORM:** Tailored specifically for runtime JSON metadata parsing and instant field-level security checks, achieving sub-10ms query execution with low memory overhead.
+
+3. **Top 3 Files to Study First:**
+   1. [`application/Espo/Core/Application.php`](../application/Espo/Core/Application.php) — to understand the bootstrap sequence and container initialization.
+   2. [`application/Espo/Core/Api/Request.php`](../application/Espo/Core/Api/Request.php) — to see how HTTP endpoints, bearer tokens, and filters are parsed.
+   3. [`application/Espo/ORM/EntityManager.php`](../application/Espo/ORM/EntityManager.php) — to see how entity persistence, hooks, and repositories are managed.
+
+### Action Taken
+- Authored comprehensive architectural documentation in [`docs/ESPOCRM_ARCHITECTURE.md`](../docs/ESPOCRM_ARCHITECTURE.md).
+- Created reference implementations for the 4 core components in `application/Espo/` and automated tests in [`tests/test_espocrm_setup.js`](../tests/test_espocrm_setup.js).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review our implementation of `application/Espo/Core/Api/Request.php` and our React Candidate Portal component in `client/src/components/CandidatePortal.jsx`. How does React's Virtual DOM differ from direct DOM manipulation in this pipeline view, and what potential edge cases exist during reconciliation and API dispatch?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Layer | Component Inspected | Identified Risk / Edge Case | Architectural Mitigation Applied |
+|---|---|---|---|
+| **React Frontend** | `CandidatePortal.jsx` | Unkeyed or index-keyed candidate cards causing Virtual DOM state bleeding during list reordering. | Assigned stable `key={applicant.id}` so React's reconciliation engine accurately tracks nodes across renders. |
+| **Virtual DOM** | `virtualDomEngine.js` | Direct real DOM mutations causing desynchronization with React's in-memory fiber tree. | Confined all UI updates to React reactive state (`useState`, `useMemo`), leaving the batched Commit phase to React's diffing engine. |
+| **Event Handling** | `PipelineCard.jsx` | Synthetic click event bubbling from 'Advance Stage' button triggering card selection modal. | Used `e.stopPropagation()` inside the advance button handler to isolate action dispatch. |
+| **API Parsing** | `Request.php` | Mixed-case HTTP headers (e.g. `authorization` vs `Authorization`) breaking bearer token extraction. | Normalized header array keys to lowercase using `array_change_key_case($headers, CASE_LOWER)`. |
+| **ORM Entity** | `Repository.php` | Concurrent saves overwriting modified fields or creating blank entity IDs. | Implemented auto-generating unique UUIDs (`uniqid($entityType, true)`) and modified attribute tracking. |
+
+### Action Taken
+- Applied stable unique `id` keys across all JSX array mapping in [`client/src/components/CandidatePortal.jsx`](../client/src/components/CandidatePortal.jsx).
+- Implemented `e.stopPropagation()` in [`client/src/components/PipelineCard.jsx`](../client/src/components/PipelineCard.jsx).
+- Added normalized header lookup and bearer token extraction regex in [`application/Espo/Core/Api/Request.php`](../application/Espo/Core/Api/Request.php).
+- Validated Virtual DOM diffing algorithm and state transitions in [`tests/test_react_virtual_dom.js`](../tests/test_react_virtual_dom.js).
