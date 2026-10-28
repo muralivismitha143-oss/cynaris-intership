@@ -1,0 +1,33 @@
+{
+  "name": "cynaris-recruitment-platform",
+  "version": "1.0.0",
+  "description": "Cynaris Recruitment Platform - Full Stack Interview Pipeline with EspoCRM & React",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "build": "cd backend && npm install",
+    "test": "node tests/test_espocrm_setup.js && node tests/test_react_virtual_dom.js && node tests/test_business_process_mapping.js && node tests/test_react_props_unidirectional.js && node tests/test_crm_workflow_engine.js && node tests/test_react_state_and_forms.js && node tests/test_activity_dashboard_sql.js && node tests/test_react_use_effect.js",
+    "test:w3d4": "node tests/test_activity_dashboard_sql.js && node tests/test_react_use_effect.js",
+    "test:w3d3": "node tests/test_crm_workflow_engine.js && node tests/test_react_state_and_forms.js",
+    "test:w3d2": "node tests/test_business_process_mapping.js && node tests/test_react_props_unidirectional.js",
+    "test:w3d1": "node tests/test_espocrm_setup.js && node tests/test_react_virtual_dom.js",
+    "test:espocrm": "node tests/test_espocrm_setup.js",
+    "test:react": "node tests/test_react_virtual_dom.js",
+    "test:w2": "node tests/test_modern_javascript.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "espocrm",
+    "activity-dashboard",
+    "sql-reporting",
+    "dashlet",
+    "react",
+    "use-effect",
+    "side-effects",
+    "cleanup"
+  ],
+  "author": "Murali",
+  "license": "ISC"
+}
