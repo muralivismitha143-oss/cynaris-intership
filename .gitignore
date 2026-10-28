@@ -5,6 +5,8 @@ backend/node_modules/
 .env
 .env.*
 !.env.example
+!.env.espocrm.example
+!*.example
 
 # Logs
 *.log
