@@ -6,9 +6,10 @@
   "scripts": {
     "start": "node backend/server.js",
     "build": "cd backend && npm install",
-    "test": "node tests/test_espocrm_setup.js && node tests/test_react_virtual_dom.js && node tests/test_business_process_mapping.js && node tests/test_react_props_unidirectional.js",
-    "test:w3d1": "node tests/test_espocrm_setup.js && node tests/test_react_virtual_dom.js",
+    "test": "node tests/test_espocrm_setup.js && node tests/test_react_virtual_dom.js && node tests/test_business_process_mapping.js && node tests/test_react_props_unidirectional.js && node tests/test_crm_workflow_engine.js && node tests/test_react_state_and_forms.js",
+    "test:w3d3": "node tests/test_crm_workflow_engine.js && node tests/test_react_state_and_forms.js",
     "test:w3d2": "node tests/test_business_process_mapping.js && node tests/test_react_props_unidirectional.js",
+    "test:w3d1": "node tests/test_espocrm_setup.js && node tests/test_react_virtual_dom.js",
     "test:espocrm": "node tests/test_espocrm_setup.js",
     "test:react": "node tests/test_react_virtual_dom.js",
     "test:w2": "node tests/test_modern_javascript.js"
@@ -18,13 +19,13 @@
   },
   "keywords": [
     "espocrm",
-    "business-process",
-    "lead-to-closure",
-    "recruitment",
+    "workflow-engine",
+    "reporting-engine",
+    "bpm",
     "react",
-    "unidirectional-data-flow",
-    "props",
-    "virtual-dom"
+    "use-state",
+    "controlled-inputs",
+    "conditional-rendering"
   ],
   "author": "Murali",
   "license": "ISC"
