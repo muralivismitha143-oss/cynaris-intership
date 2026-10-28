@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-52%2F52%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2010%20Suites%20Passing-success?style=for-the-badge)](tests/)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
 ---
@@ -16,6 +16,21 @@
 ---
 
 ## 🚀 Week 3: Project 2 — EspoCRM Architecture, Business Processes & React
+
+### Week 3 Day 5 — AI Conversation Summarizer: Groq Integration & React Router Client-Side Routing
+- **EspoCRM Custom Hook & Service:**
+  - `ConversationSummarizerHook.php`: `afterSave` hook on Activity entity triggering when linked to an Account, fetching the 5 most recent interactions.
+  - `ConversationSummarizer.php`: Core PHP service with prompt formatting, Groq primary call (`llama-3.3-70b-versatile`), OpenRouter failover (`meta-llama/llama-3.3-70b-instruct`), and deterministic local fallback.
+  - `Account.json`: Custom entity metadata extension persisting `aiSummary`, `aiSummaryGeneratedAt`, and `aiSummaryProvider`.
+- **React Router Client-Side Routing:**
+  - `ReactRouterComponents.jsx`: Standard implementation of `BrowserRouter`, `MemoryRouter`, `Routes`, `Route`, `Link`, `useParams`, and `useNavigate`.
+  - `AccountsListView.jsx`: Accounts directory with declarative `<Link to={`/accounts/${id}`}>` cards.
+  - `AccountDetailView.jsx`: Master-detail view using `useParams()` to read `accountId`, `useNavigate()` for programmatic redirection, displaying account metadata, interaction timeline, and the embedded AI summary panel.
+  - `ConversationSummarizerPanel.jsx`: Visual panel displaying provider telemetry (latency, provider badge), 3-bullet cards, and an interactive simulated outage toggle.
+- **Documentation & Viva Assessment:**
+  - [`docs/WEEK3_DAY5_SUBMISSION.md`](docs/WEEK3_DAY5_SUBMISSION.md): Full walkthrough with simulated screenshots and 3 Viva answers.
+  - [`docs/AI_CONVERSATION_SUMMARIZER.md`](docs/AI_CONVERSATION_SUMMARIZER.md): Technical specification and prompt engineering details.
+  - [`docs/WEEK3_FINAL_PR.md`](docs/WEEK3_FINAL_PR.md): End-of-week Capstone Pull Request template.
 
 ### Week 3 Day 4 — Activity Dashboard: SQL Queries + Reporting Engine Extension & React `useEffect` Lifecycle
 - **Custom SQL Report & Sargability:** Authored optimized query for "Activities per Account (last 30 days), grouped by type (Call, Meeting, Email)" combining sargable date boundaries (`date_start >= DATE_SUB(NOW(), INTERVAL 30 DAY)`) with non-blocking `UNION ALL` across polymorphic activity tables (`call`, `meeting`, `email`).
@@ -79,39 +94,8 @@ npm start
 # Open http://localhost:3000
 ```
 
-### 3. Run Automated Unit Test Suites
+### 3. Running All Automated Unit Tests
 ```powershell
-# Run All Week 3 Unit Tests (29 tests across 8 suites)
 npm test
-
-# Run Week 3 Day 4 Tests (SQL Dashboard & useEffect Lifecycle)
-npm run test:w3d4
-
-# Run Week 3 Day 3 Tests (Workflow Engine & Controlled Inputs)
-npm run test:w3d3
-
-# Run Week 3 Day 2 Tests (Business Process & Unidirectional Flow)
-npm run test:w3d2
-
-# Run Week 3 Day 1 Tests (EspoCRM Setup & Virtual DOM)
-npm run test:w3d1
-
-# Run Week 2 Modern JavaScript Tests
-npm run test:w2
+# Runs all 10 unit test suites across EspoCRM, React Router, Workflows, Virtual DOM, and AI Services
 ```
-
----
-
-## 📁 Key Documentation Files
-
-- [docs/WEEK3_DAY4_SUBMISSION.md](docs/WEEK3_DAY4_SUBMISSION.md) — Week 3 Day 4 submission report, SQL benchmark, and Viva guide.
-- [docs/ACTIVITY_DASHBOARD_SQL_REPORT.md](docs/ACTIVITY_DASHBOARD_SQL_REPORT.md) — Detailed analytical SQL query specification and index analysis.
-- [docs/WEEK3_DAY3_SUBMISSION.md](docs/WEEK3_DAY3_SUBMISSION.md) — Week 3 Day 3 submission report and controlled inputs analysis.
-- [docs/ENTERPRISE_CRM_WORKFLOW_REPORTING.md](docs/ENTERPRISE_CRM_WORKFLOW_REPORTING.md) — Architectural specification of Workflow, BPM, and Reporting engines.
-- [docs/WEEK3_DAY2_SUBMISSION.md](docs/WEEK3_DAY2_SUBMISSION.md) — Week 3 Day 2 submission report and process mapping.
-- [docs/BUSINESS_PROCESS_MAPPING.md](docs/BUSINESS_PROCESS_MAPPING.md) — Enterprise Lead-to-Closure process mapping and API specifications.
-- [docs/WEEK3_DAY1_SUBMISSION.md](docs/WEEK3_DAY1_SUBMISSION.md) — Week 3 Day 1 setup walkthrough and installer verification.
-- [docs/ESPOCRM_ARCHITECTURE.md](docs/ESPOCRM_ARCHITECTURE.md) — In-depth architectural analysis and 3 key decisions.
-- [docs/CIA_LOG.md](docs/CIA_LOG.md) — CIA interaction logs across Week 2 and Week 3.
-- [DEPLOYMENT.md](DEPLOYMENT.md) — Production deployment guide for Railway & Render.
-- [.github/pull_request_template.md](.github/pull_request_template.md) — Standardized PR template for end-of-week submission.
