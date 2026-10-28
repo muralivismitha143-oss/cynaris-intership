@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node backend/server.js",
     "build": "cd backend && npm install",
-    "test": "node tests/test_espocrm_setup.js && node tests/test_react_virtual_dom.js",
+    "test": "node tests/test_espocrm_setup.js && node tests/test_react_virtual_dom.js && node tests/test_business_process_mapping.js && node tests/test_react_props_unidirectional.js",
+    "test:w3d1": "node tests/test_espocrm_setup.js && node tests/test_react_virtual_dom.js",
+    "test:w3d2": "node tests/test_business_process_mapping.js && node tests/test_react_props_unidirectional.js",
     "test:espocrm": "node tests/test_espocrm_setup.js",
     "test:react": "node tests/test_react_virtual_dom.js",
     "test:w2": "node tests/test_modern_javascript.js"
@@ -16,12 +18,13 @@
   },
   "keywords": [
     "espocrm",
+    "business-process",
+    "lead-to-closure",
     "recruitment",
-    "kanban",
     "react",
-    "virtual-dom",
-    "groq",
-    "openrouter"
+    "unidirectional-data-flow",
+    "props",
+    "virtual-dom"
   ],
   "author": "Murali",
   "license": "ISC"
