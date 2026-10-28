@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-39%2F39%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-46%2F46%20Passing-success?style=for-the-badge)](tests/)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
 ---
@@ -17,27 +17,27 @@
 
 ## 🚀 Week 3: Project 2 — EspoCRM Architecture, Business Processes & React
 
+### Week 3 Day 3 — Enterprise CRM Architecture: Workflow, Automation & Reporting Engine
+- **Workflow Rule Engine (`application/Espo/Core/Workflow/WorkflowManager.php`):** Event interception (`afterCreate`, `afterSave`, `scheduled`), declarative condition evaluations (`equals`, `greaterThanOrEqual`, `in`, `contains`), and polymorphic action dispatchers (`sendEmail`, `createTask`, `updateEntity`, `triggerWebhook`).
+- **Analytical Reporting Engine (`application/Espo/Core/Reporting/ReportEngine.php`):** Multi-dimensional aggregation queries across dimensions with aggregate mathematical measures (`SUM`, `AVG`, `COUNT`, `MAX`, `MIN`).
+- **BPM Process Runtime (`application/Espo/Core/Bpm/ProcessEngine.php`):** Token-based process execution runtime with branching gateways and history tracking.
+- **React Controlled Form Studio (`client/src/components/WorkflowReportingStudio/`):**
+  - `WorkflowRuleBuilder.jsx`: Controlled form inputs (`value` + `onChange`), dynamic condition array manipulation with `useState`, and conditional rendering of action configuration panels.
+  - `ReportingQueryStudio.jsx`: Multi-dimensional report query form with contextual measure field suppression and live aggregation preview.
+  - `WorkflowReportingDashboard.jsx`: Unified master dashboard orchestrating studio components.
+- **Documentation & Viva Guide:** Detailed day report in [`docs/WEEK3_DAY3_SUBMISSION.md`](docs/WEEK3_DAY3_SUBMISSION.md) and architecture guide in [`docs/ENTERPRISE_CRM_WORKFLOW_REPORTING.md`](docs/ENTERPRISE_CRM_WORKFLOW_REPORTING.md).
+
 ### Week 3 Day 2 — Business Process Mapping: Lead to Closure + API Inspection & Unidirectional Data Flow
 - **Lead-to-Closure Process Mapping:** Complete enterprise lifecycle specification in [`docs/BUSINESS_PROCESS_MAPPING.md`](docs/BUSINESS_PROCESS_MAPPING.md) tracing `Lead` &rarr; `Opportunity` &rarr; `Account` & `Contact` &rarr; `Activity` &rarr; `Closed Won`.
-- **Workflow & Automation Analysis:**
-  - Evaluated **3 core Workflow rules** (`Lead Auto-Routing`, `High-Value Deal Alert`, `Stale Lead Inactivity Reminder`).
-  - Analyzed **2 BPM process flows** with a comprehensive Mermaid BPMN flowchart.
-  - Deconstructed **2 enterprise reports** across Entity, Filters, Columns, and Group By.
+- **Workflow & Automation Analysis:** Evaluated 3 Workflow rules, 2 BPM process flows with Mermaid BPMN flowchart, and 2 reporting engine configurations.
 - **REST API Inspection:** Documented `/api/v1/` endpoints for `POST /api/v1/Lead`, `POST /api/v1/Lead/action/convert`, and `POST /api/v1/Meeting`.
-- **React Functional Components & Unidirectional Data Flow:**
-  - Composed component hierarchy in [`client/src/components/LeadToClosure/`](client/src/components/LeadToClosure/):
-    - `LeadPipelineContainer.jsx`: Smart state orchestrator managing immutable updates.
-    - `ClosureSummaryMetrics.jsx`: Functional KPI presenter receiving computed props.
-    - `LeadCard.jsx`: Presentational lead card with conversion action triggers.
-    - `OpportunityCard.jsx`: Controlled deal progression card with stage transitions.
-    - `ActivityFeed.jsx`: Chronological engagement feed for calls, meetings, and tasks.
-- **Documentation & Viva Guide:** Comprehensive day walkthrough in [`docs/WEEK3_DAY2_SUBMISSION.md`](docs/WEEK3_DAY2_SUBMISSION.md).
+- **React Functional Components & Unidirectional Data Flow:** Component hierarchy in [`client/src/components/LeadToClosure/`](client/src/components/LeadToClosure/).
+- **Documentation & Viva Guide:** [`docs/WEEK3_DAY2_SUBMISSION.md`](docs/WEEK3_DAY2_SUBMISSION.md).
 
 ### Week 3 Day 1 — Fork, Clone & Local Setup: EspoCRM & React Virtual DOM
 - **EspoCRM Multi-Container Stack:** Docker Compose environment ([`docker-compose.espocrm.yml`](docker-compose.espocrm.yml)) orchestrating **MySQL 8.0**, **EspoCRM App (Port 8080)**, **EspoCRM Daemon**, and **phpMyAdmin (Port 8081)**.
 - **Environment Template:** Zero-secret configuration template in [`.env.espocrm.example`](.env.espocrm.example).
-- **Architecture Study & Anatomy:** Deep dive into the 4 core repository components in [`docs/ESPOCRM_ARCHITECTURE.md`](docs/ESPOCRM_ARCHITECTURE.md) (`Core/`, `Modules/`, `Core/Api/`, `ORM/`).
-- **3 Key Architectural Decisions:** Metadata-driven architecture, decoupled SPA REST API, custom lightweight ORM.
+- **Architecture Study & Anatomy:** Deep dive into the 4 core repository components in [`docs/ESPOCRM_ARCHITECTURE.md`](docs/ESPOCRM_ARCHITECTURE.md).
 - **React Virtual DOM Client:** Candidate Portal in [`client/src/components/CandidatePortal.jsx`](client/src/components/CandidatePortal.jsx) and Virtual DOM diffing engine in [`client/src/utils/virtualDomEngine.js`](client/src/utils/virtualDomEngine.js).
 - **Day 1 Submission Guide:** [`docs/WEEK3_DAY1_SUBMISSION.md`](docs/WEEK3_DAY1_SUBMISSION.md).
 
@@ -77,8 +77,11 @@ npm start
 
 ### 3. Run Automated Unit Test Suites
 ```powershell
-# Run All Week 3 Unit Tests (16 tests)
+# Run All Week 3 Unit Tests (23 tests across 6 suites)
 npm test
+
+# Run Week 3 Day 3 Tests (Workflow Engine & Controlled Inputs)
+npm run test:w3d3
 
 # Run Week 3 Day 2 Tests (Business Process & Unidirectional Flow)
 npm run test:w3d2
@@ -94,7 +97,9 @@ npm run test:w2
 
 ## 📁 Key Documentation Files
 
-- [docs/WEEK3_DAY2_SUBMISSION.md](docs/WEEK3_DAY2_SUBMISSION.md) — Week 3 Day 2 submission report, visual walkthrough, workflows, and Viva guide.
+- [docs/WEEK3_DAY3_SUBMISSION.md](docs/WEEK3_DAY3_SUBMISSION.md) — Week 3 Day 3 submission report, controlled inputs analysis, and Viva guide.
+- [docs/ENTERPRISE_CRM_WORKFLOW_REPORTING.md](docs/ENTERPRISE_CRM_WORKFLOW_REPORTING.md) — Architectural specification of Workflow, BPM, and Reporting engines.
+- [docs/WEEK3_DAY2_SUBMISSION.md](docs/WEEK3_DAY2_SUBMISSION.md) — Week 3 Day 2 submission report and process mapping.
 - [docs/BUSINESS_PROCESS_MAPPING.md](docs/BUSINESS_PROCESS_MAPPING.md) — Enterprise Lead-to-Closure process mapping and API specifications.
 - [docs/WEEK3_DAY1_SUBMISSION.md](docs/WEEK3_DAY1_SUBMISSION.md) — Week 3 Day 1 setup walkthrough and installer verification.
 - [docs/ESPOCRM_ARCHITECTURE.md](docs/ESPOCRM_ARCHITECTURE.md) — In-depth architectural analysis and 3 key decisions.

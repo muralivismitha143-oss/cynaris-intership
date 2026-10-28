@@ -355,3 +355,63 @@
 - Locked terminal stages (`Closed Won`, `Closed Lost`) in [`client/src/components/LeadToClosure/OpportunityCard.jsx`](../client/src/components/LeadToClosure/OpportunityCard.jsx).
 - Added `e.stopPropagation()` to all card action buttons.
 - Validated all edge cases and unidirectional state transitions via automated unit tests in [`tests/test_react_props_unidirectional.js`](../tests/test_react_props_unidirectional.js) and [`tests/test_business_process_mapping.js`](../tests/test_business_process_mapping.js).
+
+
+---
+
+# Week 3 Day 3 — Enterprise CRM Architecture: Workflow, Automation & Reporting Engine
+
+**Date:** October 23, 2026  
+**Lesson:** Week 3 Day 3 — Enterprise CRM Architecture — Workflow, Automation & Reporting Engine  
+**Branch:** `feat/cynaris-w3d3-murali`  
+
+---
+
+## Interaction 1: CIA → Full Stack Mentor Mode
+
+### Prompt / Query
+> *"I have implemented Week 3 Day 3: Enterprise CRM Architecture (Workflow, Automation & Reporting Engine) and developed a React studio suite modeling this capability. The architecture includes: (1) an EspoCRM Core WorkflowManager (`application/Espo/Core/Workflow/WorkflowManager.php`) with multi-attribute declarative condition evaluation and polymorphic action dispatching; (2) an analytical ReportEngine (`application/Espo/Core/Reporting/ReportEngine.php`) for dimensional grouping and aggregate measures (SUM, AVG, COUNT, MIN, MAX); (3) a lightweight BPM ProcessEngine (`application/Espo/Core/Bpm/ProcessEngine.php`); and (4) a React Studio suite (`WorkflowRuleBuilder`, `ReportingQueryStudio`, `WorkflowReportingDashboard`) utilizing `useState`, controlled inputs, and extensive conditional rendering. Could you review my architecture, state update patterns, and condition evaluation grammar before I commit?"*
+
+### CIA Mentor Review & Guidance
+1. **Engine Separation & Architectural Scalability:**
+   - Excellent division of labor. Decoupling the synchronous Workflow Rule Engine from the multi-step BPM runtime ensures that quick transactional field updates execute in sub-millisecond time without waiting for human task gateways or timer intervals.
+   - The `ReportEngine` formulation cleanly reflects enterprise OLAP aggregation patterns, grouping by categorical dimensions while computing mathematical summaries.
+2. **React State Management with `useState`:**
+   - Using `useState` for dynamic condition rows (`conditions: [{ id, field, operator, value }]`) is a canonical pattern. Ensure that additions, deletions, and property modifications strictly follow immutable update patterns:
+     - *Add:* `setConditions((prev) => [...prev, newCondition])`
+     - *Delete:* `setConditions((prev) => prev.filter((c) => c.id !== id))`
+     - *Update:* `setConditions((prev) => prev.map((c) => c.id === id ? { ...c, [prop]: val } : c))`
+   - Avoid using array indices as element keys when mapping dynamic form rows; always use stable unique IDs (`Date.now()` or UUIDs) so React does not misplace focus or input state during deletion.
+3. **Controlled Inputs & Two-Way Binding:**
+   - Every `<input>`, `<select>`, and `<textarea>` must have its `value` tied to a specific state property and its `onChange` handler synchronizing the state. This turns React into the Single Source of Truth for form data, making pre-flight validation straightforward.
+4. **Conditional Rendering Clarity:**
+   - Conditionally rendering action-specific parameter panels (Task vs Email vs Webhook) based on `actionType` keeps the UI clean and prevents user cognitive overload.
+   - In `ReportingQueryStudio`, conditionally suppressing the measure field selector when `measureFunction === 'COUNT'` is good UX practice since count operations count primary keys automatically.
+
+### Action Taken
+- Assigned unique `Date.now()` IDs to dynamic condition rows in [`client/src/components/WorkflowReportingStudio/WorkflowRuleBuilder.jsx`](../client/src/components/WorkflowReportingStudio/WorkflowRuleBuilder.jsx).
+- Implemented immutable state updates across all form handlers.
+- Documented the architectural specifications in [`docs/ENTERPRISE_CRM_WORKFLOW_REPORTING.md`](../docs/ENTERPRISE_CRM_WORKFLOW_REPORTING.md).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"What edge cases should I safeguard against during condition evaluation in `WorkflowManager.php`, aggregate measures in `ReportEngine.php`, and dynamic controlled input state updates in `WorkflowRuleBuilder.jsx`?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Layer | Component Inspected | Identified Risk / Edge Case | Architectural Mitigation Applied |
+|---|---|---|---|
+| **Condition Grammar** | `WorkflowManager.php` | String-based numeric comparisons (e.g. `'1000000'` vs `'500000'`) performing lexicographical rather than numeric comparison (`'500000' > '1000000'`). | Explicitly cast both operands to float `(float)$actual >= (float)$expected` in numeric comparison operators. |
+| **Empty Condition Sets** | `WorkflowRuleBuilder.jsx` | User deleting all condition rows, leaving an empty array. | Added an explicit warning banner indicating that 0 conditions will trigger the rule on ALL entity events unconditionally. |
+| **Action Switching** | `WorkflowRuleBuilder.jsx` | User configuring task subject, then switching `actionType` to `sendEmail`, potentially submitting orphan task fields. | Segregated action payloads so only attributes corresponding to the active `actionType` are packaged on save. |
+| **Division by Zero** | `ReportEngine.php` | Calculating `AVG` on a group with 0 matching records resulting in a PHP Division-by-Zero warning. | Added guard check: `count($vals) > 0 ? (array_sum($vals) / count($vals)) : 0.0`. |
+| **Controlled Form Guard** | `WorkflowRuleBuilder.jsx` | User submitting a rule with empty whitespace name (`"   "`). | Added pre-flight validation check `if (!ruleName.trim())` setting `validationError` state and preventing submission. |
+
+### Action Taken
+- Added explicit `(float)` casting for all comparison operators in [`application/Espo/Core/Workflow/WorkflowManager.php`](../application/Espo/Core/Workflow/WorkflowManager.php).
+- Added division-by-zero guards in [`application/Espo/Core/Reporting/ReportEngine.php`](../application/Espo/Core/Reporting/ReportEngine.php).
+- Implemented pre-flight whitespace validation and action payload sanitization in [`client/src/components/WorkflowReportingStudio/WorkflowRuleBuilder.jsx`](../client/src/components/WorkflowReportingStudio/WorkflowRuleBuilder.jsx).
+- Verified all edge case scenarios via automated tests in [`tests/test_crm_workflow_engine.js`](../tests/test_crm_workflow_engine.js) and [`tests/test_react_state_and_forms.js`](../tests/test_react_state_and_forms.js).
