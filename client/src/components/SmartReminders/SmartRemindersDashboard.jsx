@@ -3,13 +3,14 @@
  * 
  * Demonstrates:
  * - Smart Reminders: Automation Rules & AI-Suggested Timing
- * - Node.js Architecture Integration (built-in http, fs, path, events)
+ * - Express Routing & User Preference Settings (Quiet Hours, Channels, Policy)
  * - Groq Primary (llama-3.3-70b-versatile) + OpenRouter Fallback (meta-llama/llama-3.3-70b-instruct)
  * - Interactive Groq outage simulation toggle
  * - Queue management for scheduled and dispatched smart reminders
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import UserPreferencesSettings, { INITIAL_USER_PREFERENCES } from './UserPreferencesSettings';
 
 const INITIAL_RULES = [
   {
@@ -106,6 +107,9 @@ export function SmartRemindersDashboard() {
   const [selectedEntity, setSelectedEntity] = useState(SAMPLE_MATCHES[0]);
   const [simulateOutage, setSimulateOutage] = useState(false);
   const [isLoadingAi, setIsLoadingAi] = useState(false);
+  const [showPreferencesModal, setShowPreferencesModal] = useState(false);
+  const [currentPrefs, setCurrentPrefs] = useState(INITIAL_USER_PREFERENCES['recruiter-1']);
+
   const [timingResult, setTimingResult] = useState({
     recommendedSlot: 'Tuesday 10:30 AM - 11:30 AM IST',
     recommendedChannel: 'Email',
@@ -154,8 +158,14 @@ export function SmartRemindersDashboard() {
     setIsLoadingAi(true);
 
     try {
-      // Simulate API round-trip to backend with dual failover
-      await new Promise((resolve) => setTimeout(resolve, 400));
+      // Simulate API round-trip to backend with dual failover and user preference checks
+      await new Promise((resolve) => setTimeout(resolve, 380));
+
+      // Resolve channel according to user preferences
+      let chosenChannel = entity.preferredChannel || 'Email';
+      if (chosenChannel === 'WhatsApp' && !currentPrefs.channels.whatsapp) {
+        chosenChannel = currentPrefs.channels.email ? 'Email' : 'In-App';
+      }
 
       if (simulateOutage) {
         // OpenRouter Fallback
@@ -164,7 +174,7 @@ export function SmartRemindersDashboard() {
             entity.pipelineStage === 'Offered'
               ? 'Tomorrow 11:00 AM - 12:30 PM IST'
               : 'Wednesday 2:30 PM - 3:30 PM IST',
-          recommendedChannel: entity.preferredChannel || 'WhatsApp',
+          recommendedChannel: chosenChannel,
           urgencyLevel: entity.urgency,
           rationale:
             '[OpenRouter Fallback] Mid-week afternoon delivery minimizes calendar clashes with core sprint meetings while preserving fast response urgency.',
@@ -187,7 +197,7 @@ export function SmartRemindersDashboard() {
             entity.pipelineStage === 'Offered'
               ? 'Today 4:00 PM - 5:00 PM IST'
               : 'Tuesday 10:30 AM - 11:30 AM IST',
-          recommendedChannel: entity.preferredChannel || 'Email',
+          recommendedChannel: chosenChannel,
           urgencyLevel: entity.urgency,
           rationale:
             'Engineering candidates exhibit 3.2x higher response rates when contacted in mid-morning windows following team syncs. Professional tone maintains high engagement.',
@@ -245,19 +255,78 @@ export function SmartRemindersDashboard() {
         </div>
       )}
 
+      {/* Preferences Modal Dialog */}
+      {showPreferencesModal && (
+        <UserPreferencesSettings
+          activeUserId={currentPrefs.userId}
+          onPreferencesChanged={(updated) => {
+            setCurrentPrefs(updated);
+            showToast(`Active preferences synchronized with ${updated.userName}`, 'info');
+          }}
+          onClose={() => setShowPreferencesModal(false)}
+        />
+      )}
+
       {/* Hero Header */}
       <header className="dashboard-hero">
-        <div className="hero-titles">
-          <div className="hero-badge-group">
-            <span className="badge-pill">Week 4 Day 1</span>
-            <span className="badge-pill pill-node">Node.js Event Loop &amp; Pure HTTP</span>
+        <div className="hero-top-row">
+          <div className="hero-titles">
+            <div className="hero-badge-group">
+              <span className="badge-pill">Week 4 Day 2</span>
+              <span className="badge-pill pill-node">Express Routing &amp; Middleware</span>
+              <span className="badge-pill pill-profile">👤 {currentPrefs.userName} ({currentPrefs.role})</span>
+            </div>
+            <h2>Smart Reminders &mdash; Frontend UI + User Preference Settings</h2>
+            <p className="hero-description">
+              Configure recruiter notification channels, quiet hours (DND in IST), and automation rules.
+              Powered by Express REST API, middleware validation, and dual-provider AI scheduling (Groq &bull; OpenRouter).
+            </p>
           </div>
-          <h2>Smart Reminders &mdash; Automation Rules + AI-Suggested Timing</h2>
-          <p className="hero-description">
-            Automate follow-up reminders for stalled candidates and CRM accounts. Analyzes recipient role,
-            urgency, and response psychology to compute optimal dispatch slots in Indian Standard Time (IST)
-            with dual LLM fallback (Groq &bull; OpenRouter).
-          </p>
+
+          <div className="hero-actions">
+            <button
+              type="button"
+              className="btn-open-preferences"
+              onClick={() => setShowPreferencesModal(true)}
+              data-testid="btn-open-preferences"
+            >
+              ⚙️ User Preferences &amp; Quiet Hours
+            </button>
+          </div>
+        </div>
+
+        {/* Live Preferences Overview Ribbon */}
+        <div className="preferences-ribbon-bar">
+          <div className="ribbon-item">
+            <span className="r-label">Active Channels:</span>
+            <div className="r-channels">
+              {currentPrefs.channels.email && <span className="ch-pill">✉️ Email</span>}
+              {currentPrefs.channels.whatsapp && <span className="ch-pill">💬 WhatsApp</span>}
+              {currentPrefs.channels.inApp && <span className="ch-pill">🔔 In-App</span>}
+              {currentPrefs.channels.sms && <span className="ch-pill">📱 SMS</span>}
+            </div>
+          </div>
+
+          <div className="ribbon-item">
+            <span className="r-label">Quiet Hours (DND):</span>
+            <span className="r-val">
+              {currentPrefs.quietHours.enabled
+                ? `🌙 ${currentPrefs.quietHours.start} - ${currentPrefs.quietHours.end} IST`
+                : '☀️ Disabled'}
+            </span>
+          </div>
+
+          <div className="ribbon-item">
+            <span className="r-label">Working Days:</span>
+            <span className="r-val">
+              🗓️ {currentPrefs.workingSchedule?.days?.length || 5} Days ({currentPrefs.workingSchedule?.startHour} - {currentPrefs.workingSchedule?.endHour} IST)
+            </span>
+          </div>
+
+          <div className="ribbon-item">
+            <span className="r-label">Min Urgency:</span>
+            <span className="r-val">⚡ {currentPrefs.remindersPolicy?.minimumUrgency || 'Medium'}</span>
+          </div>
         </div>
       </header>
 
