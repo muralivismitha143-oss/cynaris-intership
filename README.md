@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-All%2014%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2015%20Suites%20Passing-success?style=for-the-badge)](tests/)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
 ---
@@ -16,6 +16,22 @@
 ---
 
 ## ⏰ Week 4: Node.js Architecture, Microservices & Smart Automation
+
+### Week 4 Day 4 — Deploy EspoCRM Fork to Production & Connect Node.js to MySQL
+- **EspoCRM Production Deployment Stack & Architecture Analysis:**
+  - Full evaluation of EspoCRM's 4 architectural layers: `application/Espo/Core/` (kernel & DI container), `application/Espo/Modules/` (module loader), `application/Espo/Core/Api/` (REST controllers), and `application/Espo/ORM/` (`EntityManager` & `Repository`).
+  - Multi-container production deployment using Docker Compose (`docker-compose.espocrm.yml`) orchestrating **MySQL 8.0** with healthchecks, **EspoCRM App (Port 8080)**, **EspoCRM Daemon** background cron worker, and **PHPMyAdmin (Port 8081)** with persistent named volumes (`espocrm-mysql-data`, `espocrm-data`).
+  - Documented 3 key architectural decisions: Metadata-driven declarative JSON schemas, decoupled RESTful API first + SPA frontend, and non-destructive 3-tier customization cascade (`core` &rarr; `module` &rarr; `custom`).
+- **Node.js MySQL Integration (`mysql2/promise`):**
+  - High-performance connection pooling (`backend/database/mysqlClient.js`) with `connectionLimit: 10`, `waitForConnections: true`, and `enableKeepAlive: true`, complete with high-fidelity fallback for CI/offline environments.
+  - Database schema migrations (`backend/database/schema.sql`) provisioning `job_applicant`, `automation_rules`, `smart_reminders`, and `audit_logs` tables.
+  - Repository pattern (`backend/database/applicantRepository.js`) implementing full CRUD operations strictly via **prepared statements (`?` parameter placeholders)** to guarantee 100% immunity against SQL injection attacks.
+  - Atomic multi-statement transaction management (`beginTransaction`, `commit`, `rollback`).
+- **Database REST API Router (`backend/routes/dbRouter.js`):**
+  - Exposes `GET /api/database/status`, `POST /api/database/migrate`, and complete CRUD operations over `/api/database/applicants`.
+- **Documentation & Viva Assessment:**
+  - [`docs/WEEK4_DAY4_SUBMISSION.md`](docs/WEEK4_DAY4_SUBMISSION.md): Comprehensive submission report with simulated screenshots and 3 Viva answers.
+  - [`docs/ESPOCRM_PRODUCTION_ARCHITECTURE.md`](docs/ESPOCRM_PRODUCTION_ARCHITECTURE.md): Architectural specification, folder structure breakdown, and MySQL integration guide.
 
 ### Week 4 Day 3 — Debug Sprint: Root Cause 2 Issues + Performance Investigation
 - **RESTful API Architecture & Strict Route Parameter Validation:**

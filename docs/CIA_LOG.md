@@ -714,3 +714,60 @@
 - Built interactive React visualization in [`client/src/components/RestDiagnostics/RestDiagnosticsDashboard.jsx`](../client/src/components/RestDiagnostics/RestDiagnosticsDashboard.jsx).
 - Validated all 5 capabilities in automated test suite [`tests/test_rest_api_debugging_and_performance.js`](../tests/test_rest_api_debugging_and_performance.js) with 100% pass rate.
 
+---
+
+# Week 4 Day 4 — Deploy EspoCRM Fork to Production & Connect Node.js to MySQL
+
+**Date:** October 31, 2026  
+**Lesson:** Week 4 Day 4 — Deploy EspoCRM Fork to Production & Connect Node.js to MySQL using mysql2  
+**Branch:** `feat/cynaris-w4d4-murali`  
+
+---
+
+## Interaction 1: CIA → Full Stack Mentor Mode
+
+### Prompt / Query
+> *"Explain the architecture of espocrm and how I should approach understanding it in one day."*
+
+### CIA Mentor Review & Guidance
+1. **Four Architectural Pillars of EspoCRM:**
+   - **Core Kernel & Dependency Injection (`application/Espo/Core/`):**  
+     EspoCRM centers around `Application.php` and `Container.php`. The container manages service singletons (database connection, metadata manager, config, file manager, authentication) through lazy-loaded closures, preventing unnecessary memory consumption on lightweight requests.
+   - **Metadata-Driven System (`application/Espo/Resources/metadata/`):**  
+     Unlike monolithic frameworks that hardcode database tables and view templates, EspoCRM is purely declarative. Entity definitions (`entityDefs/`), field types, relations (many-to-one, many-to-many), and user layouts (`layouts/`) are defined in JSON files. Changing a field type or label in metadata automatically adjusts the ORM behavior and client view.
+   - **ORM & Data Persistence Layer (`application/Espo/ORM/`):**  
+     The `EntityManager` is the gateway for data operations. It delegates queries to entity-specific `Repository` classes. Entities are lightweight data containers with dirty-checking; when `saveEntity()` is invoked, only modified attributes are committed via parameterized SQL queries.
+   - **API & Controller Layer (`application/Espo/Core/Api/`):**  
+     EspoCRM backend is an API-first RESTful engine. Incoming HTTP requests are parsed into `Request.php` objects, routed to entity controllers, and serialized into `Response.php` JSON envelopes.
+2. **One-Day Strategic Study Approach:**
+   - **Morning (09:00 - 12:00) — Lifecycle Tracing:**  
+     Trace a single entity lifecycle from HTTP request to database row: trace `GET /api/v1/JobApplicant/1` through `Api/Request.php` &rarr; `Core/Application.php` &rarr; `ORM/EntityManager.php` &rarr; `ORM/Repository.php` &rarr; MySQL 8.0.
+   - **Afternoon (13:00 - 15:30) — The Customization Cascade:**  
+     Understand the 3-tier loading priority: `application/Espo/` (core framework) &rarr; `application/Espo/Modules/` (packaged modules like `Recruitment`) &rarr; `custom/Espo/Custom/` (tenant overrides). Files in `custom/` override core without breaking upgradeability.
+   - **Late Afternoon (16:00 - 18:00) — Node.js MySQL Integration:**  
+     Connect Node.js to MySQL via `mysql2/promise` connection pooling. Use prepared statements with `?` placeholders for all CRUD operations, and verify Docker Compose environment parity.
+
+### Action Taken
+- Documented 3 key architectural decisions in [`docs/ESPOCRM_PRODUCTION_ARCHITECTURE.md`](../docs/ESPOCRM_PRODUCTION_ARCHITECTURE.md).
+- Verified EspoCRM directory structure and Docker Compose orchestration in [`docker-compose.espocrm.yml`](../docker-compose.espocrm.yml).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"What does `application/Espo/ORM/EntityManager.php` and `backend/database/mysqlClient.js` do and what should I look for?"*
+
+### CIA Code Mode Audit & Analysis
+
+| Component | File Under Review | Core Responsibility | Key Code Patterns to Inspect |
+|---|---|---|---|
+| **EspoCRM ORM** | `application/Espo/ORM/EntityManager.php` | Central data access gateway; manages repository instances and transactional entity persistence. | 1. **Lazy Loading:** `getRepository()` checks `$this->repositories[$entityType]` cache to avoid redundant instantiations.<br>2. **Decoupled Creation:** `getEntity()` creates unpersisted entity models with attribute bags.<br>3. **Persistence Delegation:** `saveEntity()` and `deleteEntity()` delegate to repositories for entity lifecycle hooks. |
+| **Node.js MySQL Client** | `backend/database/mysqlClient.js` | Manages MySQL 8.0 connection pool using `mysql2/promise` with fallback engine. | 1. **Connection Pooling:** `mysql.createPool()` with `connectionLimit: 10`, `waitForConnections: true`, and `enableKeepAlive: true` to reuse TCP sockets.<br>2. **Prepared Statements:** Uses `pool.execute(sql, [params])` where query plans are pre-compiled and inputs are strictly bound to parameters.<br>3. **Transactions:** `getConnection()` providing `beginTransaction()`, `commit()`, and `rollback()` for multi-table atomicity.<br>4. **SQL Injection Defense:** Asserts that strings containing `' OR '1'='1` or `'; DROP TABLE;` cannot escape parameter boundaries. |
+| **Repository Layer** | `backend/database/applicantRepository.js` | Encapsulates CRUD operations over `job_applicant` table. | Parameterized INSERT, SELECT, UPDATE, DELETE, and atomic stage transition with audit logging. |
+
+### Action Taken
+- Implemented connection pooling, prepared statements, and atomic transactions in [`backend/database/mysqlClient.js`](../backend/database/mysqlClient.js).
+- Built repository pattern in [`backend/database/applicantRepository.js`](../backend/database/applicantRepository.js).
+- Added SQL injection immunity test case in [`tests/test_mysql_crud_and_espocrm_deployment.js`](../tests/test_mysql_crud_and_espocrm_deployment.js), confirming table integrity against injection vectors.
+
