@@ -296,3 +296,4 @@ module.exports = {
   getApplicantsStore: () => applicantsStore,
   validStages,
 };
+

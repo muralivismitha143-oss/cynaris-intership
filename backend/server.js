@@ -14,6 +14,10 @@ const { restCacheMiddleware } = require("./middleware/restCacheMiddleware");
 const { applicantsRouter, getApplicantsStore } = require("./routes/applicantsRouter");
 const { diagnosticsRouter } = require("./routes/diagnosticsRouter");
 
+// MySQL Database Connection & CRUD (Week 4 Day 4 - MySQL Connection Pool & Prepared Statements)
+const { mysqlClient } = require("./database/mysqlClient");
+const { dbRouter } = require("./routes/dbRouter");
+
 const reminderStore = new ReminderStore();
 const ruleEngine = new RuleEngine(reminderStore);
 const aiTimingEngine = new AiTimingEngine();
@@ -98,6 +102,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/api/preferences", preferencesRouter);
 app.use("/api/applicants", applicantsRouter);
 app.use("/api/performance", diagnosticsRouter);
+app.use("/api/database", dbRouter);
 app.use("/static/preferences", express.static(path.join(__dirname, "public/preferences"), {
   maxAge: "1d",
   etag: true,
@@ -650,6 +655,7 @@ app.use((req, res) => {
 });
 
 if (require.main === module) {
+  mysqlClient.init().catch(console.error);
   app.listen(PORT, HOST, () => {
     console.log(`Interview API running at http://${HOST}:${PORT}`);
   });

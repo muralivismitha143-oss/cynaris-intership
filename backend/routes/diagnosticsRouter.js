@@ -71,3 +71,4 @@ router.get('/rest-diagnostics', async (req, res) => {
 module.exports = {
   diagnosticsRouter: router,
 };
+
