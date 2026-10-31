@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-All%2012%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2013%20Suites%20Passing-success?style=for-the-badge)](tests/)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
 ---
@@ -16,6 +16,21 @@
 ---
 
 ## ⏰ Week 4: Node.js Architecture, Microservices & Smart Automation
+
+### Week 4 Day 2 — Smart Reminders: Frontend UI + User Preference Settings
+- **Express Server Architecture & Modular Routing:**
+  - Dedicated Express router (`backend/routes/preferencesRouter.js`) mounted on `/api/preferences` for RESTful user preference lifecycles.
+  - Custom schema validation middleware (`backend/middleware/preferenceValidator.js`) verifying 24-hour time formats (`HH:mm`), channel configurations, minimum urgency tiers, and enforcing active channel guardrails.
+  - Atomic persistence in `backend/data/userPreferences.json` with temporary file writes and safe rename semantics.
+  - Static file pipeline: `preferences-schema.json` and documentation guide served via `express.static("/static/preferences")` with HTTP cache headers.
+- **Quiet Hours & Working Window Intelligence:**
+  - Overnight calculation handling midnight crossover windows (e.g. `20:00` to `08:30` IST), automatically deferring evening or weekend reminders to the start of the next business day (`09:30 IST`).
+- **React 18 Settings Modal & UI:**
+  - `UserPreferencesSettings.jsx`: Interactive modal with recruiter profile switching (`Murali V`, `Priya Sharma`, `Rahul Deshmukh`), delivery channel cards (Email, WhatsApp, In-App, SMS), quiet hours pickers, and live DND status banners.
+  - Hero header ribbon in `SmartRemindersDashboard.jsx` reflecting active recruiter preferences and quiet hours state.
+- **Documentation & Viva Assessment:**
+  - [`docs/WEEK4_DAY2_SUBMISSION.md`](docs/WEEK4_DAY2_SUBMISSION.md): Full walkthrough with simulated screenshots and 3 Viva answers.
+  - [`docs/SMART_REMINDERS_PREFERENCES_UI.md`](docs/SMART_REMINDERS_PREFERENCES_UI.md): Technical specification and Express routing details.
 
 ### Week 4 Day 1 — Smart Reminders: Automation Rules + AI-Suggested Timing
 - **Node.js Core Architecture & Built-in Modules:**
@@ -95,22 +110,22 @@ An enterprise recruitment tracking platform combining modern Vue 3 reactive comp
 
 ## 🛠️ How to Run Locally
 
-### 1. Smart Reminders Microservice (Week 4 Day 1 - Pure Node.js HTTP)
+### 1. Full Stack Application & Express Server (Week 4)
+```powershell
+cd backend
+npm start
+# Runs Express Server with Smart Reminders & User Preferences on http://localhost:3000
+# Static Preferences Guide: http://localhost:3000/static/preferences/
+```
+
+### 2. Smart Reminders Microservice (Standalone Pure Node.js HTTP)
 ```powershell
 node backend/smartReminderServer.js
 # Runs pure Node.js HTTP server on http://localhost:3005
 ```
 
-### 2. Full Stack Application & Express Server
-```powershell
-cd backend
-npm start
-# Runs Express + Smart Reminders API on http://localhost:3000
-```
-
 ### 3. EspoCRM Docker Environment (Week 3)
 ```powershell
-# Start EspoCRM + MySQL 8.0 + phpMyAdmin
 docker compose -f docker-compose.espocrm.yml up -d
 # EspoCRM UI: http://localhost:8080
 ```
@@ -118,5 +133,5 @@ docker compose -f docker-compose.espocrm.yml up -d
 ### 4. Running All Automated Unit Tests
 ```powershell
 npm test
-# Runs all 12 unit test suites across Node.js architecture, Smart Reminders AI, EspoCRM, React Router, Workflows, and Virtual DOM
+# Runs all 13 unit test suites across Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
 ```
