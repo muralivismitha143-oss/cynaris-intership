@@ -7,7 +7,7 @@
     "start": "node backend/server.js",
     "start:reminders": "node backend/smartReminderServer.js",
     "build": "cd backend && npm install",
-    "test": "node tests/test_espocrm_setup.js && node tests/test_react_virtual_dom.js && node tests/test_business_process_mapping.js && node tests/test_react_props_unidirectional.js && node tests/test_crm_workflow_engine.js && node tests/test_react_state_and_forms.js && node tests/test_activity_dashboard_sql.js && node tests/test_react_use_effect.js && node tests/test_ai_conversation_summarizer.js && node tests/test_react_router_client.js && node tests/test_smart_reminders_ai_timing.js && node tests/test_nodejs_architecture_event_loop.js && node tests/test_express_routing_and_preferences.js",
+    "test": "node tests/test_espocrm_setup.js && node tests/test_react_virtual_dom.js && node tests/test_business_process_mapping.js && node tests/test_react_props_unidirectional.js && node tests/test_crm_workflow_engine.js && node tests/test_react_state_and_forms.js && node tests/test_activity_dashboard_sql.js && node tests/test_react_use_effect.js && node tests/test_ai_conversation_summarizer.js && node tests/test_react_router_client.js && node tests/test_smart_reminders_ai_timing.js && node tests/test_nodejs_architecture_event_loop.js && node tests/test_express_routing_and_preferences.js && node tests/test_rest_api_debugging_and_performance.js",
     "test:w4d2": "node tests/test_express_routing_and_preferences.js",
     "test:w4d1": "node tests/test_smart_reminders_ai_timing.js && node tests/test_nodejs_architecture_event_loop.js",
     "test:w3d5": "node tests/test_ai_conversation_summarizer.js && node tests/test_react_router_client.js",
@@ -17,7 +17,8 @@
     "test:w3d1": "node tests/test_espocrm_setup.js && node tests/test_react_virtual_dom.js",
     "test:espocrm": "node tests/test_espocrm_setup.js",
     "test:react": "node tests/test_react_virtual_dom.js",
-    "test:w2": "node tests/test_modern_javascript.js"
+    "test:w2": "node tests/test_modern_javascript.js",
+    "test:w4d3": "node tests/test_rest_api_debugging_and_performance.js"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -43,7 +44,13 @@
     "express-router",
     "middleware",
     "quiet-hours",
-    "user-preferences"
+    "user-preferences",
+    "restful-api",
+    "route-parameters",
+    "query-strings",
+    "http-status-codes",
+    "etag-caching",
+    "event-loop-lag"
   ],
   "author": "Murali",
   "license": "ISC"
