@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-All%2010%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2012%20Suites%20Passing-success?style=for-the-badge)](tests/)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
 ---
@@ -12,6 +12,26 @@
 - **Primary Production URL (Railway):** [https://cynaris-recruitment-production.up.railway.app](https://cynaris-recruitment-production.up.railway.app)
 - **Backup / Staging URL (Render):** [https://cynaris-recruitment.onrender.com](https://cynaris-recruitment.onrender.com)
 - **Production Health Check:** `https://cynaris-recruitment-production.up.railway.app/api/health`
+
+---
+
+## ⏰ Week 4: Node.js Architecture, Microservices & Smart Automation
+
+### Week 4 Day 1 — Smart Reminders: Automation Rules + AI-Suggested Timing
+- **Node.js Core Architecture & Built-in Modules:**
+  - Standalone Pure Node.js HTTP Server (`backend/smartReminderServer.js`, Port 3005) built directly with `http.createServer`, handling stream chunking (`req.on('data')`, `req.on('end')`), payload guards, and Event Loop telemetry.
+  - Asynchronous non-blocking persistence (`backend/modules/smartReminders/ReminderStore.js`) using `fs.promises` and atomic file write/rename patterns.
+  - Event-driven pipeline automation engine (`backend/modules/smartReminders/RuleEngine.js`) extending Node.js `events.EventEmitter` to evaluate idle candidate hours and emit `'rule:matched'` events.
+- **Dual AI Provider Architecture & Fallback:**
+  - `AiTimingEngine.js`: Recipient behavioral analysis enforcing Indian Standard Time (IST) working hours and strict JSON schema.
+  - Primary Provider: **Groq** (`llama-3.3-70b-versatile`) with low latency (< 300ms).
+  - Fallback Provider: **OpenRouter** (`meta-llama/llama-3.3-70b-instruct`) engaged upon HTTP 429/503 errors or timeouts.
+  - Deterministic offline safety net ensuring 100% test reliability and zero downtime.
+- **React 18 Frontend Dashboard:**
+  - `SmartRemindersDashboard.jsx`: Interactive UI with automation rule toggles, candidate idle trigger selector, simulated Groq outage toggle, and scheduled reminders queue.
+- **Documentation & Viva Assessment:**
+  - [`docs/WEEK4_DAY1_SUBMISSION.md`](docs/WEEK4_DAY1_SUBMISSION.md): Full walkthrough with simulated screenshots and 3 Viva answers.
+  - [`docs/SMART_REMINDERS_AI_TIMING.md`](docs/SMART_REMINDERS_AI_TIMING.md): Technical specification and prompt engineering details.
 
 ---
 
@@ -75,27 +95,28 @@ An enterprise recruitment tracking platform combining modern Vue 3 reactive comp
 
 ## 🛠️ How to Run Locally
 
-### 1. EspoCRM Docker Environment (Week 3)
+### 1. Smart Reminders Microservice (Week 4 Day 1 - Pure Node.js HTTP)
 ```powershell
-# Copy environment configuration
-cp .env.espocrm.example .env.espocrm
-
-# Start EspoCRM + MySQL 8.0 + phpMyAdmin
-docker compose -f docker-compose.espocrm.yml up -d
-
-# Open EspoCRM Web Installer: http://localhost:8080
-# Open phpMyAdmin Database UI: http://localhost:8081
+node backend/smartReminderServer.js
+# Runs pure Node.js HTTP server on http://localhost:3005
 ```
 
-### 2. Express Backend & Vue 3 Pipeline (Week 2)
+### 2. Full Stack Application & Express Server
 ```powershell
 cd backend
 npm start
-# Open http://localhost:3000
+# Runs Express + Smart Reminders API on http://localhost:3000
 ```
 
-### 3. Running All Automated Unit Tests
+### 3. EspoCRM Docker Environment (Week 3)
+```powershell
+# Start EspoCRM + MySQL 8.0 + phpMyAdmin
+docker compose -f docker-compose.espocrm.yml up -d
+# EspoCRM UI: http://localhost:8080
+```
+
+### 4. Running All Automated Unit Tests
 ```powershell
 npm test
-# Runs all 10 unit test suites across EspoCRM, React Router, Workflows, Virtual DOM, and AI Services
+# Runs all 12 unit test suites across Node.js architecture, Smart Reminders AI, EspoCRM, React Router, Workflows, and Virtual DOM
 ```
