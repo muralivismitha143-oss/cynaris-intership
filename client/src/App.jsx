@@ -4,9 +4,10 @@ import LeadPipelineContainer from './components/LeadToClosure/LeadPipelineContai
 import WorkflowReportingDashboard from './components/WorkflowReportingStudio/WorkflowReportingDashboard';
 import ActivityDashboardContainer from './components/ActivityDashboard/ActivityDashboardContainer';
 import AiSummarizerContainer from './components/AiSummarizer/AiSummarizerContainer';
+import SmartRemindersDashboard from './components/SmartReminders/SmartRemindersDashboard';
 
 export function App() {
-  const [activeTab, setActiveTab] = useState('ai-summarizer');
+  const [activeTab, setActiveTab] = useState('smart-reminders');
 
   return (
     <div className="app-root">
@@ -16,6 +17,13 @@ export function App() {
           <span className="brand-title">Cynaris Recruitment &bull; EspoCRM Bridge</span>
         </div>
         <div className="nav-tabs">
+          <button
+            className={`nav-tab-btn ${activeTab === 'smart-reminders' ? 'tab-active' : ''}`}
+            onClick={() => setActiveTab('smart-reminders')}
+            data-testid="tab-smart-reminders"
+          >
+            ⏰ Smart Reminders (W4D1)
+          </button>
           <button
             className={`nav-tab-btn ${activeTab === 'ai-summarizer' ? 'tab-active' : ''}`}
             onClick={() => setActiveTab('ai-summarizer')}
@@ -53,11 +61,12 @@ export function App() {
           </button>
         </div>
         <div className="nav-status">
-          <span className="live-dot"></span> React Router 6 &bull; Groq LLaMA 3.3 Active
+          <span className="live-dot"></span> Node.js Pure HTTP &bull; Groq LLaMA 3.3 Active
         </div>
       </nav>
 
       <main className="main-content">
+        {activeTab === 'smart-reminders' && <SmartRemindersDashboard />}
         {activeTab === 'ai-summarizer' && <AiSummarizerContainer />}
         {activeTab === 'activity-dashboard' && <ActivityDashboardContainer />}
         {activeTab === 'workflow-reporting' && <WorkflowReportingDashboard />}
