@@ -1,0 +1,183 @@
+/* Kanban-style Status Badge CSS for Job Applicant List View Override */
+
+.applicant-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: #ffffff;
+  border-bottom: 1px solid #edf2f7;
+  transition: background-color 0.18s ease;
+}
+
+.applicant-row:hover {
+  background-color: #f8fafc;
+}
+
+.row-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 260px;
+}
+
+.applicant-avatar-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+  color: #3730a3;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  letter-spacing: 0.5px;
+}
+
+.applicant-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.applicant-title {
+  color: #1e293b;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.applicant-title:hover {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.applicant-doc-id {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: 6px;
+}
+
+.applicant-subtext {
+  font-size: 12px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.pipeline-stage-col {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 200px;
+}
+
+/* Kanban-style Status Badge Component */
+.kanban-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid transparent;
+}
+
+.kanban-badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* Stage-specific Kanban Color Schemes */
+/* 1. Screening */
+.kanban-badge.badge-screening {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+.kanban-badge.badge-screening .kanban-badge-dot {
+  background-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+}
+
+/* 2. Technical Round 1 */
+.kanban-badge.badge-technical-round-1 {
+  background-color: #f5f3ff;
+  color: #6d28d9;
+  border-color: #ddd6fe;
+}
+.kanban-badge.badge-technical-round-1 .kanban-badge-dot {
+  background-color: #8b5cf6;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25);
+}
+
+/* 3. Technical Round 2 */
+.kanban-badge.badge-technical-round-2 {
+  background-color: #fffbeb;
+  color: #b45309;
+  border-color: #fde68a;
+}
+.kanban-badge.badge-technical-round-2 .kanban-badge-dot {
+  background-color: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25);
+}
+
+/* 4. HR Round */
+.kanban-badge.badge-hr-round {
+  background-color: #f0fdfa;
+  color: #0f766e;
+  border-color: #99f6e4;
+}
+.kanban-badge.badge-hr-round .kanban-badge-dot {
+  background-color: #14b8a6;
+  box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.25);
+}
+
+/* 5. Offered */
+.kanban-badge.badge-offered {
+  background-color: #f0fdf4;
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+.kanban-badge.badge-offered .kanban-badge-dot {
+  background-color: #22c55e;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
+}
+
+/* 6. Rejected */
+.kanban-badge.badge-rejected {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+.kanban-badge.badge-rejected .kanban-badge-dot {
+  background-color: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25);
+}
+
+/* Interactive Badge Hover */
+.kanban-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+}
+
+.row-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.updated-time {
+  font-size: 12px;
+  color: #94a3b8;
+}
