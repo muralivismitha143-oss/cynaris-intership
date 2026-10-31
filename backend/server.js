@@ -9,6 +9,11 @@ const { AiTimingEngine } = require("./modules/smartReminders/AiTimingEngine");
 // User Preferences Router (Week 4 Day 2 - Express Routing, Middleware & Preferences)
 const { preferencesRouter } = require("./routes/preferencesRouter");
 
+// RESTful Debug Sprint & Diagnostics (Week 4 Day 3 - RESTful API Design & Performance)
+const { restCacheMiddleware } = require("./middleware/restCacheMiddleware");
+const { applicantsRouter, getApplicantsStore } = require("./routes/applicantsRouter");
+const { diagnosticsRouter } = require("./routes/diagnosticsRouter");
+
 const reminderStore = new ReminderStore();
 const ruleEngine = new RuleEngine(reminderStore);
 const aiTimingEngine = new AiTimingEngine();
@@ -88,8 +93,11 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
+app.use(restCacheMiddleware);
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/api/preferences", preferencesRouter);
+app.use("/api/applicants", applicantsRouter);
+app.use("/api/performance", diagnosticsRouter);
 app.use("/static/preferences", express.static(path.join(__dirname, "public/preferences"), {
   maxAge: "1d",
   etag: true,
@@ -110,50 +118,7 @@ const GROQ_MODEL = "llama-3.3-70b-versatile";
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 const OPENROUTER_MODEL = "meta-llama/llama-3.3-70b-instruct";
 
-const applicants = [
-  {
-    id: 1,
-    name: "Rahul Kumar",
-    job_title: "Full Stack Developer",
-    pipeline_stage: "Screening",
-    experience_years: 2,
-    skills: "JavaScript, Node.js, Express, React, MongoDB, Git",
-    education: "B.Tech Computer Science (2024)",
-    resume_text: "Full Stack Engineer with 2 years of experience building web applications using React, Node.js, and Express. Designed REST APIs, implemented JWT authentication, and managed MongoDB databases. Contributed to open-source developer tooling.",
-    ai_resume_summary: null,
-    ai_summary_provider: null,
-    ai_analyzed_at: null,
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: 2,
-    name: "Priya Sharma",
-    job_title: "Backend Engineer",
-    pipeline_stage: "Technical Round 1",
-    experience_years: 3.5,
-    skills: "Python, FastAPI, Django, PostgreSQL, Docker, Redis",
-    education: "M.Tech Software Engineering (2023)",
-    resume_text: "Backend Developer specializing in high-throughput microservices using Python, FastAPI, and PostgreSQL. Reduced query latency by 40% via Redis caching. Experienced with Docker containerization and CI/CD pipelines.",
-    ai_resume_summary: null,
-    ai_summary_provider: null,
-    ai_analyzed_at: null,
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: 3,
-    name: "Arun Kumar",
-    job_title: "Frontend Developer",
-    pipeline_stage: "HR Round",
-    experience_years: 1.5,
-    skills: "Vue.js 3, TypeScript, Tailwind CSS, HTML5/CSS3, Vite",
-    education: "B.Sc Computer Science (2025)",
-    resume_text: "Frontend Engineer passionate about responsive UX and state management. Built real-time Kanban boards and dashboards in Vue 3. Deep experience with native DOM APIs, Web APIs, and mobile-first CSS architecture.",
-    ai_resume_summary: null,
-    ai_summary_provider: null,
-    ai_analyzed_at: null,
-    updated_at: new Date().toISOString()
-  }
-];
+const applicants = getApplicantsStore();
 
 // In-Memory Dashboard Query Cache (15s TTL)
 let dashboardCache = {
@@ -355,88 +320,7 @@ app.get("/api/stages", (req, res) => {
   res.json({ stages: validStages });
 });
 
-// Get all applicants
-app.get("/api/applicants", (req, res) => {
-  res.json(applicants);
-});
-
-// Get single applicant details
-app.get("/api/applicants/:applicant_id", (req, res) => {
-  const applicantId = Number(req.params.applicant_id);
-  const applicant = applicants.find(item => item.id === applicantId);
-  if (!applicant) {
-    return res.status(404).json({ error: "Applicant not found" });
-  }
-  res.json(applicant);
-});
-
-// Add a new applicant
-app.post("/api/applicants", (req, res) => {
-  const { name, stage, job_title, skills, experience_years, resume_text } = req.body || {};
-  if (!name || typeof name !== "string" || !name.trim()) {
-    return res.status(400).json({ error: "Applicant name is required" });
-  }
-
-  const targetStage = stage && validStages.includes(stage) ? stage : "Screening";
-  const newId = applicants.length > 0 ? Math.max(...applicants.map(a => a.id)) + 1 : 1;
-  const newApplicant = {
-    id: newId,
-    name: name.trim(),
-    job_title: job_title || "Full Stack Developer",
-    pipeline_stage: targetStage,
-    experience_years: Number(experience_years) || 1,
-    skills: skills || "JavaScript, HTML, CSS, Git",
-    education: "B.Tech Computer Science",
-    resume_text: resume_text || `${name.trim()} is an engineer applying for ${job_title || "Full Stack Developer"}.`,
-    ai_resume_summary: null,
-    ai_summary_provider: null,
-    ai_analyzed_at: null,
-    updated_at: new Date().toISOString()
-  };
-
-  applicants.push(newApplicant);
-
-  // Invalidate dashboard metrics cache on mutation
-  dashboardCache.data = null;
-
-  res.status(201).json({
-    message: "Applicant created successfully",
-    applicant: newApplicant
-  });
-});
-
-// Update interview stage
-app.patch("/api/applicants/:applicant_id/stage", (req, res) => {
-  const applicantId = Number(req.params.applicant_id);
-  const { stage } = req.body || {};
-
-  if (!Number.isInteger(applicantId) || applicantId < 1) {
-    return res.status(400).json({ error: "Invalid applicant ID" });
-  }
-
-  if (!validStages.includes(stage)) {
-    return res.status(400).json({
-      error: "Invalid stage",
-      allowedStages: validStages
-    });
-  }
-
-  const applicant = applicants.find(item => item.id === applicantId);
-  if (!applicant) {
-    return res.status(404).json({ error: "Applicant not found" });
-  }
-
-  applicant.pipeline_stage = stage;
-  applicant.updated_at = new Date().toISOString();
-
-  // Invalidate dashboard metrics cache on mutation
-  dashboardCache.data = null;
-
-  res.json({
-    message: "Pipeline stage updated successfully",
-    applicant
-  });
-});
+// Note: /api/applicants CRUD and validation routes are mounted via applicantsRouter
 
 // Generate AI Resume Summary (Groq Primary + OpenRouter Fallback)
 app.post("/api/applicants/:applicant_id/ai-summary", async (req, res) => {
@@ -606,7 +490,49 @@ app.get("/api/reminders/rules", async (req, res) => {
   }
 });
 
-// 2. Toggle Automation Rule
+// RESTful Single Rule Fetch: GET /api/reminders/rules/:ruleId
+app.get("/api/reminders/rules/:ruleId", async (req, res) => {
+  try {
+    const { ruleId } = req.params;
+    const rule = await reminderStore.getRuleById(ruleId);
+    if (!rule) {
+      return res.status(404).json({ success: false, error: `Rule '${ruleId}' not found`, statusCode: 404 });
+    }
+    res.status(200).json({ success: true, rule });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// RESTful Rule Update: PATCH /api/reminders/rules/:ruleId (Idempotent Partial Update)
+app.patch("/api/reminders/rules/:ruleId", async (req, res) => {
+  try {
+    const { ruleId } = req.params;
+    if (!ruleId || !ruleId.trim()) {
+      return res.status(400).json({ success: false, error: "ruleId route parameter is required" });
+    }
+
+    const { enabled } = req.body || {};
+    if (enabled !== undefined && typeof enabled !== 'boolean') {
+      return res.status(400).json({ success: false, error: "enabled field must be a boolean" });
+    }
+
+    const updated = await reminderStore.toggleRule(ruleId.trim(), enabled);
+    if (!updated) {
+      return res.status(404).json({ success: false, error: `Rule '${ruleId}' not found`, statusCode: 404 });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Rule '${ruleId}' updated successfully`,
+      rule: updated,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 2. Toggle Automation Rule (Preserved for backwards compatibility)
 app.post("/api/reminders/rules/toggle", async (req, res) => {
   try {
     const { ruleId, enabled } = req.body || {};
@@ -723,6 +649,10 @@ app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
 
-app.listen(PORT, HOST, () => {
-  console.log(`Interview API running at http://${HOST}:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, HOST, () => {
+    console.log(`Interview API running at http://${HOST}:${PORT}`);
+  });
+}
+
+module.exports = app;

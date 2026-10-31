@@ -5,6 +5,7 @@ import WorkflowReportingDashboard from './components/WorkflowReportingStudio/Wor
 import ActivityDashboardContainer from './components/ActivityDashboard/ActivityDashboardContainer';
 import AiSummarizerContainer from './components/AiSummarizer/AiSummarizerContainer';
 import SmartRemindersDashboard from './components/SmartReminders/SmartRemindersDashboard';
+import RestDiagnosticsDashboard from './components/RestDiagnostics/RestDiagnosticsDashboard';
 
 export function App() {
   const [activeTab, setActiveTab] = useState('smart-reminders');
@@ -17,6 +18,13 @@ export function App() {
           <span className="brand-title">Cynaris Recruitment &bull; EspoCRM Bridge</span>
         </div>
         <div className="nav-tabs">
+          <button
+            className={`nav-tab-btn ${activeTab === 'rest-diagnostics' ? 'tab-active' : ''}`}
+            onClick={() => setActiveTab('rest-diagnostics')}
+            data-testid="tab-rest-diagnostics"
+          >
+            🔍 REST Debug & Diagnostics (W4D3)
+          </button>
           <button
             className={`nav-tab-btn ${activeTab === 'smart-reminders' ? 'tab-active' : ''}`}
             onClick={() => setActiveTab('smart-reminders')}
@@ -66,6 +74,7 @@ export function App() {
       </nav>
 
       <main className="main-content">
+        {activeTab === 'rest-diagnostics' && <RestDiagnosticsDashboard />}
         {activeTab === 'smart-reminders' && <SmartRemindersDashboard />}
         {activeTab === 'ai-summarizer' && <AiSummarizerContainer />}
         {activeTab === 'activity-dashboard' && <ActivityDashboardContainer />}
