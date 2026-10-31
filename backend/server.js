@@ -1,6 +1,15 @@
 const express = require("express");
 const path = require("path");
 
+// Smart Reminders Module (Week 4 Day 1 - Node.js Architecture & AI Timing)
+const { ReminderStore } = require("./modules/smartReminders/ReminderStore");
+const { RuleEngine } = require("./modules/smartReminders/RuleEngine");
+const { AiTimingEngine } = require("./modules/smartReminders/AiTimingEngine");
+
+const reminderStore = new ReminderStore();
+const ruleEngine = new RuleEngine(reminderStore);
+const aiTimingEngine = new AiTimingEngine();
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || "0.0.0.0";
@@ -572,6 +581,133 @@ app.get("/api/dashboard/stages-today", (req, res) => {
   };
 
   res.json(responsePayload);
+});
+
+
+// ==========================================
+// Week 4 Day 1: Smart Reminders & AI Timing Endpoints
+// ==========================================
+
+// 1. Get Automation Rules
+app.get("/api/reminders/rules", async (req, res) => {
+  try {
+    const rules = await reminderStore.getRules();
+    res.json({ success: true, count: rules.length, rules });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 2. Toggle Automation Rule
+app.post("/api/reminders/rules/toggle", async (req, res) => {
+  try {
+    const { ruleId, enabled } = req.body || {};
+    if (!ruleId) return res.status(400).json({ error: "ruleId is required" });
+    const updated = await reminderStore.toggleRule(ruleId, enabled);
+    if (!updated) return res.status(404).json({ error: "Rule not found" });
+    res.json({ success: true, rule: updated });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 3. Evaluate Automation Rules
+app.post("/api/reminders/evaluate", async (req, res) => {
+  try {
+    const applicantsToEval = req.body.applicants || applicants;
+    const accountsToEval = req.body.accounts || [
+      {
+        id: 'acc-1',
+        name: 'FinTech Innovations India Pvt Ltd',
+        industry: 'Financial Services',
+        type: 'Customer',
+        annualRevenue: '₹ 15,000,000',
+        updated_at: new Date(Date.now() - 3600000 * 18).toISOString(),
+      },
+      {
+        id: 'acc-3',
+        name: 'Tata Telematics Labs',
+        industry: 'Telecommunications',
+        type: 'Prospect',
+        annualRevenue: '₹ 25,000,000',
+        updated_at: new Date(Date.now() - 3600000 * 110).toISOString(),
+      },
+    ];
+
+    const matches = await ruleEngine.evaluateRules(applicantsToEval, accountsToEval);
+    res.json({
+      success: true,
+      evaluatedCount: applicantsToEval.length + accountsToEval.length,
+      triggeredCount: matches.length,
+      matches,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 4. Suggest AI Timing (Groq Primary + OpenRouter Fallback)
+app.post("/api/reminders/suggest-timing", async (req, res) => {
+  try {
+    const context = req.body.context;
+    if (!context) return res.status(400).json({ error: "Missing reminder context object" });
+
+    const options = {
+      simulateGroqFailure: req.body.simulateGroqFailure === true || req.query.simulate_groq === "true",
+      simulateBothFailure: req.body.simulateBothFailure === true || req.query.simulate_both === "true",
+      groqApiKey: req.body.groqApiKey,
+      openRouterApiKey: req.body.openRouterApiKey,
+    };
+
+    const result = await aiTimingEngine.suggestTiming(context, options);
+    res.json({ success: true, ...result });
+  } catch (err) {
+    res.status(502).json({ success: false, error: err.message });
+  }
+});
+
+// 5. Get Scheduled Reminders
+app.get("/api/reminders/scheduled", async (req, res) => {
+  try {
+    const scheduled = await reminderStore.getScheduledReminders();
+    res.json({ success: true, count: scheduled.length, scheduledReminders: scheduled });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 6. Schedule Reminder
+app.post("/api/reminders/schedule", async (req, res) => {
+  try {
+    if (!req.body.recipientName || !req.body.suggestedTiming) {
+      return res.status(400).json({ error: "Missing required reminder fields" });
+    }
+    const scheduled = await reminderStore.addScheduledReminder(req.body);
+    res.status(201).json({
+      success: true,
+      message: "Smart reminder scheduled successfully",
+      reminder: scheduled,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 7. Dispatch Reminder
+app.post("/api/reminders/dispatch", async (req, res) => {
+  try {
+    const { reminderId } = req.body || {};
+    if (!reminderId) return res.status(400).json({ error: "reminderId is required" });
+    const dispatched = await reminderStore.markDispatched(reminderId);
+    if (!dispatched) return res.status(404).json({ error: "Scheduled reminder not found" });
+    res.json({
+      success: true,
+      message: `Reminder dispatched via ${dispatched.suggestedTiming.recommendedChannel}`,
+      reminder: dispatched,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Handle unknown routes
