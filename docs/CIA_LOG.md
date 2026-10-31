@@ -657,3 +657,60 @@
 - Added channel starvation guard in [`backend/middleware/preferenceValidator.js`](../backend/middleware/preferenceValidator.js).
 - Capped working day advancement to 7 days to eliminate infinite loop risks.
 - Verified all edge cases via unit test suite in [`tests/test_express_routing_and_preferences.js`](../tests/test_express_routing_and_preferences.js).
+
+---
+
+# Week 4 Day 3 — Debug Sprint: Root Cause 2 Issues + Performance Investigation
+
+**Date:** October 31, 2026  
+**Lesson:** Week 4 Day 3 — Debug Sprint — Root Cause 2 Issues + Performance Investigation  
+**Branch:** `feat/cynaris-w4d3-murali`  
+
+---
+
+## Interaction 1: CIA → QA Engineer Mode
+
+### Prompt / Query
+> *"I am executing Week 4 Day 3: Debug Sprint — Root Cause 2 Issues + Performance Investigation under the theme 'Design RESTful APIs: HTTP methods, status codes, route parameters, query strings, and JSON responses'. The task requires identifying and resolving two distinct API bugs and performing a latency/caching investigation: (1) investigate why `GET /api/applicants/abc` incorrectly returns 404 Not Found instead of 400 Bad Request, and add query string filtering and pagination; (2) investigate why `GET /api/reminders/scheduled` ignores query filters (?status=...&channel=...) and why rule toggling uses a non-RESTful POST action endpoint rather than an idempotent PATCH; and (3) profile Event Loop lag and implement conditional HTTP 304 caching with ETags. Could you help formulate QA hypotheses and an audit checklist?"*
+
+### CIA QA Engineer Mode Root Cause Hypotheses & Diagnostic Checklist
+1. **Hypothesis 1 — Route Parameter Type Coercion Bug in `GET /api/applicants/:applicant_id`:**
+   - **Fault Mechanism:** Express extracts route parameters as raw strings (`"abc"`). In the legacy controller, the ID was converted via `Number(req.params.applicant_id)`. For non-numeric strings like `"abc"`, `Number("abc")` evaluates to `NaN`. Because `applicants.find(a => a.id === NaN)` fails to find any candidate, the code executed the fallback branch: `return res.status(404).json({ error: "Applicant not found" })`.
+   - **QA Verdict:** Returning 404 for a malformed parameter conflates a **Client Syntax / Contract Error** (`400 Bad Request`) with a **Resource Non-Existence Error** (`404 Not Found`). When an API consumer provides an invalid identifier (e.g. non-integer, negative, or decimal), the server must reject it immediately at the routing guardrail with `400 Bad Request`.
+2. **Hypothesis 2 — Neglected Query String Filtering & Non-RESTful Mutation:**
+   - **Fault Mechanism:** In `GET /api/reminders/scheduled`, the route handler invoked `reminderStore.getScheduledReminders()` and immediately returned the full array, completely ignoring `req.query.status`, `req.query.channel`, and `req.query.ruleId`. This caused severe bandwidth waste as frontends received unnecessary dispatched reminders. Additionally, updating rule status was implemented as `POST /api/reminders/rules/toggle`, violating RESTful conventions where partial resource state modifications belong on `PATCH /api/reminders/rules/:ruleId`.
+   - **QA Verdict:** RESTful endpoints must support server-side filtering via query strings to minimize over-fetching. Route mutations modifying partial entity properties must use idempotent `PATCH` methods referencing the resource URI.
+3. **Hypothesis 3 — Lack of Conditional Revalidation (HTTP 304 Caching):**
+   - **Fault Mechanism:** High-frequency dashboard polling caused redundant re-serialization and full payload transmission of identical data on every request, wasting network bandwidth and increasing Event Loop processing time.
+   - **QA Verdict:** Generating weak ETags (`W/"<md5>"`) from response payloads and checking `If-None-Match` allows Express to reply with `304 Not Modified` and a 0-byte body, dropping bandwidth consumption to near zero.
+
+### Action Taken
+- Created dedicated route parameter validator middleware (`validateApplicantId`) returning explicit `400 Bad Request` for non-integer inputs.
+- Implemented query string filtering (`stage`, `search`, `min_exp`, `sort`, `order`) and pagination envelopes (`page`, `limit`, `totalPages`, `hasNext`, `hasPrev`) in [`backend/routes/applicantsRouter.js`](../backend/routes/applicantsRouter.js).
+- Enhanced [`backend/server.js`](../backend/server.js) with query string filtering on `GET /api/reminders/scheduled` and added RESTful `PATCH /api/reminders/rules/:ruleId`.
+- Implemented conditional HTTP caching middleware [`backend/middleware/restCacheMiddleware.js`](../backend/middleware/restCacheMiddleware.js) generating MD5 ETags.
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Please review my code fixes for the route parameter validation, query string filtering, and ETag conditional caching. How does my implementation compare to standard RESTful production architecture?"*
+
+### CIA Code Mode Audit & Comparison
+
+| Issue / Feature | Broken / Legacy Code | CIA Recommendation | Applied Production Fix |
+|---|---|---|---|
+| **Route Param Validation** | `const id = Number(req.params.applicant_id); if (!found) return res.status(404)` | Use dedicated middleware before controller: check `Number.isInteger(numId) && numId >= 1` | Middleware `validateApplicantId` in `applicantsRouter.js` checks `Number.isInteger(numId) && numId >= 1 && String(numId) === param.trim()`; returns 400 Bad Request with `receivedParameter`. |
+| **Resource Creation** | `res.status(201).json({ applicant: newApplicant })` | Set standard `Location` header referencing the new resource URI | Set `res.setHeader('Location', `/api/applicants/${newId}`)` alongside `201 Created` status code. |
+| **Query String Filtering** | Ignored `req.query`, returned static list | Parse `req.query` for filtering, case-insensitive substring searching, and pagination envelope | Multi-criteria filtering (`stage`, `search`, `min_exp`) + pagination envelope (`count`, `total`, `page`, `totalPages`, `hasNext`, `hasPrev`). |
+| **Rule State Mutation** | Non-RESTful `POST /api/reminders/rules/toggle` with body `{ ruleId, enabled }` | Use standard RESTful `PATCH /api/reminders/rules/:ruleId` with entity ID in route parameter | Added `PATCH /api/reminders/rules/:ruleId` validating boolean `enabled` field; retained POST toggle for backward compatibility. |
+| **HTTP Caching** | Uncached: every request transferred full JSON payload | Calculate response hash, set `ETag`, and intercept with `304 Not Modified` on match | `restCacheMiddleware` intercepts `res.json`, generates MD5 ETag, sets `Cache-Control: public, max-age=0, must-revalidate`, and returns `304 Not Modified` with 0 bytes when `If-None-Match` matches. |
+| **Performance Telemetry** | Basic duration logger | Measure Node.js Event Loop delay using `setImmediate` and `process.hrtime` | Added `GET /api/performance/rest-diagnostics` reporting Event Loop lag (< 1ms, HEALTHY), supported HTTP contracts, and 304 bandwidth reduction. |
+
+### Action Taken
+- Consolidated all applicant REST endpoints into [`backend/routes/applicantsRouter.js`](../backend/routes/applicantsRouter.js).
+- Mounted `applicantsRouter` and `diagnosticsRouter` into [`backend/server.js`](../backend/server.js).
+- Built interactive React visualization in [`client/src/components/RestDiagnostics/RestDiagnosticsDashboard.jsx`](../client/src/components/RestDiagnostics/RestDiagnosticsDashboard.jsx).
+- Validated all 5 capabilities in automated test suite [`tests/test_rest_api_debugging_and_performance.js`](../tests/test_rest_api_debugging_and_performance.js) with 100% pass rate.
+

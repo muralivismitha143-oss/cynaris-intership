@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-All%2013%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2014%20Suites%20Passing-success?style=for-the-badge)](tests/)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
 ---
@@ -16,6 +16,24 @@
 ---
 
 ## ⏰ Week 4: Node.js Architecture, Microservices & Smart Automation
+
+### Week 4 Day 3 — Debug Sprint: Root Cause 2 Issues + Performance Investigation
+- **RESTful API Architecture & Strict Route Parameter Validation:**
+  - Root Cause 1 Fix: Corrected route parameter type coercion in `GET /api/applicants/:applicant_id`. Non-integer or malformed parameters (e.g. `"abc"`, `"-5"`, `"1.5"`) previously produced `NaN` and triggered a misleading `404 Not Found`. Implemented `validateApplicantId` middleware returning RFC 9110 compliant `400 Bad Request` with parameter diagnostics.
+  - Query String Filtering & Search: Enhanced `GET /api/applicants` with multi-attribute filtering (`?stage=...`), case-insensitive keyword searching (`?search=python`), minimum experience threshold (`?min_exp=3`), and a structured pagination envelope (`total`, `count`, `page`, `totalPages`, `hasNext`, `hasPrev`).
+  - Resource Creation Standard: `POST /api/applicants` emits `201 Created` and sets the standard `Location: /api/applicants/:id` header.
+- **Smart Reminders Query Filtering & Idempotent PATCH Mutations:**
+  - Root Cause 2 Fix: Enhanced `GET /api/reminders/scheduled` to parse `req.query` for `status`, `channel`, `ruleId`, and `limit`, eliminating client-side over-fetching.
+  - Replaced non-RESTful `POST /api/reminders/rules/toggle` with standard `PATCH /api/reminders/rules/:ruleId`, supporting idempotent partial state updates with boolean type validation.
+- **Performance Investigation & Conditional HTTP 304 Caching:**
+  - Event Loop Lag Profiling: Instrumented high-resolution Event Loop delay measurement via `setImmediate` and `process.hrtime.bigint()`, verifying sub-millisecond lag (`0.05ms`, `HEALTHY`).
+  - Weak ETag Caching Middleware (`backend/middleware/restCacheMiddleware.js`): Generates MD5 weak ETags on GET responses. Matching incoming `If-None-Match` requests trigger `304 Not Modified` with a **0-byte payload**, slashing network transfer overhead to zero.
+  - Diagnostics Telemetry Endpoint: `GET /api/performance/rest-diagnostics` reporting Event Loop lag, HTTP caching hit ratios, and memory footprint.
+- **React Diagnostics Dashboard (`client/src/components/RestDiagnostics/RestDiagnosticsDashboard.jsx`):**
+  - Interactive parameter tester, query string pagination explorer, rule PATCH toggles, and live 304 caching simulator.
+- **Documentation & Viva Assessment:**
+  - [`docs/WEEK4_DAY3_SUBMISSION.md`](docs/WEEK4_DAY3_SUBMISSION.md): Comprehensive submission report with full Viva Voce answers.
+  - [`docs/REST_API_DEBUG_SPRINT.md`](docs/REST_API_DEBUG_SPRINT.md): Architectural specification and root cause investigation guide.
 
 ### Week 4 Day 2 — Smart Reminders: Frontend UI + User Preference Settings
 - **Express Server Architecture & Modular Routing:**
