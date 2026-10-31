@@ -6,6 +6,9 @@ const { ReminderStore } = require("./modules/smartReminders/ReminderStore");
 const { RuleEngine } = require("./modules/smartReminders/RuleEngine");
 const { AiTimingEngine } = require("./modules/smartReminders/AiTimingEngine");
 
+// User Preferences Router (Week 4 Day 2 - Express Routing, Middleware & Preferences)
+const { preferencesRouter } = require("./routes/preferencesRouter");
+
 const reminderStore = new ReminderStore();
 const ruleEngine = new RuleEngine(reminderStore);
 const aiTimingEngine = new AiTimingEngine();
@@ -86,6 +89,11 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
+app.use("/api/preferences", preferencesRouter);
+app.use("/static/preferences", express.static(path.join(__dirname, "public/preferences"), {
+  maxAge: "1d",
+  etag: true,
+}));
 
 const validStages = [
   "Screening",
