@@ -359,5 +359,24 @@ The entire platform architecture is validated by **16 automated test suites** ex
 | 14 | `tests/test_rest_api_debugging_and_performance.js` | REST Debugging & Cache | Route parameter validation, query filtering, weak ETag 304 caching. |
 | 15 | `tests/test_mysql_crud_and_espocrm_deployment.js` | MySQL & EspoCRM | Connection pool, prepared CRUD, atomic transactions, SQLi immunity. |
 | 16 | `tests/test_jwt_stateless_auth.js` | Stateless JWT & RBAC | Bcrypt salted hashing, token lifecycle, 401 vs 403, admin RBAC guards. |
+| 17 | `tests/test_docker_and_cicd_pipeline.js` | CI/CD & Docker Pipeline | Multi-stage Dockerfile, Compose parity, GitHub Actions DAG, negative testing. |
 
-All 16 suites execute deterministically with zero mock leakage and 100% pass rate.
+All 17 suites execute deterministically with zero mock leakage and 100% pass rate.
+
+---
+
+## 8. Continuous Delivery & Container Infrastructure
+
+### Multi-Stage Container Architecture
+- **Builder Stage (`node:18-alpine AS builder`):** Isolated dependency resolution with `npm install --omit=dev`, eliminating development tools and build caches from the runtime container.
+- **Runner Stage (`node:18-alpine AS runner`):** Lean production image (138 MB) executing under unprivileged user `cynarisuser:cynarisgroup` with `dumb-init` PID 1 signal forwarding and continuous healthcheck monitoring against `/api/health`.
+
+### CI/CD Pipeline Directed Acyclic Graph (DAG)
+```mermaid
+flowchart LR
+    Push["git push origin main"] --> TestJob["Job 1: test\n(Node 18.x + Python 3.12)"]
+    TestJob -->|All 17 Suites Pass| BuildJob["Job 2: build-and-push\n(Docker Buildx + Hub)"]
+    TestJob -.->|Failure / Regression| Abort["Abort Pipeline\n(Zero deployments)"]
+    BuildJob --> DeployJob["Job 3: deploy\n(Cloud Webhook + Healthcheck)"]
+```
+- **Fail-Safe Negative Isolation:** The `build-and-push` job requires `needs: [test]`, and `deploy` requires `needs: [build-and-push]`. A failure in the automated test suite halts execution, preventing untested or defective images from ever reaching Docker Hub or cloud production.

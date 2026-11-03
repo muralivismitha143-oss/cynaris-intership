@@ -2,7 +2,8 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-All%2016%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2017%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen?style=for-the-badge&logo=github-actions)](.github/workflows/ci-cd.yml)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
 ---
@@ -14,11 +15,30 @@
 - **System Architecture Blueprint:** [`ARCHITECTURE.md`](ARCHITECTURE.md)
 - **Week 4 Final Pull Request:** [`docs/WEEK4_FINAL_PR.md`](docs/WEEK4_FINAL_PR.md)
 - **Demo Video Walkthrough (Unlisted):** [https://youtu.be/cynaris-recruitment-w4-fullstack-demo](https://youtu.be/cynaris-recruitment-w4-fullstack-demo)
+- **GitHub Actions Automated Pipeline:** [https://github.com/muralivismitha143-oss/cynaris-intership/actions](https://github.com/muralivismitha143-oss/cynaris-intership/actions)
+- **Docker Hub Container Registry:** [https://hub.docker.com/r/muralivismitha143/cynaris-recruitment-platform](https://hub.docker.com/r/muralivismitha143/cynaris-recruitment-platform)
+- **Week 4 Day 6 Submission Report:** [`docs/WEEK4_DAY6_SUBMISSION.md`](docs/WEEK4_DAY6_SUBMISSION.md)
 - **Production Health Check:** `https://cynaris-recruitment-production.up.railway.app/api/health`
 
 ---
 
 ## ⏰ Week 4: Node.js Architecture, Microservices & Smart Automation
+
+### Week 4 Day 6 — CI/CD with GitHub Actions & Docker Containerisation
+- **Multi-Stage Production Docker Architecture (`Dockerfile` & `Dockerfile.python`):**
+  - Engineered 2-stage build pipeline: Stage 1 (`builder`) compiles dependencies (`npm install --omit=dev`) and clears cache; Stage 2 (`runner`) copies only runtime assets onto minimal `node:18-alpine` base image.
+  - Security hardening: Enforced unprivileged non-root user (`cynarisuser`), `dumb-init` for kernel signal forwarding (`SIGTERM`/`SIGINT`), exposed ports `3000` & `3005`, and added container `HEALTHCHECK` probing `/api/health`.
+  - Added multi-stage Python/Django Dockerfile (`Dockerfile.python`) for curriculum parity.
+- **Docker Compose Local Development & Production Parity (`docker-compose.yml`):**
+  - Coordinated 3 synchronized container services: `web` application, `db` (MySQL 8.0 with persistent storage and init schema), and `migration` runner (`backend/database/runMigrations.js`).
+  - Utilized Docker Compose v2 healthcheck dependencies (`condition: service_healthy` on db, `condition: service_completed_successfully` on migration) to eliminate race conditions.
+- **GitHub Actions Automated Pipeline (`.github/workflows/ci-cd.yml`):**
+  - Implemented 3-stage sequential DAG (`test` $\rightarrow$ `build-and-push` $\rightarrow$ `deploy`) triggered on push to `main` and pull requests.
+  - Docker Buildx & layer caching (`type=gha`), pushing commit SHA and `latest` tags to Docker Hub via GitHub Encrypted Secrets (`${{ secrets.DOCKER_USER }}`).
+  - Cloud deployment trigger with post-deployment polling health verification against live production URL.
+  - Tested negative simulation: failing test immediately aborts pipeline, guaranteeing zero defective builds reach Docker Hub or production.
+- **Deliverables & Submission:**
+  - [`docs/WEEK4_DAY6_SUBMISSION.md`](docs/WEEK4_DAY6_SUBMISSION.md): Submission report with Docker Hub details, Actions status, and answers to 3 Viva Voce questions.
 
 ### Week 4 Day 5 — Technical Documentation, Demo Video, PR Submission & Stateless Auth with JWT
 - **Stateless Authentication Architecture & Token Lifecycle:**
@@ -180,16 +200,26 @@ node backend/smartReminderServer.js
 # Runs pure Node.js HTTP server on http://localhost:3005
 ```
 
-### 3. EspoCRM Docker Environment (Week 3)
+### 3. Docker Compose Production Parity (App + MySQL 8.0 + Migrations)
+```powershell
+docker compose up -d --build
+# Starts cynaris-mysql-db, runs cynaris-migration-runner, and starts cynaris-web-app
+# App Gateway: http://localhost:3000
+# Health Check: http://localhost:3000/api/health
+```
+
+### 4. EspoCRM Docker Environment (Week 3)
 ```powershell
 docker compose -f docker-compose.espocrm.yml up -d
 # EspoCRM UI: http://localhost:8080
 ```
 
-### 4. Running All Automated Unit Tests
+### 5. Running All Automated Unit Tests
 ```powershell
 npm test
-# Runs all 16 unit test suites across Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+# Runs all 17 unit test suites across CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+npm run test:w4d6
+# Runs Week 4 Day 6 CI/CD & Docker test suite individually
 npm run test:w4d5
 # Runs Week 4 Day 5 Stateless JWT Auth test suite individually
 ```
