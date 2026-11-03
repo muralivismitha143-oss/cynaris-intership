@@ -2,20 +2,42 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-All%2015%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2016%20Suites%20Passing-success?style=for-the-badge)](tests/)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
 ---
 
-## 🌐 Live Production Deployment
+## 🌐 Live Production Deployment & Architecture Blueprint
 
 - **Primary Production URL (Railway):** [https://cynaris-recruitment-production.up.railway.app](https://cynaris-recruitment-production.up.railway.app)
 - **Backup / Staging URL (Render):** [https://cynaris-recruitment.onrender.com](https://cynaris-recruitment.onrender.com)
+- **System Architecture Blueprint:** [`ARCHITECTURE.md`](ARCHITECTURE.md)
+- **Week 4 Final Pull Request:** [`docs/WEEK4_FINAL_PR.md`](docs/WEEK4_FINAL_PR.md)
+- **Demo Video Walkthrough (Unlisted):** [https://youtu.be/cynaris-recruitment-w4-fullstack-demo](https://youtu.be/cynaris-recruitment-w4-fullstack-demo)
 - **Production Health Check:** `https://cynaris-recruitment-production.up.railway.app/api/health`
 
 ---
 
 ## ⏰ Week 4: Node.js Architecture, Microservices & Smart Automation
+
+### Week 4 Day 5 — Technical Documentation, Demo Video, PR Submission & Stateless Auth with JWT
+- **Stateless Authentication Architecture & Token Lifecycle:**
+  - Implemented stateless authentication using **JSON Web Tokens (JWT)** signed via `HMAC-SHA256` (`jsonwebtoken`) with a 24-hour expiration window, eliminating server-side session persistence.
+  - Engineered authentication middleware (`backend/middleware/authMiddleware.js`) strictly parsing `Authorization: Bearer <token>` headers according to RFC 6750.
+  - Strict HTTP status code separation:
+    - `401 Unauthorized`: Missing or malformed authentication credentials.
+    - `403 Forbidden`: Credentials present but invalid, expired, tampered, or lacking role authorization.
+- **Bcrypt Password Security & Salt Hashing:**
+  - Integrated `bcryptjs` with **10 salt rounds** in `backend/modules/auth/UserStore.js`, generating unique 128-bit cryptographically secure pseudorandom salts per user to neutralize rainbow table attacks.
+  - Implemented timing-safe password verification via `bcrypt.compare()` and safe user projection (`toSafeUser`) guaranteeing password hashes never leak into responses.
+- **Role-Based Access Control (RBAC):**
+  - Implemented `requireRole('admin')` middleware guarding administrative routes (`GET /api/auth/admin/users`) against unauthorized recruiter access.
+- **RESTful Authentication Router (`backend/routes/authRouter.js`):**
+  - Mounted on `/api/auth`, exposing `/register`, `/login`, `/me`, and `/admin/users`.
+- **System Blueprint & Submission Deliverables:**
+  - [`ARCHITECTURE.md`](ARCHITECTURE.md): Comprehensive system architecture blueprint with Mermaid diagrams, database schemas, and JWT flow.
+  - [`docs/WEEK4_FINAL_PR.md`](docs/WEEK4_FINAL_PR.md): End-of-week Capstone Pull Request template.
+  - [`docs/WEEK4_DAY5_SUBMISSION.md`](docs/WEEK4_DAY5_SUBMISSION.md): Submission report with simulated screenshots, demo script, and complete answers to 3 Viva Voce questions.
 
 ### Week 4 Day 4 — Deploy EspoCRM Fork to Production & Connect Node.js to MySQL
 - **EspoCRM Production Deployment Stack & Architecture Analysis:**
@@ -167,5 +189,7 @@ docker compose -f docker-compose.espocrm.yml up -d
 ### 4. Running All Automated Unit Tests
 ```powershell
 npm test
-# Runs all 13 unit test suites across Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+# Runs all 16 unit test suites across Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+npm run test:w4d5
+# Runs Week 4 Day 5 Stateless JWT Auth test suite individually
 ```

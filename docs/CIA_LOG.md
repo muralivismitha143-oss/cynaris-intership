@@ -771,3 +771,67 @@
 - Built repository pattern in [`backend/database/applicantRepository.js`](../backend/database/applicantRepository.js).
 - Added SQL injection immunity test case in [`tests/test_mysql_crud_and_espocrm_deployment.js`](../tests/test_mysql_crud_and_espocrm_deployment.js), confirming table integrity against injection vectors.
 
+---
+
+# Week 4 Day 5 — Technical Documentation, Demo Video, PR Submission & Stateless Auth with JWT
+
+**Date:** November 1, 2026  
+**Lesson:** Week 4 Day 5 — Technical Documentation + Demo Video + PR Submission & Implement Stateless Auth with JWT  
+**Branch:** `feat/cynaris-w4d5-murali`  
+
+---
+
+## Interaction 1: CIA → Full Stack Mentor Mode
+
+### Prompt / Query
+> *"How should stateless authentication using JWT and bcrypt password hashing be architected in an enterprise Node.js/Express application, and what are the security trade-offs compared to stateful session cookies?"*
+
+### CIA Mentor Review & Guidance
+
+1. **Stateless JWT vs. Stateful Session Architecture:**
+   - **Stateful Sessions (Traditional):** The server generates a random session ID, stores session state in server memory or a centralized store (e.g., Redis), and sets an `HttpOnly` cookie. On every request, the server performs a cache/DB lookup. While this allows immediate session revocation, it introduces state synchronization overhead across distributed microservices and horizontally scaled instances.
+   - **Stateless JWT (Modern API Architecture):** The server issues a JSON Web Token consisting of three base64url-encoded parts: Header, Payload (claims: `id`, `email`, `role`, `name`), and Signature (`HMAC-SHA256`). The server signs the token with a private `JWT_SECRET`. On incoming requests, intermediate services verify the cryptographic signature without querying the database, eliminating DB lookup latency and enabling seamless horizontal scaling.
+
+2. **Password Security via Adaptive Bcrypt Hashing:**
+   - **Why Fast Hashes Fail:** Standard hashing functions like MD5 or SHA-256 are engineered for speed, enabling attackers to compute billions of hashes per second using GPUs and rainbow tables.
+   - **Bcrypt Work Factor & Salt:** Bcrypt employs the Eksblowfish key-setup algorithm with a configurable cost parameter (salt rounds). With `saltRounds = 10`, it executes $2^{10} = 1024$ hashing rounds. Furthermore, bcrypt generates a unique 128-bit cryptographically secure pseudorandom salt for every password, ensuring that identical passwords result in completely distinct hashes, completely neutralizing rainbow table attacks.
+
+3. **Token Lifecycle & Expiration Policy:**
+   - Access tokens should carry a defined expiration window (`expiresIn: '24h'`) along with standard claims (`iss: 'cynaris-platform'`, `aud: 'cynaris-client'`).
+   - Short expiration limits the replay window in case of token interception.
+
+4. **Middleware Architecture & HTTP Status Separation:**
+   - **Authentication Middleware (`authenticateToken`):** Extracts token from `Authorization: Bearer <token>`. Must cleanly distinguish between:
+     - `401 Unauthorized`: Client failed to present authentication credentials (missing header, non-Bearer schema).
+     - `403 Forbidden`: Credentials presented but cryptographically invalid, forged, or expired (`TokenExpiredError`, `JsonWebTokenError`).
+   - **Role-Based Access Control (`requireRole`):** Evaluates verified token claims against required privilege tiers (e.g., `admin` vs `recruiter`), returning `403 Forbidden` if role hierarchy is insufficient.
+
+### Action Taken
+- Designed atomic file-backed user repository [`backend/modules/auth/UserStore.js`](../backend/modules/auth/UserStore.js) integrating `bcryptjs` with 10 salt rounds.
+- Engineered reusable middleware [`backend/middleware/authMiddleware.js`](../backend/middleware/authMiddleware.js) implementing signature verification, expiration checks, and RBAC guards.
+- Formulated RESTful authentication router [`backend/routes/authRouter.js`](../backend/routes/authRouter.js) supporting registration, login, profile retrieval, and admin user auditing.
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review our UserStore, authMiddleware, and authRouter implementations for security vulnerabilities such as timing attacks, password leakage, role escalation, and unhandled token tampering."*
+
+### CIA Code Mode Audit & Analysis
+
+| Component / Layer | Potential Vulnerability / Anti-Pattern | CIA Recommendation | Applied Production Hardening |
+|---|---|---|---|
+| **Password Storage** | Plaintext or fast-hash storage, or returning password hash in API response | Use `bcrypt.hash(password, 10)` and always strip `password` property before serialization | Implemented `hashPassword()` and `verifyPassword()` in `UserStore.js`. Added `toSafeUser(user)` projection ensuring hash is omitted from all API responses and token payloads. |
+| **Registration Guardrails** | Weak password acceptance, duplicate accounts, missing email validation | Enforce minimum length ($\ge 6$), email regex validation, and return `409 Conflict` on duplicate | Implemented email regex check, $\ge 6$ character length constraint, and explicit `409 Conflict` response with helpful error payload. |
+| **Authentication Header Parsing** | Crashing on malformed headers, accepting non-Bearer schemes | Validate header existence, verify `Bearer <token>` structure with split, and reject malformed schemes with `401 Unauthorized` | Handled missing header, empty header, and non-Bearer schemas with explicit `401 Unauthorized` and `WWW-Authenticate` guidance. |
+| **Cryptographic Tampering** | Accepting expired or forged JWT payloads | Catch `TokenExpiredError` and `JsonWebTokenError` from `jwt.verify()` and return `403 Forbidden` | Middleware intercepts all JWT verification failures, returning structured `403 Forbidden` with detailed error reason. |
+| **Privilege Escalation** | Allowing users to register themselves with `admin` role | Default registration to `recruiter` role; validate permitted roles against strict whitelist | `registerUser()` restricts registration role to `recruiter` by default; role assignment on registration is restricted. |
+| **RBAC Route Guard** | Calling endpoint without verifying role privileges | Chain `requireRole('admin')` after `authenticateToken` | Protected `/api/auth/admin/users` with `requireRole('admin')`, returning `403 Forbidden` when accessed by recruiters. |
+
+### Action Taken
+- Hardened [`backend/modules/auth/UserStore.js`](../backend/modules/auth/UserStore.js) with safe projections and pre-seeded default demo accounts (`admin@cynaris.com`, `recruiter@cynaris.com`).
+- Bound authentication router into main Express application in [`backend/server.js`](../backend/server.js) mounted under `/api/auth`.
+- Developed comprehensive test suite [`tests/test_jwt_stateless_auth.js`](../tests/test_jwt_stateless_auth.js) covering bcrypt salts, token signing, expiration, tampering, registration, login, and RBAC with 100% pass rate.
+
+
