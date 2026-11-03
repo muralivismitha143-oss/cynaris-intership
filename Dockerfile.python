@@ -1,0 +1,61 @@
+# ==============================================================================
+# Multi-Stage Dockerfile — Python / Django Production Architecture
+# Target: Production-ready Python 3.12 Web Service with Gunicorn
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Stage 1: Build & Wheel Compilation (Builder Stage)
+# ------------------------------------------------------------------------------
+FROM python:3.12-slim AS builder
+
+WORKDIR /app
+
+# Prevent Python from writing .pyc files and buffer stdout/stderr
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gcc libpq-dev default-libmysqlclient-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy dependency specifications
+COPY requirements.txt* ./
+
+# Build wheels or install to isolated user directory
+RUN if [ -f requirements.txt ]; then \
+        pip install --user --no-cache-dir -r requirements.txt; \
+    else \
+        pip install --user --no-cache-dir gunicorn requests python-dotenv; \
+    fi
+
+# ------------------------------------------------------------------------------
+# Stage 2: Minimal Production Runtime (Runner Stage)
+# ------------------------------------------------------------------------------
+FROM python:3.12-slim AS runner
+
+LABEL maintainer="Murali <murali@cynaris.com>" \
+      description="Cynaris Recruitment Python / Django Service"
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PORT=8000 \
+    PATH=/root/.local/bin:$PATH
+
+# Copy pre-compiled dependencies from builder stage
+COPY --from=builder /root/.local /root/.local
+
+# Copy application source code
+COPY . .
+
+# Run static asset collection if manage.py is present
+RUN if [ -f manage.py ]; then python manage.py collectstatic --noinput || true; fi
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health', timeout=3)" || exit 1
+
+CMD ["python", "cynaris_recruitment/dashboard.py"]
