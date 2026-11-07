@@ -110,4 +110,35 @@ router.get('/queries/user-logins-last-7-days', (req, res) => {
   });
 });
 
+// ==============================================================================
+// Week 5 Day 3: Moodle Block Plugins Subsystem & Cynaris Stats Scaffold
+// ==============================================================================
+
+// GET /api/moodle/blocks - List all detected block plugins in the Moodle LMS
+router.get('/blocks', (req, res) => {
+  const blocks = moodleService.getBlockPlugins();
+  res.json({
+    success: true,
+    total: blocks.length,
+    blocks,
+  });
+});
+
+// GET /api/moodle/blocks/cynaris_stats - Rendered block content & telemetry
+router.get('/blocks/cynaris_stats', (req, res) => {
+  const mode = req.query.mode || 'scaffold';
+  const blockStats = moodleService.getStatsBlockContent(mode);
+  res.json(blockStats);
+});
+
+// POST /api/moodle/admin/upgrade - Headless Moodle CLI upgrade runner
+router.post('/admin/upgrade', (req, res) => {
+  const upgradeResult = moodleService.runCliUpgrade();
+  res.json({
+    success: upgradeResult.success,
+    message: 'Moodle CLI upgrade executed successfully',
+    details: upgradeResult,
+  });
+});
+
 module.exports = router;

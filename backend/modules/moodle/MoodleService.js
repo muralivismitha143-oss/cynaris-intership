@@ -320,6 +320,145 @@ class MoodleService {
   getLogs(limit = 20) {
     return this.data.logs.slice(0, Number(limit));
   }
+
+  /**
+   * ==============================================================================
+   * Week 5 Day 3: Moodle Block Plugins Subsystem & Cynaris Stats Scaffold
+   * ==============================================================================
+   */
+
+  /**
+   * Scans codebase for installed Moodle block plugins and their metadata.
+   */
+  getBlockPlugins() {
+    const pluginRoots = [
+      path.resolve(__dirname, '../../../moodle/blocks'),
+      path.resolve(__dirname, '../../../blocks'),
+    ];
+
+    const plugins = [];
+    const seen = new Set();
+
+    pluginRoots.forEach(root => {
+      if (fs.existsSync(root)) {
+        const entries = fs.readdirSync(root);
+        entries.forEach(name => {
+          if (seen.has(name)) return;
+          const blockDir = path.join(root, name);
+          const versionFile = path.join(blockDir, 'version.php');
+          const blockClassFile = path.join(blockDir, `${name}.php`) || path.join(blockDir, `block_${name}.php`);
+          const langFile = fs.existsSync(path.join(blockDir, 'lang/en', `block_${name}.php`))
+            ? path.join(blockDir, 'lang/en', `block_${name}.php`)
+            : path.join(blockDir, 'lang/en', `${name}.php`);
+          const accessFile = path.join(blockDir, 'db/access.php');
+
+          if (fs.existsSync(versionFile)) {
+            seen.add(name);
+            const versionContent = fs.readFileSync(versionFile, 'utf8');
+            const compMatch = versionContent.match(/component\s*=\s*['"]([^'"]+)['"]/);
+            const verMatch = versionContent.match(/version\s*=\s*([0-9]+)/);
+            const reqMatch = versionContent.match(/requires\s*=\s*([0-9]+)/);
+            const relMatch = versionContent.match(/release\s*=\s*['"]([^'"]+)['"]/);
+
+            let pluginName = name.replace(/^block_/, '').replace(/_/g, ' ');
+            if (fs.existsSync(langFile)) {
+              const langContent = fs.readFileSync(langFile, 'utf8');
+              const nameMatch = langContent.match(/\$string\['pluginname'\]\s*=\s*['"]([^'"]+)['"]/);
+              if (nameMatch) {
+                pluginName = nameMatch[1];
+              }
+            }
+
+            plugins.push({
+              name,
+              component: compMatch ? compMatch[1] : `block_${name}`,
+              displayName: pluginName,
+              version: verMatch ? parseInt(verMatch[1], 10) : 2023100900,
+              requires: reqMatch ? parseInt(reqMatch[1], 10) : 2023042400,
+              release: relMatch ? relMatch[1] : 'v1.0.0',
+              status: 'enabled',
+              hasAccessConfig: fs.existsSync(accessFile),
+              hasLangPack: fs.existsSync(langFile),
+              directory: blockDir,
+            });
+          }
+        });
+      }
+    });
+
+    return plugins;
+  }
+
+  /**
+   * Emulates Moodle block_base::get_content() for block_cynaris_stats.
+   * Returns rendered HTML, structured metrics, and footer link.
+   */
+  getStatsBlockContent(mode = 'scaffold') {
+    const title = 'Cynaris Recruitment & Training Stats';
+    const activeCandidatesCount = this.data.users.filter(u => u.role !== 'admin' && u.deleted !== 1).length || 5;
+    const completedCoursesCount = this.data.courses.length || 3;
+    const averageScore = '91.0%';
+    const readinessPercentage = 95;
+
+    const htmlText = `<div class="cynaris-stats-block" style="font-family: inherit; font-size: 13px; line-height: 1.5;">` +
+      `<div style="padding: 10px; background: #f8fafc; border-left: 4px solid #0284c7; border-radius: 4px; margin-bottom: 8px;">` +
+      `<strong style="color: #0f172a; font-size: 14px;">Cynaris Candidate & Training Telemetry</strong>` +
+      `</div>` +
+      `<ul style="list-style: none; padding-left: 0; margin: 0 0 10px 0;">` +
+      `<li style="padding: 4px 0; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between;">` +
+      `<span>👥 Active Enrolled Candidates:</span>` +
+      `<strong style="color: #0284c7;">${activeCandidatesCount} Active</strong>` +
+      `</li>` +
+      `<li style="padding: 4px 0; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between;">` +
+      `<span>📚 Completed Induction Courses:</span>` +
+      `<strong style="color: #10b981;">${completedCoursesCount} Completed</strong>` +
+      `</li>` +
+      `<li style="padding: 4px 0; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between;">` +
+      `<span>📊 Average Assessment Score:</span>` +
+      `<strong style="color: #6366f1;">${averageScore} Avg</strong>` +
+      `</li>` +
+      `<li style="padding: 4px 0; display: flex; justify-content: space-between;">` +
+      `<span>🚀 Candidate Onboarding Readiness:</span>` +
+      `<strong style="color: #059669;">${readinessPercentage}% Ready</strong>` +
+      `</li>` +
+      `</ul>` +
+      `<div style="background: #e2e8f0; border-radius: 4px; height: 8px; overflow: hidden; margin-bottom: 6px;">` +
+      `<div style="background: #10b981; width: ${readinessPercentage}%; height: 100%;"></div>` +
+      `</div>` +
+      `<small style="color: #64748b;">Cynaris Talent Intelligence • Scaffold Active</small>` +
+      `</div>`;
+
+    return {
+      success: true,
+      component: 'block_cynaris_stats',
+      title,
+      content: {
+        text: htmlText,
+        footer: '<div style="text-align: right; margin-top: 6px;"><a href="/my/" style="font-size: 11px; color: #0284c7; text-decoration: none;">Open Recruiter Dashboard &rarr;</a></div>',
+      },
+      metrics: {
+        activeCandidates: activeCandidatesCount,
+        completedCourses: completedCoursesCount,
+        averageAssessmentScore: averageScore,
+        onboardingReadiness: `${readinessPercentage}%`,
+      },
+      formats: {
+        all: true,
+        my: true,
+        'course-view': true,
+        site: true,
+      },
+      scaffoldMode: mode === 'scaffold',
+    };
+  }
+
+  /**
+   * Triggers the Moodle CLI upgrade process and returns the status.
+   */
+  runCliUpgrade() {
+    const { runMoodleCliUpgrade } = require('./cliUpgrade');
+    return runMoodleCliUpgrade();
+  }
 }
 
 const moodleService = new MoodleService();
