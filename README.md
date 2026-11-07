@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-All%2018%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2019%20Suites%20Passing-success?style=for-the-badge)](tests/)
 [![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen?style=for-the-badge&logo=github-actions)](.github/workflows/ci-cd.yml)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
@@ -20,6 +20,8 @@
 - **Week 4 Day 6 Submission Report:** [`docs/WEEK4_DAY6_SUBMISSION.md`](docs/WEEK4_DAY6_SUBMISSION.md)
 - **Moodle LMS Architecture Blueprint:** [`docs/MOODLE_ARCHITECTURE.md`](docs/MOODLE_ARCHITECTURE.md)
 - **Week 5 Day 1 Submission Report:** [`docs/WEEK5_DAY1_SUBMISSION.md`](docs/WEEK5_DAY1_SUBMISSION.md)
+- **Moodle 5 Core Tables Workshop:** [`docs/MOODLE_5_CORE_TABLES_WORKSHOP.md`](docs/MOODLE_5_CORE_TABLES_WORKSHOP.md)
+- **Week 5 Day 2 Submission Report:** [`docs/WEEK5_DAY2_SUBMISSION.md`](docs/WEEK5_DAY2_SUBMISSION.md)
 - **Production Health Check:** `https://cynaris-recruitment-production.up.railway.app/api/health`
 
 ---
@@ -43,6 +45,24 @@
 - **Documentation & Viva Guide:**
   - [`docs/MOODLE_ARCHITECTURE.md`](docs/MOODLE_ARCHITECTURE.md): Full architectural specification, folder structure, and database schemas.
   - [`docs/WEEK5_DAY1_SUBMISSION.md`](docs/WEEK5_DAY1_SUBMISSION.md): Submission report with simulated screenshots and 3 Viva Voce answers.
+
+### Week 5 Day 2 — Moodle Architecture Workshop — 5 Core Tables Only (ER + Queries)
+- **5 Core Tables Introspection & Architecture (`DESCRIBE`):**
+  - Profiled column schemas, primary keys (`bigint(10) auto_increment`), nullability, and foreign key indexes across only the 5 fundamental tables: `mdl_course`, `mdl_grade_grades`, `mdl_course_completions`, `mdl_user`, and `mdl_log`.
+- **Relational Entity-Relationship (ER) Diagram:**
+  - Mapped foreign key linkages (`userid`, `course`, `itemid`) and cardinalities between candidate identity, curriculum, completion criteria, grading ledgers, and immutable audit logs in Mermaid (`erDiagram`).
+- **Three Enterprise Analytical SQL Queries:**
+  - **Query (a) — Enrolled Students with Completion Status:** Inner joins `mdl_user`, `mdl_course`, and `mdl_course_completions`, using multi-branch `CASE` expressions to differentiate between `Completed`, `In Progress`, and `Enrolled / Not Started`.
+  - **Query (b) — Average Grade Per Course:** Aggregates assessment grades via `mdl_grade_items` and `mdl_grade_grades`, employing `AVG()` and `ROUND()` with `LEFT JOIN` semantics to prevent omission of ungraded courses.
+  - **Query (c) — User Logins in the Last 7 Days:** Implements Moodle Unix epoch timestamp arithmetic (`time >= UNIX_TIMESTAMP(NOW()) - 7*86400`) on `mdl_log` to quantify active candidate engagement.
+- **Plain English Relational Summary:**
+  - Synthesized how the 5 tables interact in a concise 121-word architectural summary ($\le 200$ words).
+- **Backend API Routes & Services:**
+  - Mounted introspection and query endpoints under `/api/moodle/schema/describe` and `/api/moodle/queries/*` in [`backend/routes/moodleRouter.js`](backend/routes/moodleRouter.js).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_moodle_core_tables_and_queries.js`](tests/test_moodle_core_tables_and_queries.js): 13 automated assertions validating schema, queries, and constraints.
+  - [`docs/MOODLE_5_CORE_TABLES_WORKSHOP.md`](docs/MOODLE_5_CORE_TABLES_WORKSHOP.md): Comprehensive workshop notes with schemas, ER diagrams, and SQL execution tables.
+  - [`docs/WEEK5_DAY2_SUBMISSION.md`](docs/WEEK5_DAY2_SUBMISSION.md): Official submission report with simulated outputs and answers to all 3 Viva Voce questions.
 
 ---
 
@@ -248,7 +268,9 @@ docker compose -f docker-compose.espocrm.yml up -d
 ### 6. Running All Automated Unit Tests
 ```powershell
 npm test
-# Runs all 18 unit test suites across Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+# Runs all 19 unit test suites across Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+npm run test:w5d2
+# Runs Week 5 Day 2 Moodle Core Tables & Queries test suite individually
 npm run test:w5d1
 # Runs Week 5 Day 1 Moodle Setup test suite individually
 npm run test:w4d6

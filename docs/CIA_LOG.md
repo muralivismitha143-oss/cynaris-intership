@@ -974,6 +974,65 @@
 - Formulated full schema DDL in [`moodle/database/schema.sql`](../moodle/database/schema.sql) covering all 5 key tables.
 - Validated all 15 test assertions in [`tests/test_moodle_setup.js`](../tests/test_moodle_setup.js) with 100% pass rate.
 
+---
+
+# Week 5 Day 2 — Moodle Architecture Workshop — 5 Core Tables Only (ER + Queries)
+
+**Date:** November 7, 2026  
+**Lesson:** Week 5 Day 2 — Moodle Architecture Workshop — 5 Core Tables Only (ER + Queries)  
+**Branch:** `feat/cynaris-w5d2-murali`  
+
+---
+
+## Interaction 1: CIA → Full Stack Mentor Mode
+
+### Prompt / Query
+> *"Guide me on dissecting the Moodle database schema with a focus on only the 5 core tables (`mdl_course`, `mdl_grade_grades`, `mdl_course_completions`, `mdl_user`, `mdl_log`). How do their relationships work, how should I handle Moodle's epoch timestamps in SQL, and how should outer joins be structured for reporting?"*
+
+### CIA Mentor Review & Guidance
+
+1. **Relational Topography of the 5 Core Tables:**
+   - **`mdl_user` (The Central Identity Hub):** Primary key `id`. Acts as the root actor across all enterprise activities. Connects 1:N to `mdl_course_completions` via `userid`, 1:N to `mdl_grade_grades` via `userid`, and 1:N to `mdl_log` via `userid`.
+   - **`mdl_course` (The Learning Context Hub):** Primary key `id`. Defines course containers (`shortname`, `fullname`). Connects 1:N to `mdl_course_completions` via `course`, 1:N to `mdl_log` via `course`, and relates to `mdl_grade_grades` through grade items / curriculum assessments.
+   - **`mdl_course_completions` (The Milestone State Junction):** Junction between `mdl_user` and `mdl_course`. Tracks course progress flags (`status`, `timestarted`, `timecompleted`). A composite candidate enrollment status is derived based on completion timestamp nullability.
+   - **`mdl_grade_grades` (The Assessment Mark Ledger):** Contains numerical marks scored by candidates (`rawgrade`, `finalgrade`). Foreign key `userid` identifies the candidate, while `itemid` connects to the specific graded item/activity within a course.
+   - **`mdl_log` (The Immutable Activity Audit Trail):** High-velocity event log recording candidate interactions (`userid`, `course`, `module`, `action`, `info`, `time`, `ip`). Enables behavioral engagement tracking and compliance auditing.
+
+2. **Crucial Architectural Considerations:**
+   - **Moodle Unix Epoch Timestamps:** Unlike systems storing ISO 8601 strings or MySQL `DATETIME`, Moodle represents all temporal metrics (`timestarted`, `timecompleted`, `timecreated`, `timemodified`, `time`) as 10-digit integers (`bigint(10)`) recording seconds since Unix Epoch (1970-01-01 00:00:00 UTC). Queries performing rolling window calculations (e.g., last 7 days) must use arithmetic: `l.time >= (UNIX_TIMESTAMP(NOW()) - (7 * 86400))` or conversion functions: `FROM_UNIXTIME(l.time)`.
+   - **Outer Join Preservation:** When querying course completions or course average grades, strict `INNER JOIN` operations risk omitting in-progress candidates (whose completion record may be unfinalized) or freshly created courses (which have enrollments but no submitted assessment grades yet). Utilizing `LEFT JOIN` with `COALESCE` or `CASE` expressions guarantees reporting completeness without data loss.
+
+### Action Taken
+- Synthesized the ER relationships into a formal Mermaid diagram (`erDiagram`) with exact cardinality indicators.
+- Developed 3 enterprise-grade SQL queries with robust join semantics and Unix epoch arithmetic.
+- Enhanced [`backend/modules/moodle/MoodleService.js`](../backend/modules/moodle/MoodleService.js) with `describeTables()` and analytical query handlers.
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review the 3 SQL queries for Moodle reporting: (a) Enrolled students with completion status, (b) Average grade per course, and (c) User logins in the last 7 days. Check edge cases: candidates with NULL completion dates, courses with 0 attempts, and Unix epoch timestamp boundaries."*
+
+### CIA Code Mode Audit & Analysis
+
+| Target Query | Query Objective | Implementation Strategy & Edge Case Guardrails | Code Validation Result |
+|---|---|---|---|
+| **Query (a)** | Enrolled students with completion status | Joined `mdl_user` ($u$), `mdl_course` ($c$), and `mdl_course_completions` ($cc$). Evaluated lifecycle states using `CASE WHEN cc.timecompleted IS NOT NULL AND cc.timecompleted > 0 THEN 'Completed' WHEN cc.timestarted > 0 THEN 'In Progress' ELSE 'Enrolled / Not Started' END`. Converted epoch seconds to ISO dates using `FROM_UNIXTIME(cc.timecompleted)`. | **Clean Execution:** Returns candidate progress across active courses, correctly identifying completed, in-progress, and enrolled candidates. |
+| **Query (b)** | Average grade per course | Aggregated `mdl_grade_grades` ($gg$) joined with `mdl_course` ($c$) and `mdl_grade_items` ($gi$). Applied `AVG(gg.finalgrade)` rounded to 2 decimals. Guarded against division-by-zero or empty courses using `COALESCE(ROUND(AVG(gg.finalgrade), 2), 0.00)` and `COUNT(DISTINCT gg.userid)` for evaluated student count. Ordered by average grade descending. | **Clean Execution:** Correctly calculated average grades (e.g., 91.00% for CS101 Full-Stack, 87.50% for DB201, 88.00% for CLD301). |
+| **Query (c)** | User logins in the last 7 days | Filtered `mdl_log` ($l$) by `module = 'login'` AND `action = 'login'` AND `l.time >= (UNIX_TIMESTAMP(NOW()) - (7 * 86400))`. Grouped by `u.id`, `u.username`, `u.email`. Added `MAX(l.time)` for latest login timestamp and ordered by `login_count DESC`. Excluded older historical events outside the 7-day boundary. | **Clean Execution:** Accurately aggregated login frequency for active candidates (e.g., Murali with 4 logins), ignoring events older than 7 days. |
+
+### Action Taken
+- Enriched mock dataset in [`moodle/database/seed_data.json`](../moodle/database/seed_data.json) with 5 realistic candidates, multiple enrolled courses, and timestamped login logs spanning recent days and past months.
+- Mounted REST endpoints in [`backend/routes/moodleRouter.js`](../backend/routes/moodleRouter.js):
+  - `GET /api/moodle/schema/describe`
+  - `GET /api/moodle/queries/enrollment-completions`
+  - `GET /api/moodle/queries/course-average-grades`
+  - `GET /api/moodle/queries/user-logins-last-7-days`
+- Created dedicated test suite [`tests/test_moodle_core_tables_and_queries.js`](../tests/test_moodle_core_tables_and_queries.js) with 13 automated assertions, passing 100%.
+- Verified full regression: all 19 test suites passing via `npm test`.
+
+
 
 
 
