@@ -474,7 +474,7 @@ class MoodleService {
   <!-- Header & Live Status Badge -->
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid #e2e8f0;">
     <span style="font-weight:600; color:#0f172a;">📊 Training Performance Telemetry</span>
-    <span id="cynaris-live-badge" style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:500;">
+    <span id="cynaris-live-badge" role="status" aria-live="polite" aria-atomic="true" style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:500;">
       🟢 Live Telemetry
     </span>
   </div>
@@ -519,10 +519,10 @@ class MoodleService {
 
   <!-- Dynamic Update Action Controls -->
   <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:8px; border-top:1px solid #e2e8f0;">
-    <button id="cynaris-refresh-btn" type="button" style="background:#0284c7; color:#ffffff; border:none; border-radius:4px; padding:4px 10px; font-size:11px; font-weight:500; cursor:pointer;">
+    <button id="cynaris-refresh-btn" type="button" aria-label="Refresh real-time training telemetry without reloading the page" style="background:#0284c7; color:#ffffff; border:none; border-radius:4px; padding:4px 10px; font-size:11px; font-weight:500; cursor:pointer;">
       🔄 Refresh Telemetry
     </button>
-    <small id="cynaris-last-updated" style="color:#94a3b8; font-size:10px;">Updated: Just now</small>
+    <small id="cynaris-last-updated" role="status" aria-live="polite" style="color:#94a3b8; font-size:10px;">Updated: Just now</small>
   </div>
 </div>
 
@@ -534,15 +534,19 @@ class MoodleService {
 (function() {
   let completionChartInstance = null;
   let loginChartInstance = null;
+  let isRefreshing = false;
 
   const initialData = ${JSON.stringify(chartData)};
 
   function initCharts(data) {
+    const skeleton = document.getElementById('cynaris-chart-skeleton');
     if (typeof Chart === 'undefined') {
+      if (skeleton) skeleton.style.display = 'block';
       console.warn('[CynarisStats] Chart.js CDN not yet loaded, retrying...');
       setTimeout(() => initCharts(data), 200);
       return;
     }
+    if (skeleton) skeleton.style.display = 'none';
 
     const completionCtx = document.getElementById('cynaris-completion-chart');
     const loginCtx = document.getElementById('cynaris-login-chart');
@@ -614,11 +618,22 @@ class MoodleService {
     });
   }
 
-  // Dynamic AJAX Update Function without Page Reload
+  // Dynamic AJAX Update Function without Page Reload (Debounced & Concurrency-Safe)
   async function refreshDashboardDynamically() {
+    if (isRefreshing) return;
+    isRefreshing = true;
+
     const badge = document.getElementById('cynaris-live-badge');
     const updatedLabel = document.getElementById('cynaris-last-updated');
+    const refreshBtn = document.getElementById('cynaris-refresh-btn');
+
     if (badge) badge.innerText = '⏳ Syncing...';
+    if (refreshBtn) {
+      refreshBtn.disabled = true;
+      refreshBtn.style.opacity = '0.6';
+      refreshBtn.style.cursor = 'not-allowed';
+      refreshBtn.innerText = '⏳ Syncing...';
+    }
 
     try {
       const response = await fetch('/api/moodle/blocks/cynaris_stats/chart-data');
@@ -627,10 +642,20 @@ class MoodleService {
         initCharts(freshData);
         if (updatedLabel) updatedLabel.innerText = 'Updated: ' + new Date().toLocaleTimeString();
         if (badge) badge.innerText = '🟢 Live Telemetry';
+      } else {
+        if (badge) badge.innerText = '⚠️ Sync Failed';
       }
     } catch (err) {
       console.error('[CynarisStats] Dynamic update failed:', err);
       if (badge) badge.innerText = '⚠️ Sync Failed';
+    } finally {
+      isRefreshing = false;
+      if (refreshBtn) {
+        refreshBtn.disabled = false;
+        refreshBtn.style.opacity = '1';
+        refreshBtn.style.cursor = 'pointer';
+        refreshBtn.innerText = '🔄 Refresh Telemetry';
+      }
     }
   }
 
