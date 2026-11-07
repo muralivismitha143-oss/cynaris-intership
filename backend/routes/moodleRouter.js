@@ -126,9 +126,25 @@ router.get('/blocks', (req, res) => {
 
 // GET /api/moodle/blocks/cynaris_stats - Rendered block content & telemetry
 router.get('/blocks/cynaris_stats', (req, res) => {
-  const mode = req.query.mode || 'scaffold';
+  const mode = req.query.mode || 'chartjs';
   const blockStats = moodleService.getStatsBlockContent(mode);
   res.json(blockStats);
+});
+
+// ==============================================================================
+// Week 5 Day 4: Progress Dashboard — Chart.js Visualisation from Grade Data
+// ==============================================================================
+
+// GET /api/moodle/blocks/cynaris_stats/chart-data - Real-time Chart.js JSON telemetry
+router.get('/blocks/cynaris_stats/chart-data', (req, res) => {
+  const chartData = moodleService.getChartDashboardData();
+  res.json(chartData);
+});
+
+// GET /blocks/cynaris_stats/ajax.php - Moodle native AJAX script route parity
+router.get('/ajax/cynaris_stats', (req, res) => {
+  const chartData = moodleService.getChartDashboardData();
+  res.json(chartData);
 });
 
 // POST /api/moodle/admin/upgrade - Headless Moodle CLI upgrade runner
