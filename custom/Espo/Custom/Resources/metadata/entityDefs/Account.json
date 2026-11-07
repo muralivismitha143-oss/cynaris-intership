@@ -1,0 +1,22 @@
+{
+  "fields": {
+    "aiSummary": {
+      "type": "text",
+      "label": "AI Conversation Summary",
+      "readOnly": true,
+      "view": "custom:views/account/fields/ai-summary",
+      "tooltip": "Auto-generated 3-bullet executive summary of the last 5 customer activities via Groq / OpenRouter."
+    },
+    "aiSummaryGeneratedAt": {
+      "type": "datetime",
+      "label": "AI Summary Generated At",
+      "readOnly": true
+    },
+    "aiSummaryProvider": {
+      "type": "varchar",
+      "maxLength": 50,
+      "label": "AI Provider Used",
+      "readOnly": true
+    }
+  }
+}

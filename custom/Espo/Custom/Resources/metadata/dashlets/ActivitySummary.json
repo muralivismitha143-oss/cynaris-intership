@@ -1,0 +1,30 @@
+{
+  "view": "custom:views/dashlets/activity-summary",
+  "category": "Activities",
+  "options": {
+    "fields": {
+      "title": {
+        "type": "varchar",
+        "default": "Activities per Account (Last 30 Days)"
+      },
+      "timeRange": {
+        "type": "enum",
+        "options": ["last7Days", "last30Days", "last90Days", "currentQuarter"],
+        "default": "last30Days"
+      },
+      "chartType": {
+        "type": "enum",
+        "options": ["bar", "horizontalBar", "pie"],
+        "default": "bar"
+      },
+      "autoRefreshInterval": {
+        "type": "int",
+        "default": 30,
+        "tooltip": "Auto refresh interval in seconds"
+      }
+    }
+  },
+  "acl": {
+    "entity": "Account"
+  }
+}

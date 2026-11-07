@@ -1,0 +1,42 @@
+{
+  "fields": {
+    "name": {
+      "type": "varchar",
+      "required": true,
+      "maxLength": 255
+    },
+    "email": {
+      "type": "varchar",
+      "required": true,
+      "pattern": "^[^@]+@[^@]+\\.[^@]+$"
+    },
+    "pipelineStage": {
+      "type": "enum",
+      "options": [
+        "Screening",
+        "Technical Round 1",
+        "Technical Round 2",
+        "HR Round",
+        "Offered",
+        "Rejected"
+      ],
+      "default": "Screening"
+    },
+    "experienceYears": {
+      "type": "int",
+      "default": 0,
+      "min": 0
+    },
+    "aiResumeSummary": {
+      "type": "text",
+      "readOnly": false
+    }
+  },
+  "links": {
+    "interviews": {
+      "type": "hasMany",
+      "entity": "Interview",
+      "foreign": "applicant"
+    }
+  }
+}

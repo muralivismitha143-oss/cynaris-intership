@@ -1,0 +1,106 @@
+{
+  "courses": [
+    {
+      "id": 101,
+      "fullname": "Full Stack Developer Internship — Induction & Architecture",
+      "shortname": "CYN-FS-101",
+      "category": 1,
+      "summary": "Core architectural principles, virtual DOM diffing, RESTful API design, and database persistence.",
+      "format": "topics",
+      "visible": 1,
+      "timecreated": 1730000000
+    },
+    {
+      "id": 102,
+      "fullname": "Enterprise CRM & EspoCRM Integration",
+      "shortname": "CYN-CRM-102",
+      "category": 1,
+      "summary": "Business process mapping, custom hooks, and Groq AI conversation summarizer.",
+      "format": "topics",
+      "visible": 1,
+      "timecreated": 1730100000
+    },
+    {
+      "id": 103,
+      "fullname": "Production DevOps — Docker & CI/CD Pipelines",
+      "shortname": "CYN-OPS-103",
+      "category": 2,
+      "summary": "Multi-stage Dockerfiles, Compose orchestration, and GitHub Actions automated deployment.",
+      "format": "topics",
+      "visible": 1,
+      "timecreated": 1730200000
+    }
+  ],
+  "users": [
+    {
+      "id": 2,
+      "username": "murali.candidate",
+      "firstname": "Murali",
+      "lastname": "V",
+      "email": "murali@cynaris.com",
+      "institution": "Cynaris Software",
+      "department": "Engineering Intern",
+      "confirmed": 1
+    },
+    {
+      "id": 3,
+      "username": "priya.sharma",
+      "firstname": "Priya",
+      "lastname": "Sharma",
+      "email": "priya.sharma@cynaris.com",
+      "institution": "Cynaris Software",
+      "department": "Senior Technical Mentor",
+      "confirmed": 1
+    }
+  ],
+  "quizzes": [
+    {
+      "id": 501,
+      "course": 101,
+      "name": "Week 4 Technical Assessment: Node.js, MySQL & JWT",
+      "timeopen": 1730600000,
+      "timeclose": 1730700000,
+      "grade": 100.0
+    }
+  ],
+  "grades": [
+    {
+      "id": 901,
+      "itemid": 501,
+      "userid": 2,
+      "finalgrade": 96.50000,
+      "rawgrademax": 100.00000,
+      "feedback": "Outstanding execution of stateless JWT authentication and MySQL prepared statement CRUD."
+    }
+  ],
+  "course_completions": [
+    {
+      "id": 301,
+      "userid": 2,
+      "course": 101,
+      "timeenrolled": 1730005000,
+      "timecompleted": 1730650000,
+      "status": 1
+    }
+  ],
+  "logs": [
+    {
+      "id": 7001,
+      "time": 1730650500,
+      "userid": 2,
+      "course": 101,
+      "module": "quiz",
+      "action": "attempt_submitted",
+      "info": "Submitted quiz attempt 501 with score 96.5%"
+    },
+    {
+      "id": 7002,
+      "time": 1730650600,
+      "userid": 2,
+      "course": 101,
+      "module": "course",
+      "action": "completed",
+      "info": "Course criteria achieved: CYN-FS-101"
+    }
+  ]
+}

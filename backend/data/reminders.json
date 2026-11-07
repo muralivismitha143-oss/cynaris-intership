@@ -1,0 +1,71 @@
+{
+  "rules": [
+    {
+      "id": "rule-1",
+      "name": "Stalled Technical Round Follow-up",
+      "entityType": "JobApplicant",
+      "triggerStage": "Technical Round 1",
+      "idleThresholdHours": 48,
+      "urgency": "High",
+      "channelPreference": "Email",
+      "description": "Trigger when applicant in Technical Round 1 has had no scorecard or status update for > 48 hours.",
+      "enabled": true
+    },
+    {
+      "id": "rule-2",
+      "name": "Offer Decision & Acceptance Check-in",
+      "entityType": "JobApplicant",
+      "triggerStage": "Offered",
+      "idleThresholdHours": 72,
+      "urgency": "Critical",
+      "channelPreference": "WhatsApp",
+      "description": "Trigger when an offer letter has been pending acceptance for > 72 hours without candidate reply.",
+      "enabled": true
+    },
+    {
+      "id": "rule-3",
+      "name": "Screening Feedback Acceleration",
+      "entityType": "JobApplicant",
+      "triggerStage": "Screening",
+      "idleThresholdHours": 24,
+      "urgency": "Medium",
+      "channelPreference": "Email",
+      "description": "Trigger when a newly applied candidate remains unreviewed in Screening for > 24 hours.",
+      "enabled": true
+    },
+    {
+      "id": "rule-4",
+      "name": "High-Value Account Outreach (EspoCRM)",
+      "entityType": "Account",
+      "triggerStage": "Prospect",
+      "idleThresholdHours": 96,
+      "urgency": "High",
+      "channelPreference": "Phone",
+      "description": "Trigger when a high-value sales account in evaluation phase has had no touchpoint for > 4 days.",
+      "enabled": true
+    }
+  ],
+  "scheduledReminders": [
+    {
+      "id": "rem-101",
+      "ruleId": "rule-1",
+      "entityId": 2,
+      "recipientName": "Priya Sharma",
+      "role": "Backend Engineer",
+      "pipelineStage": "Technical Round 1",
+      "hoursIdle": 54,
+      "suggestedTiming": {
+        "recommendedSlot": "Tuesday 10:30 AM - 11:30 AM IST",
+        "recommendedChannel": "Email",
+        "rationale": "Engineering leads demonstrate peak open rates on Tuesday mornings post-standup.",
+        "urgencyLevel": "High",
+        "customizedMessage": "Hi Priya, hope your week is off to a great start! Our engineering panel thoroughly enjoyed your Technical Round 1 discussion. We wanted to quickly touch base regarding the next steps and bar-raiser schedule."
+      },
+      "provider": "Groq (llama-3.3-70b-versatile)",
+      "status": "Scheduled",
+      "scheduledAt": "2026-10-31T10:38:56.545Z",
+      "createdAt": "2026-10-31T08:38:56.546Z"
+    }
+  ],
+  "dispatchHistory": []
+}

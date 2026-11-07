@@ -1,0 +1,54 @@
+<!-- Job Applicant List View - Jinja Template Override with Kanban Status Badge -->
+<div class="applicant-row list-row" data-applicant-id="{{ doc.name }}">
+  <div class="row-left">
+    <div class="applicant-avatar-badge">
+      {{ doc.applicant_name[:2].upper() if doc.applicant_name else 'AP' }}
+    </div>
+    <div class="applicant-info">
+      <div class="applicant-name-link">
+        <a href="/app/job-applicant/{{ doc.name }}" class="applicant-title font-weight-bold">
+          {{ doc.applicant_name or doc.name }}
+        </a>
+        <span class="applicant-doc-id text-muted">#{{ doc.name }}</span>
+      </div>
+      <div class="applicant-subtext text-muted">
+        <span>{{ doc.email_id or 'No email provided' }}</span>
+        {% if doc.job_title %}
+          <span class="separator">•</span>
+          <span>{{ doc.job_title }}</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="row-center pipeline-stage-col">
+    {% set stage = doc.pipeline_stage or "Screening" %}
+    {% set stage_slug = stage | lower | replace(" ", "-") %}
+    
+    <!-- Kanban-style Status Badge -->
+    <span class="kanban-badge badge-{{ stage_slug }}" data-stage="{{ stage }}" title="Current Stage: {{ stage }}">
+      <span class="kanban-badge-dot"></span>
+      <span class="kanban-badge-label">{{ stage }}</span>
+    </span>
+  </div>
+
+  <div class="row-right">
+    <span class="updated-time text-muted">
+      {{ frappe.utils.format_date(doc.modified, "medium") if frappe else doc.modified or "Today" }}
+    </span>
+    <div class="quick-action-dropdown">
+      <button class="btn btn-xs btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Move Stage <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-right stage-selector-menu">
+        <li><a href="#" class="stage-option" data-stage="Screening">Screening</a></li>
+        <li><a href="#" class="stage-option" data-stage="Technical Round 1">Technical Round 1</a></li>
+        <li><a href="#" class="stage-option" data-stage="Technical Round 2">Technical Round 2</a></li>
+        <li><a href="#" class="stage-option" data-stage="HR Round">HR Round</a></li>
+        <li role="separator" class="divider"></li>
+        <li><a href="#" class="stage-option text-success" data-stage="Offered">Offered</a></li>
+        <li><a href="#" class="stage-option text-danger" data-stage="Rejected">Rejected</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
