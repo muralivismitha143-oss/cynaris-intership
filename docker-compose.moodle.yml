@@ -1,0 +1,91 @@
+version: '3.8'
+
+# ==============================================================================
+# Docker Compose — moodlehq/moodle-docker & Cynaris Training Environment
+# Services:
+#   1. moodle-web: Moodle PHP/Apache Container (Port 8000)
+#   2. moodle-db: PostgreSQL 14 Database Container (Port 5432)
+#   3. moodle-mailhog: SMTP Test Mail Catcher (Web UI Port 8025)
+# ==============================================================================
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. Moodle Web Application Server
+  # ----------------------------------------------------------------------------
+  moodle-web:
+    image: moodlehq/moodle-php-apache:${MOODLE_DOCKER_PHP_VERSION:-8.1}
+    container_name: moodle-web-app
+    restart: unless-stopped
+    ports:
+      - "${MOODLE_DOCKER_WEB_PORT:-8000}:80"
+    environment:
+      MOODLE_DOCKER_DB: ${MOODLE_DOCKER_DB:-pgsql}
+      MOODLE_DOCKER_DB_HOST: moodle-db
+      MOODLE_DOCKER_DB_PORT: ${MOODLE_DOCKER_DB_PORT:-5432}
+      MOODLE_DOCKER_DB_NAME: ${MOODLE_DOCKER_DB_NAME:-moodle}
+      MOODLE_DOCKER_DB_USER: ${MOODLE_DOCKER_DB_USER:-moodle}
+      MOODLE_DOCKER_DB_PASSWORD: ${MOODLE_DOCKER_DB_PASSWORD:-moodle_secret_pw}
+      MOODLE_DOCKER_WWWROOT: ${MOODLE_DOCKER_WWWROOT:-http://localhost:8000}
+      MOODLE_DOCKER_DATAROOT: ${MOODLE_DOCKER_DATAROOT:-/var/www/moodledata}
+    volumes:
+      - ./moodle:/var/www/html
+      - moodle-data:/var/www/moodledata
+    depends_on:
+      moodle-db:
+        condition: service_healthy
+    networks:
+      - moodle-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ----------------------------------------------------------------------------
+  # 2. Database Service (PostgreSQL 14 / MySQL 8.0 Parity)
+  # ----------------------------------------------------------------------------
+  moodle-db:
+    image: postgres:14-alpine
+    container_name: moodle-db
+    restart: unless-stopped
+    ports:
+      - "${MOODLE_DOCKER_DB_PORT:-5432}:5432"
+    environment:
+      POSTGRES_DB: ${MOODLE_DOCKER_DB_NAME:-moodle}
+      POSTGRES_USER: ${MOODLE_DOCKER_DB_USER:-moodle}
+      POSTGRES_PASSWORD: ${MOODLE_DOCKER_DB_PASSWORD:-moodle_secret_pw}
+    volumes:
+      - moodle-db-data:/var/lib/postgresql/data
+      - ./moodle/database/schema.sql:/docker-entrypoint-initdb.d/init_moodle.sql:ro
+    networks:
+      - moodle-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${MOODLE_DOCKER_DB_USER:-moodle} -d ${MOODLE_DOCKER_DB_NAME:-moodle}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # ----------------------------------------------------------------------------
+  # 3. MailHog SMTP Test Catcher (Local Email Debugging)
+  # ----------------------------------------------------------------------------
+  moodle-mailhog:
+    image: mailhog/mailhog:latest
+    container_name: moodle-mailhog
+    restart: unless-stopped
+    ports:
+      - "${MAILHOG_PORT:-8025}:8025" # Web UI
+      - "1025:1025"                 # SMTP Server
+    networks:
+      - moodle-network
+
+volumes:
+  moodle-data:
+    driver: local
+  moodle-db-data:
+    driver: local
+
+networks:
+  moodle-network:
+    driver: bridge

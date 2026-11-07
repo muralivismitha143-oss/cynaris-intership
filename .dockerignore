@@ -1,0 +1,36 @@
+# Git artifacts
+.git
+.gitignore
+.github
+
+# Node dependencies and test outputs
+node_modules
+*/node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Python caches and virtual environments
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Local configuration and environment overrides
+.env.local
+.env.*.local
+*.tmp
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Documentation and transcripts
+docs/
+.gemini/

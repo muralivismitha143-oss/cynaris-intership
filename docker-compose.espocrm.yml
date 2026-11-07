@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  espocrm-mysql:
+    image: mysql:8.0
+    container_name: espocrm-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password_change_in_prod}
+      MYSQL_DATABASE: ${ESPOCRM_DATABASE_NAME:-espocrm}
+      MYSQL_USER: ${ESPOCRM_DATABASE_USER:-espocrm}
+      MYSQL_PASSWORD: ${ESPOCRM_DATABASE_PASSWORD:-espocrm_secret_pw}
+    volumes:
+      - espocrm-mysql-data:/var/lib/mysql
+    networks:
+      - espocrm-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root_password_change_in_prod}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  espocrm:
+    image: espocrm/espocrm:latest
+    container_name: espocrm-app
+    restart: unless-stopped
+    ports:
+      - "${ESPOCRM_PORT:-8080}:80"
+    depends_on:
+      espocrm-mysql:
+        condition: service_healthy
+    environment:
+      ESPOCRM_DATABASE_HOST: espocrm-mysql
+      ESPOCRM_DATABASE_NAME: ${ESPOCRM_DATABASE_NAME:-espocrm}
+      ESPOCRM_DATABASE_USER: ${ESPOCRM_DATABASE_USER:-espocrm}
+      ESPOCRM_DATABASE_PASSWORD: ${ESPOCRM_DATABASE_PASSWORD:-espocrm_secret_pw}
+      ESPOCRM_ADMIN_USERNAME: ${ESPOCRM_ADMIN_USERNAME:-admin}
+      ESPOCRM_ADMIN_PASSWORD: ${ESPOCRM_ADMIN_PASSWORD:-admin}
+      ESPOCRM_SITE_URL: ${ESPOCRM_SITE_URL:-http://localhost:8080}
+    volumes:
+      - espocrm-data:/var/www/html
+    networks:
+      - espocrm-network
+
+  espocrm-daemon:
+    image: espocrm/espocrm:latest
+    container_name: espocrm-daemon
+    restart: unless-stopped
+    command: php /var/www/html/daemon.php
+    depends_on:
+      - espocrm
+    volumes:
+      - espocrm-data:/var/www/html
+    networks:
+      - espocrm-network
+
+  espocrm-phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: espocrm-pma
+    restart: unless-stopped
+    ports:
+      - "${PMA_PORT:-8081}:80"
+    environment:
+      PMA_HOST: espocrm-mysql
+      PMA_PORT: 3306
+    depends_on:
+      - espocrm-mysql
+    networks:
+      - espocrm-network
+
+volumes:
+  espocrm-mysql-data:
+    driver: local
+  espocrm-data:
+    driver: local
+
+networks:
+  espocrm-network:
+    driver: bridge

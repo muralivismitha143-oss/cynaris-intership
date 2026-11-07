@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cynaris Notification Preferences Static Guide</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 2rem; background: #f8fafc; color: #1e293b; max-width: 800px; margin: 0 auto; }
+    h1 { color: #0284c7; }
+    .card { background: white; padding: 1.5rem; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 1rem; }
+    code { background: #f1f5f9; padding: 0.2rem 0.4rem; border-radius: 4px; font-family: monospace; }
+  </style>
+</head>
+<body>
+  <h1>⚙️ User Preferences & Quiet Hours Guide</h1>
+  <p>Static documentation served via Express <code>express.static()</code>.</p>
+  <div class="card">
+    <h3>Quiet Hours & Working Window Rules</h3>
+    <ul>
+      <li><strong>Indian Standard Time (IST):</strong> All time conversions default to Asia/Kolkata (UTC+5:30).</li>
+      <li><strong>Overnight Intervals:</strong> If Quiet Hours are set from <code>20:00</code> to <code>08:30</code>, reminders generated during this window are shifted to the recruiter's next working start time (09:30 IST).</li>
+      <li><strong>Active Channels:</strong> At least one notification channel (Email, WhatsApp, In-App, SMS) must remain active.</li>
+    </ul>
+    <p>JSON Schema available at: <a href="preferences-schema.json">preferences-schema.json</a></p>
+  </div>
+</body>
+</html>
