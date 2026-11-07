@@ -21,6 +21,9 @@ const { dbRouter } = require("./routes/dbRouter");
 // Stateless JWT Auth & Security (Week 4 Day 5 - Stateless Auth with JWT & Bcrypt)
 const { authRouter } = require("./routes/authRouter");
 
+// Moodle LMS Integration (Week 5 Day 1 - Moodle LMS Docker Setup & Architecture)
+const moodleRouter = require("./routes/moodleRouter");
+
 const reminderStore = new ReminderStore();
 const ruleEngine = new RuleEngine(reminderStore);
 const aiTimingEngine = new AiTimingEngine();
@@ -107,6 +110,7 @@ app.use("/api/applicants", applicantsRouter);
 app.use("/api/performance", diagnosticsRouter);
 app.use("/api/database", dbRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/moodle", moodleRouter);
 app.use("/static/preferences", express.static(path.join(__dirname, "public/preferences"), {
   maxAge: "1d",
   etag: true,

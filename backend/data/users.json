@@ -61,5 +61,23 @@
     "role": "recruiter",
     "department": "Talent Acquisition",
     "createdAt": "2026-11-03T13:54:40.615Z"
+  },
+  {
+    "id": "user-1794050028457-bfcp",
+    "name": "Rohan Mehra",
+    "email": "new.recruiter.1794050028394@cynaris.com",
+    "passwordHash": "$2b$10$BINA8wIxJmGSwCXVTu5gHeIhfpkw.s8j3QE2nbE8ZKazhAvj45nJq",
+    "role": "recruiter",
+    "department": "Talent Acquisition",
+    "createdAt": "2026-11-07T11:13:48.457Z"
+  },
+  {
+    "id": "user-1794050238340-b63e",
+    "name": "Rohan Mehra",
+    "email": "new.recruiter.1794050238280@cynaris.com",
+    "passwordHash": "$2b$10$EbOTqNN1pbmmrWzRUcWTnONx9WhVWfwuac88P8Yg0TPIonQzkbEfi",
+    "role": "recruiter",
+    "department": "Talent Acquisition",
+    "createdAt": "2026-11-07T11:17:18.340Z"
   }
 ]
