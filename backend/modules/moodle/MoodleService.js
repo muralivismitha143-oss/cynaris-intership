@@ -463,7 +463,7 @@ class MoodleService {
         ? `<span style="background:#dcfce7; color:#15803d; padding:2px 6px; border-radius:4px; font-size:11px;">${s.averageGrade}%</span>`
         : `<span style="background:#f1f5f9; color:#64748b; padding:2px 6px; border-radius:4px; font-size:11px;">No Grades</span>`;
       return `<tr style="border-bottom:1px solid #e2e8f0;">` +
-        `<td style="padding:6px 4px; font-weight:500;">${s.name}</td>` +
+        `<td style="padding:6px 4px; font-weight:500; max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${s.name}">${s.name}</td>` +
         `<td style="padding:6px 4px; text-align:center;">${s.gradedAttempts}</td>` +
         `<td style="padding:6px 4px; text-align:right;">${badge}</td>` +
         `</tr>`;
@@ -479,10 +479,15 @@ class MoodleService {
     </span>
   </div>
 
+  <!-- Skeleton Shimmer Loader (Hidden once charts render) -->
+  <div id="cynaris-chart-skeleton" style="display:none; padding:12px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:6px; margin-bottom:12px; text-align:center; color:#64748b; font-size:11px;">
+    ⏳ Rendering real-time visualization...
+  </div>
+
   <!-- Chart 1: Course Completion % (Bar Chart) -->
   <div style="margin-bottom:16px;">
     <div style="font-size:12px; font-weight:600; color:#334155; margin-bottom:6px;">📈 Course Completion Rates</div>
-    <div style="position:relative; height:180px; width:100%;">
+    <div style="position:relative; height:180px; min-height:160px; width:100%; overflow:hidden;">
       <canvas id="cynaris-completion-chart"></canvas>
     </div>
   </div>
@@ -490,7 +495,7 @@ class MoodleService {
   <!-- Chart 2: Login Frequency (Line Chart) -->
   <div style="margin-bottom:16px;">
     <div style="font-size:12px; font-weight:600; color:#334155; margin-bottom:6px;">⚡ Candidate Login Frequency</div>
-    <div style="position:relative; height:180px; width:100%;">
+    <div style="position:relative; height:180px; min-height:160px; width:100%; overflow:hidden;">
       <canvas id="cynaris-login-chart"></canvas>
     </div>
   </div>
@@ -498,12 +503,12 @@ class MoodleService {
   <!-- Candidate Assessment Grades Table (Demonstrating students with and without grades) -->
   <div style="margin-bottom:12px;">
     <div style="font-size:12px; font-weight:600; color:#334155; margin-bottom:6px;">👥 Candidate Grade Averages</div>
-    <table style="width:100%; border-collapse:collapse; font-size:12px;">
+    <table style="width:100%; table-layout:fixed; border-collapse:collapse; font-size:12px;">
       <thead>
         <tr style="background:#f8fafc; color:#64748b; font-size:11px; text-transform:uppercase;">
-          <th style="padding:6px 4px; text-align:left;">Student</th>
-          <th style="padding:6px 4px; text-align:center;">Attempts</th>
-          <th style="padding:6px 4px; text-align:right;">Avg Grade</th>
+          <th style="padding:6px 4px; text-align:left; width:55%;">Student</th>
+          <th style="padding:6px 4px; text-align:center; width:20%;">Attempts</th>
+          <th style="padding:6px 4px; text-align:right; width:25%;">Avg Grade</th>
         </tr>
       </thead>
       <tbody id="cynaris-student-grade-rows">
@@ -564,6 +569,14 @@ class MoodleService {
           }
         },
         scales: {
+          x: {
+            ticks: {
+              autoSkip: true,
+              maxRotation: 40,
+              minRotation: 0,
+              font: { size: 10 }
+            }
+          },
           y: {
             beginAtZero: true,
             max: 100,
@@ -584,6 +597,14 @@ class MoodleService {
           legend: { display: false }
         },
         scales: {
+          x: {
+            ticks: {
+              autoSkip: true,
+              maxRotation: 40,
+              minRotation: 0,
+              font: { size: 10 }
+            }
+          },
           y: {
             beginAtZero: true,
             ticks: { stepSize: 1 }
