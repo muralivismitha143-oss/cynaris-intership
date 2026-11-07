@@ -7,7 +7,8 @@
     "start": "node backend/server.js",
     "start:reminders": "node backend/smartReminderServer.js",
     "build": "cd backend && npm install",
-    "test": "node tests/test_espocrm_setup.js && node tests/test_react_virtual_dom.js && node tests/test_business_process_mapping.js && node tests/test_react_props_unidirectional.js && node tests/test_crm_workflow_engine.js && node tests/test_react_state_and_forms.js && node tests/test_activity_dashboard_sql.js && node tests/test_react_use_effect.js && node tests/test_ai_conversation_summarizer.js && node tests/test_react_router_client.js && node tests/test_smart_reminders_ai_timing.js && node tests/test_nodejs_architecture_event_loop.js && node tests/test_express_routing_and_preferences.js && node tests/test_rest_api_debugging_and_performance.js && node tests/test_mysql_crud_and_espocrm_deployment.js && node tests/test_jwt_stateless_auth.js && node tests/test_docker_and_cicd_pipeline.js && node tests/test_moodle_setup.js && node tests/test_moodle_core_tables_and_queries.js && node tests/test_moodle_block_cynaris_stats.js && node tests/test_moodle_chartjs_dashboard.js",
+    "test": "node tests/test_espocrm_setup.js && node tests/test_react_virtual_dom.js && node tests/test_business_process_mapping.js && node tests/test_react_props_unidirectional.js && node tests/test_crm_workflow_engine.js && node tests/test_react_state_and_forms.js && node tests/test_activity_dashboard_sql.js && node tests/test_react_use_effect.js && node tests/test_ai_conversation_summarizer.js && node tests/test_react_router_client.js && node tests/test_smart_reminders_ai_timing.js && node tests/test_nodejs_architecture_event_loop.js && node tests/test_express_routing_and_preferences.js && node tests/test_rest_api_debugging_and_performance.js && node tests/test_mysql_crud_and_espocrm_deployment.js && node tests/test_jwt_stateless_auth.js && node tests/test_docker_and_cicd_pipeline.js && node tests/test_moodle_setup.js && node tests/test_moodle_core_tables_and_queries.js && node tests/test_moodle_block_cynaris_stats.js && node tests/test_moodle_chartjs_dashboard.js && node tests/test_moodle_ui_bug_fixes.js",
+    "test:w5d5": "node tests/test_moodle_ui_bug_fixes.js",
     "test:w5d4": "node tests/test_moodle_chartjs_dashboard.js",
     "test:w5d3": "node tests/test_moodle_block_cynaris_stats.js",
     "moodle:upgrade": "node backend/modules/moodle/cliUpgrade.js",
@@ -92,7 +93,10 @@
     "chartjs",
     "progress-dashboard",
     "data-visualisation",
-    "ajax-service"
+    "ajax-service",
+    "ui-bug-fixes",
+    "assessment-engine",
+    "accessibility-aria"
   ],
   "author": "Murali",
   "license": "ISC",
