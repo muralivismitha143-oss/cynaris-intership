@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-All%2021%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2022%20Suites%20Passing-success?style=for-the-badge)](tests/)
 [![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen?style=for-the-badge&logo=github-actions)](.github/workflows/ci-cd.yml)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
@@ -26,6 +26,8 @@
 - **Week 5 Day 3 Submission Report:** [`docs/WEEK5_DAY3_SUBMISSION.md`](docs/WEEK5_DAY3_SUBMISSION.md)
 - **Moodle Chart.js Progress Dashboard:** [`docs/MOODLE_CHARTJS_PROGRESS_DASHBOARD.md`](docs/MOODLE_CHARTJS_PROGRESS_DASHBOARD.md)
 - **Week 5 Day 4 Submission Report:** [`docs/WEEK5_DAY4_SUBMISSION.md`](docs/WEEK5_DAY4_SUBMISSION.md)
+- **Moodle Assessment UI Bug Report:** [`docs/MOODLE_ASSESSMENT_UI_BUG_REPORT.md`](docs/MOODLE_ASSESSMENT_UI_BUG_REPORT.md)
+- **Week 5 Day 5 Submission Report:** [`docs/WEEK5_DAY5_SUBMISSION.md`](docs/WEEK5_DAY5_SUBMISSION.md)
 - **Production Health Check:** `https://cynaris-recruitment-production.up.railway.app/api/health`
 
 ---
@@ -103,6 +105,18 @@
   - [`tests/test_moodle_chartjs_dashboard.js`](tests/test_moodle_chartjs_dashboard.js): 14 automated assertions validating SQL metrics, Chart.js datasets, and dynamic update scripts.
   - [`docs/MOODLE_CHARTJS_PROGRESS_DASHBOARD.md`](docs/MOODLE_CHARTJS_PROGRESS_DASHBOARD.md): Architectural guide with queries, JSON specs, and visual mockups.
   - [`docs/WEEK5_DAY4_SUBMISSION.md`](docs/WEEK5_DAY4_SUBMISSION.md): Official submission report with checklist, visual layout, and answers to all 3 Viva Voce questions.
+
+### Week 5 Day 5 — Assessment Engine Study + UI Bug Fix + PR
+- **Systematic UI/UX Bug Investigation & Root Cause Isolation:**
+  - Audited Moodle Assessment Engine (`mod_quiz`) and Telemetry Dashboard (`block_cynaris_stats`), identifying 3 concrete issues affecting responsiveness, parameter safety, layout collision, and asynchronous concurrency.
+- **Three Concrete Bug Fixes Committed Independently:**
+  - **Issue #101 (`031fed4`):** Fixed `moodle/mod/quiz/view.php` by adding `<meta name="viewport" content="width=device-width, initial-scale=1.0">`, sanitizing query inputs with `filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT)`, and dynamically rendering previous attempt scores and accessible CTA buttons ("Retake Assessment" vs "Start Timed Attempt").
+  - **Issue #102 (`2f272e0`):** Fixed `block_cynaris_stats.php` Chart.js canvas overflow on narrow viewports by configuring `autoSkip: true`, `maxRotation: 40`, and `font: { size: 10 }`. Added `#cynaris-chart-skeleton` shimmer loader, and enforced `table-layout: fixed;` with text-overflow ellipsis on student grade rows.
+  - **Issue #103 (`42dbaa7`):** Eliminated asynchronous race conditions in `block_cynaris_stats.php` by implementing a boolean mutex lock (`isRefreshing`), visually disabling the refresh button during fetch with guaranteed reset in `finally`, and adding W3C ARIA live region attributes (`role="status"`, `aria-live="polite"`, `aria-atomic="true"`).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_moodle_ui_bug_fixes.js`](tests/test_moodle_ui_bug_fixes.js): 11 automated assertions covering parameter validation, viewport tags, Chart.js autoSkip, skeleton shimmer, mutex locks, and ARIA attributes.
+  - [`docs/MOODLE_ASSESSMENT_UI_BUG_REPORT.md`](docs/MOODLE_ASSESSMENT_UI_BUG_REPORT.md): Formal bug report with reproduction steps, root causes, before/after diffs, and verification logs.
+  - [`docs/WEEK5_DAY5_SUBMISSION.md`](docs/WEEK5_DAY5_SUBMISSION.md): Official submission report with CIA comparisons, checklist, and answers to all 3 Viva Voce questions.
 
 ---
 
@@ -308,7 +322,9 @@ docker compose -f docker-compose.espocrm.yml up -d
 ### 6. Running All Automated Unit Tests
 ```powershell
 npm test
-# Runs all 21 unit test suites across Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+# Runs all 22 unit test suites across Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+npm run test:w5d5
+# Runs Week 5 Day 5 Assessment Engine Study & UI Bug Fixes test suite individually
 npm run test:w5d4
 # Runs Week 5 Day 4 Chart.js Progress Dashboard test suite individually
 npm run test:w5d3

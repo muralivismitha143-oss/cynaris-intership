@@ -1168,3 +1168,59 @@
 
 
 
+
+---
+
+# Week 5 Day 5 — Assessment Engine Study + UI Bug Fix + PR
+
+**Date:** November 7, 2026  
+**Lesson:** Week 5 Day 5 — Assessment Engine Study + UI Bug Fix + PR  
+**Branch:** `feat/cynaris-w5d5-murali`  
+
+---
+
+## Interaction 1: CIA → QA Engineer Mode
+
+### Prompt / Query
+> *"I am auditing the Moodle assessment workflow (`moodle/mod/quiz/view.php`) and the telemetry dashboard (`blocks/cynaris_stats/block_cynaris_stats.php`). We need to identify, reproduce, and root-cause 3 distinct UI/UX and architectural bugs: (1) an assessment quiz view issue regarding mobile viewport, parameter handling, and attempt history; (2) a dashboard layout/visual issue with Chart.js canvas overflow, label collisions, and skeleton loading; and (3) a dynamic telemetry concurrency race condition on the refresh button with accessibility gaps. What are the concrete failure modes, reproduction steps, and root cause hypotheses for these issues?"*
+
+### CIA QA Engineer Review & Bug Reproduction Analysis
+
+1. **Issue #101 Hypothesis (Assessment Quiz View - `mod/quiz/view.php`):**
+   - **Failure Mode A (Mobile Viewport Defect):** When rendering standalone activity PHP templates outside Moodle's full `$OUTPUT->header()` theme pipeline, omitting `<meta name="viewport" content="width=device-width, initial-scale=1.0">` causes mobile browsers (WebKit/Blink) to assume a desktop layout width of 980px. Touch targets shrink below WCAG minimums (48x48px), forcing pinch-and-zoom.
+   - **Failure Mode B (Parameter Injection & Type Safety):** Directly reading `$_GET['id']` without type coercion or filter validation opens the script to PHP notices, unhandled type mismatches, or SQL injection vectors if passed to raw queries.
+   - **Failure Mode C (Static Attempt Feedback):** If a student has already completed the assessment, displaying a static "Start Timed Attempt" button without showing past attempt grades (`candidateAttempt`) creates confusion on whether their submission was registered.
+
+2. **Issue #102 Hypothesis (Progress Dashboard Layout - `block_cynaris_stats.php`):**
+   - **Failure Mode A (Chart.js Axis Collision):** Chart.js default tick options on categorical x-axes attempt to draw all labels. In narrow sidebar blocks ($< 280\text{px}$), labels rotate to 50 degrees and collide with each other or truncate off the canvas edges unless `autoSkip: true`, `maxRotation: 40`, and smaller fonts (`size: 10`) are set.
+   - **Failure Mode B (Table Cell Overflow):** Standard tables with `table-layout: auto` expand horizontally to fit candidate names. Long names like "Ananya Deshmukh" cause horizontal layout breakage unless `table-layout: fixed` and `text-overflow: ellipsis` are enforced.
+   - **Failure Mode C (Cumulative Layout Shift):** Asynchronous fetching without an initial skeleton placeholder induces a jarring visual layout shift when the canvas injects into the DOM.
+
+3. **Issue #103 Hypothesis (Dynamic Telemetry Refresh Concurrency & A11y):**
+   - **Failure Mode A (Asynchronous Race Condition):** Rapid clicks on the "Refresh Telemetry" button invoke multiple concurrent `fetch()` promises. Since network latencies vary, responses resolve out-of-order, causing erratic canvas destruction and re-rendering.
+   - **Failure Mode B (Button Lock Defect):** Lack of a visual `disabled` state allows continuous user input while a network transaction is pending.
+   - **Failure Mode C (Screen Reader Accessibility):** Dynamic badge updates ("Live: Synced" to "Syncing...") without W3C ARIA live regions (`role="status"`, `aria-live="polite"`, `aria-atomic="true"`) remain invisible to assistive screen readers.
+
+### Action Taken
+- Documented the reproduction workflows in [`docs/MOODLE_ASSESSMENT_UI_BUG_REPORT.md`](../docs/MOODLE_ASSESSMENT_UI_BUG_REPORT.md).
+- Formulated concrete test specifications to verify each bug fix.
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review the code changes for fixing Issues #101, #102, and #103 across `moodle/mod/quiz/view.php`, `blocks/cynaris_stats/block_cynaris_stats.php`, and `backend/modules/moodle/MoodleService.js`. Specifically compare your proposed fix implementations against the actual production requirements, pointing out where your initial suggestions were accurate and where they needed refinement."*
+
+### CIA Code Mode Audit & CIA Suggestion vs. Actual Fix Comparison
+
+| Issue | Code Inspected | CIA Initial Suggestion | Actual Production Fix Implemented | Evaluation (Where CIA was Right vs Refinement Needed) |
+|---|---|---|---|---|
+| **#101** | `moodle/mod/quiz/view.php` | Add standard `<meta name="viewport">` and cast `(int)$_GET['id']`. | Used `filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT)` with fallback to default ID `1`, integrated dynamic attempt lookup via `$moodleService->getCandidateQuizAttempt()`, and rendered previous attempt score with contextual button text ("Retake Assessment" vs "Start Timed Attempt") and `aria-label`. | **Refinement:** CIA's `(int)` cast sanitized types, but `filter_input` is more secure and idiomatic in modern PHP. Furthermore, CIA initially overlooked rendering previous attempt feedback banners, which was essential for candidate UX. |
+| **#102** | `block_cynaris_stats.php` | Reduce canvas height and set `responsive: true`. | Added `scales.x.ticks` options (`autoSkip: true, maxRotation: 40, font: { size: 10 }`), wrapped candidate grade table in `table-layout: fixed; width: 100%;` with `text-overflow: ellipsis;` and column widths (`58%` and `42%`), and implemented `#cynaris-chart-skeleton` shimmer animation with `cynarisPulse`. | **Accurate & Expanded:** CIA accurately diagnosed Chart.js label collision. The actual fix expanded on this by adding the CSS skeleton shimmer and fixed table typography. |
+| **#103** | `block_cynaris_stats.php` | Add `setTimeout` debounce function on button click. | Implemented a boolean mutex lock `let isRefreshing = false;` with immediate return if locked (`if (isRefreshing) return;`), disabled the button (`refreshBtn.disabled = true; refreshBtn.style.opacity = '0.6'`), added W3C ARIA live region attributes (`role="status"`, `aria-live="polite"`, `aria-atomic="true"`), and guaranteed state unlocking inside a `finally {}` block. | **Refinement:** CIA suggested a timer debounce (`setTimeout`). However, in network I/O, timer debounce does not prevent race conditions if network latency exceeds the debounce delay. A boolean mutex lock combined with button disabling and guaranteed release in `finally` is architecturally superior and robust against network latency fluctuations. |
+
+### Action Taken
+- Applied refined fixes directly to `moodle/mod/quiz/view.php`, `blocks/cynaris_stats/block_cynaris_stats.php`, `moodle/blocks/cynaris_stats/block_cynaris_stats.php`, and `backend/modules/moodle/MoodleService.js`.
+- Created dedicated test suite [`tests/test_moodle_ui_bug_fixes.js`](../tests/test_moodle_ui_bug_fixes.js) with 11 automated assertions.
+- Verified 100% pass rate across all 22 test suites via `npm test`.
