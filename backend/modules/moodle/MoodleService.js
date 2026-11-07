@@ -392,63 +392,370 @@ class MoodleService {
   /**
    * Emulates Moodle block_base::get_content() for block_cynaris_stats.
    * Returns rendered HTML, structured metrics, and footer link.
+   * Supports 'chartjs' mode for Week 5 Day 4 dynamic dashboard visualization.
    */
-  getStatsBlockContent(mode = 'scaffold') {
+  getStatsBlockContent(mode = 'chartjs') {
     const title = 'Cynaris Recruitment & Training Stats';
-    const activeCandidatesCount = this.data.users.filter(u => u.role !== 'admin' && u.deleted !== 1).length || 5;
-    const completedCoursesCount = this.data.courses.length || 3;
-    const averageScore = '91.0%';
-    const readinessPercentage = 95;
+    const chartData = this.getChartDashboardData();
 
-    const htmlText = `<div class="cynaris-stats-block" style="font-family: inherit; font-size: 13px; line-height: 1.5;">` +
-      `<div style="padding: 10px; background: #f8fafc; border-left: 4px solid #0284c7; border-radius: 4px; margin-bottom: 8px;">` +
-      `<strong style="color: #0f172a; font-size: 14px;">Cynaris Candidate & Training Telemetry</strong>` +
-      `</div>` +
-      `<ul style="list-style: none; padding-left: 0; margin: 0 0 10px 0;">` +
-      `<li style="padding: 4px 0; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between;">` +
-      `<span>👥 Active Enrolled Candidates:</span>` +
-      `<strong style="color: #0284c7;">${activeCandidatesCount} Active</strong>` +
-      `</li>` +
-      `<li style="padding: 4px 0; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between;">` +
-      `<span>📚 Completed Induction Courses:</span>` +
-      `<strong style="color: #10b981;">${completedCoursesCount} Completed</strong>` +
-      `</li>` +
-      `<li style="padding: 4px 0; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between;">` +
-      `<span>📊 Average Assessment Score:</span>` +
-      `<strong style="color: #6366f1;">${averageScore} Avg</strong>` +
-      `</li>` +
-      `<li style="padding: 4px 0; display: flex; justify-content: space-between;">` +
-      `<span>🚀 Candidate Onboarding Readiness:</span>` +
-      `<strong style="color: #059669;">${readinessPercentage}% Ready</strong>` +
-      `</li>` +
-      `</ul>` +
-      `<div style="background: #e2e8f0; border-radius: 4px; height: 8px; overflow: hidden; margin-bottom: 6px;">` +
-      `<div style="background: #10b981; width: ${readinessPercentage}%; height: 100%;"></div>` +
-      `</div>` +
-      `<small style="color: #64748b;">Cynaris Talent Intelligence • Scaffold Active</small>` +
-      `</div>`;
+    // If scaffold-only requested, return simple scaffold
+    if (mode === 'scaffold') {
+      const activeCandidatesCount = this.data.users.filter(u => u.role !== 'admin' && u.deleted !== 1).length || 5;
+      const completedCoursesCount = this.data.courses.length || 3;
+      const averageScore = '91.0%';
+      const readinessPercentage = 95;
+
+      const htmlText = `<div class="cynaris-stats-block" style="font-family: inherit; font-size: 13px; line-height: 1.5;">` +
+        `<div style="padding: 10px; background: #f8fafc; border-left: 4px solid #0284c7; border-radius: 4px; margin-bottom: 8px;">` +
+        `<strong style="color: #0f172a; font-size: 14px;">Cynaris Candidate & Training Telemetry</strong>` +
+        `</div>` +
+        `<ul style="list-style: none; padding-left: 0; margin: 0 0 10px 0;">` +
+        `<li style="padding: 4px 0; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between;">` +
+        `<span>👥 Active Enrolled Candidates:</span>` +
+        `<strong style="color: #0284c7;">${activeCandidatesCount} Active</strong>` +
+        `</li>` +
+        `<li style="padding: 4px 0; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between;">` +
+        `<span>📚 Completed Induction Courses:</span>` +
+        `<strong style="color: #10b981;">${completedCoursesCount} Completed</strong>` +
+        `</li>` +
+        `<li style="padding: 4px 0; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between;">` +
+        `<span>📊 Average Assessment Score:</span>` +
+        `<strong style="color: #6366f1;">${averageScore} Avg</strong>` +
+        `</li>` +
+        `<li style="padding: 4px 0; display: flex; justify-content: space-between;">` +
+        `<span>🚀 Candidate Onboarding Readiness:</span>` +
+        `<strong style="color: #059669;">${readinessPercentage}% Ready</strong>` +
+        `</li>` +
+        `</ul>` +
+        `<div style="background: #e2e8f0; border-radius: 4px; height: 8px; overflow: hidden; margin-bottom: 6px;">` +
+        `<div style="background: #10b981; width: ${readinessPercentage}%; height: 100%;"></div>` +
+        `</div>` +
+        `<small style="color: #64748b;">Cynaris Talent Intelligence • Scaffold Active</small>` +
+        `</div>`;
+
+      return {
+        success: true,
+        component: 'block_cynaris_stats',
+        title,
+        content: {
+          text: htmlText,
+          footer: '<div style="text-align: right; margin-top: 6px;"><a href="/my/" style="font-size: 11px; color: #0284c7; text-decoration: none;">Open Recruiter Dashboard &rarr;</a></div>',
+        },
+        metrics: {
+          activeCandidates: activeCandidatesCount,
+          completedCourses: completedCoursesCount,
+          averageAssessmentScore: averageScore,
+          onboardingReadiness: `${readinessPercentage}%`,
+        },
+        formats: {
+          all: true,
+          my: true,
+          'course-view': true,
+          site: true,
+        },
+        scaffoldMode: true,
+      };
+    }
+
+    // Default: Week 5 Day 4 Chart.js Dynamic Visual Dashboard
+    const studentRows = chartData.studentGradeStats.map(s => {
+      const badge = s.hasGrades
+        ? `<span style="background:#dcfce7; color:#15803d; padding:2px 6px; border-radius:4px; font-size:11px;">${s.averageGrade}%</span>`
+        : `<span style="background:#f1f5f9; color:#64748b; padding:2px 6px; border-radius:4px; font-size:11px;">No Grades</span>`;
+      return `<tr style="border-bottom:1px solid #e2e8f0;">` +
+        `<td style="padding:6px 4px; font-weight:500;">${s.name}</td>` +
+        `<td style="padding:6px 4px; text-align:center;">${s.gradedAttempts}</td>` +
+        `<td style="padding:6px 4px; text-align:right;">${badge}</td>` +
+        `</tr>`;
+    }).join('');
+
+    const html = `
+<div class="cynaris-stats-dashboard" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px;">
+  <!-- Header & Live Status Badge -->
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid #e2e8f0;">
+    <span style="font-weight:600; color:#0f172a;">📊 Training Performance Telemetry</span>
+    <span id="cynaris-live-badge" style="background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:500;">
+      🟢 Live Telemetry
+    </span>
+  </div>
+
+  <!-- Chart 1: Course Completion % (Bar Chart) -->
+  <div style="margin-bottom:16px;">
+    <div style="font-size:12px; font-weight:600; color:#334155; margin-bottom:6px;">📈 Course Completion Rates</div>
+    <div style="position:relative; height:180px; width:100%;">
+      <canvas id="cynaris-completion-chart"></canvas>
+    </div>
+  </div>
+
+  <!-- Chart 2: Login Frequency (Line Chart) -->
+  <div style="margin-bottom:16px;">
+    <div style="font-size:12px; font-weight:600; color:#334155; margin-bottom:6px;">⚡ Candidate Login Frequency</div>
+    <div style="position:relative; height:180px; width:100%;">
+      <canvas id="cynaris-login-chart"></canvas>
+    </div>
+  </div>
+
+  <!-- Candidate Assessment Grades Table (Demonstrating students with and without grades) -->
+  <div style="margin-bottom:12px;">
+    <div style="font-size:12px; font-weight:600; color:#334155; margin-bottom:6px;">👥 Candidate Grade Averages</div>
+    <table style="width:100%; border-collapse:collapse; font-size:12px;">
+      <thead>
+        <tr style="background:#f8fafc; color:#64748b; font-size:11px; text-transform:uppercase;">
+          <th style="padding:6px 4px; text-align:left;">Student</th>
+          <th style="padding:6px 4px; text-align:center;">Attempts</th>
+          <th style="padding:6px 4px; text-align:right;">Avg Grade</th>
+        </tr>
+      </thead>
+      <tbody id="cynaris-student-grade-rows">
+        ${studentRows}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Dynamic Update Action Controls -->
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:8px; border-top:1px solid #e2e8f0;">
+    <button id="cynaris-refresh-btn" type="button" style="background:#0284c7; color:#ffffff; border:none; border-radius:4px; padding:4px 10px; font-size:11px; font-weight:500; cursor:pointer;">
+      🔄 Refresh Telemetry
+    </button>
+    <small id="cynaris-last-updated" style="color:#94a3b8; font-size:10px;">Updated: Just now</small>
+  </div>
+</div>
+
+<!-- Chart.js CDN Library Inclusion -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Dynamic Chart Rendering & Live Update Engine (No Page Reload) -->
+<script>
+(function() {
+  let completionChartInstance = null;
+  let loginChartInstance = null;
+
+  const initialData = ${JSON.stringify(chartData)};
+
+  function initCharts(data) {
+    if (typeof Chart === 'undefined') {
+      console.warn('[CynarisStats] Chart.js CDN not yet loaded, retrying...');
+      setTimeout(() => initCharts(data), 200);
+      return;
+    }
+
+    const completionCtx = document.getElementById('cynaris-completion-chart');
+    const loginCtx = document.getElementById('cynaris-login-chart');
+
+    if (!completionCtx || !loginCtx) return;
+
+    // Destroy existing instances if updating dynamically without reload
+    if (completionChartInstance) completionChartInstance.destroy();
+    if (loginChartInstance) loginChartInstance.destroy();
+
+    // 1. Render Bar Chart (Course Completion %)
+    completionChartInstance = new Chart(completionCtx.getContext('2d'), {
+      type: 'bar',
+      data: data.charts.barChart,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => 'Completion: ' + ctx.raw + '%'
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100,
+            ticks: { callback: (v) => v + '%' }
+          }
+        }
+      }
+    });
+
+    // 2. Render Line Chart (Login Frequency)
+    loginChartInstance = new Chart(loginCtx.getContext('2d'), {
+      type: 'line',
+      data: data.charts.lineChart,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { stepSize: 1 }
+          }
+        }
+      }
+    });
+  }
+
+  // Dynamic AJAX Update Function without Page Reload
+  async function refreshDashboardDynamically() {
+    const badge = document.getElementById('cynaris-live-badge');
+    const updatedLabel = document.getElementById('cynaris-last-updated');
+    if (badge) badge.innerText = '⏳ Syncing...';
+
+    try {
+      const response = await fetch('/api/moodle/blocks/cynaris_stats/chart-data');
+      if (response.ok) {
+        const freshData = await response.json();
+        initCharts(freshData);
+        if (updatedLabel) updatedLabel.innerText = 'Updated: ' + new Date().toLocaleTimeString();
+        if (badge) badge.innerText = '🟢 Live Telemetry';
+      }
+    } catch (err) {
+      console.error('[CynarisStats] Dynamic update failed:', err);
+      if (badge) badge.innerText = '⚠️ Sync Failed';
+    }
+  }
+
+  // Initialize charts with seed payload
+  initCharts(initialData);
+
+  // Bind refresh button for on-demand dynamic polling
+  const refreshBtn = document.getElementById('cynaris-refresh-btn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', refreshDashboardDynamically);
+  }
+
+  // Dynamic auto-polling interval every 30 seconds
+  setInterval(refreshDashboardDynamically, 30000);
+})();
+</script>
+`;
 
     return {
       success: true,
       component: 'block_cynaris_stats',
       title,
       content: {
-        text: htmlText,
-        footer: '<div style="text-align: right; margin-top: 6px;"><a href="/my/" style="font-size: 11px; color: #0284c7; text-decoration: none;">Open Recruiter Dashboard &rarr;</a></div>',
+        text: html,
+        footer: '<div style="text-align: right; margin-top: 6px;"><a href="/blocks/cynaris_stats/ajax.php" target="_blank" style="font-size: 11px; color: #0284c7; text-decoration: none;">View Raw JSON Stream &rarr;</a></div>',
       },
-      metrics: {
-        activeCandidates: activeCandidatesCount,
-        completedCourses: completedCoursesCount,
-        averageAssessmentScore: averageScore,
-        onboardingReadiness: `${readinessPercentage}%`,
-      },
+      chartData,
       formats: {
         all: true,
         my: true,
         'course-view': true,
         site: true,
       },
-      scaffoldMode: mode === 'scaffold',
+      scaffoldMode: false,
+    };
+  }
+
+  /**
+   * ==============================================================================
+   * Week 5 Day 4: Dynamic Chart.js Analytics from 5 Core Moodle Tables
+   * ==============================================================================
+   */
+
+  /**
+   * Queries the 5 approved Moodle tables and prepares structured Chart.js payload:
+   * 1. Completion % per course (mdl_course + mdl_course_completions)
+   * 2. Average grade per student (mdl_user + mdl_grade_grades), handling students without grades
+   * 3. Last login per user & login frequency (mdl_user + mdl_log)
+   */
+  getChartDashboardData() {
+    // 1. Completion % per course (mdl_course + mdl_course_completions)
+    const courses = this.data.courses || [];
+    const completions = this.data.course_completions || [];
+    const courseCompletionStats = courses.map(course => {
+      const courseComps = completions.filter(c => c.course === course.id);
+      const totalEnrolled = courseComps.length;
+      const completedCount = courseComps.filter(c => c.status === 1 || (c.timecompleted && c.timecompleted > 0)).length;
+      const completionPercentage = totalEnrolled > 0 ? Number(((completedCount / totalEnrolled) * 100).toFixed(1)) : 0.0;
+      return {
+        courseId: course.id,
+        courseCode: course.shortname,
+        courseName: course.fullname,
+        totalEnrolled,
+        completedCount,
+        completionPercentage,
+      };
+    });
+
+    // 2. Average grade per student (mdl_user + mdl_grade_grades)
+    // 3+ students enrolled, some with grades, some without
+    const users = (this.data.users || []).filter(u => !u.deleted && u.role !== 'admin');
+    const grades = this.data.grades || [];
+    const studentGradeStats = users.map(user => {
+      const userGrades = grades.filter(g => g.userid === user.id);
+      const gradedAttempts = userGrades.length;
+      const hasGrades = gradedAttempts > 0;
+      const averageGrade = hasGrades
+        ? Number((userGrades.reduce((acc, g) => acc + Number(g.finalgrade), 0) / gradedAttempts).toFixed(2))
+        : 0.00;
+      return {
+        userId: user.id,
+        name: `${user.firstname} ${user.lastname}`,
+        email: user.email,
+        department: user.department || 'Intern',
+        gradedAttempts,
+        averageGrade,
+        hasGrades,
+      };
+    }).sort((a, b) => b.averageGrade - a.averageGrade || a.name.localeCompare(b.name));
+
+    // 3. Last login per user & login frequency (mdl_user + mdl_log)
+    const logs = (this.data.logs || []).filter(l => l.module === 'login' && l.action === 'login');
+    const loginFrequencyStats = users.map(user => {
+      const userLogs = logs.filter(l => l.userid === user.id);
+      const loginCount = userLogs.length;
+      const maxTime = userLogs.reduce((max, l) => Math.max(max, l.time), 0);
+      return {
+        userId: user.id,
+        name: `${user.firstname} ${user.lastname}`,
+        loginCount,
+        lastLoginTime: maxTime > 0 ? maxTime : null,
+        lastLoginDate: maxTime > 0 ? new Date(maxTime * 1000).toISOString().replace('T', ' ').slice(0, 19) : 'Never',
+      };
+    }).sort((a, b) => b.loginCount - a.loginCount || a.name.localeCompare(b.name));
+
+    // Chart.js data structures
+    const barChartData = {
+      labels: courseCompletionStats.map(c => c.courseCode),
+      datasets: [
+        {
+          label: 'Course Completion Rate (%)',
+          data: courseCompletionStats.map(c => c.completionPercentage),
+          backgroundColor: 'rgba(2, 132, 199, 0.75)',
+          borderColor: 'rgba(2, 132, 199, 1)',
+          borderWidth: 1.5,
+          borderRadius: 4,
+        }
+      ]
+    };
+
+    const lineChartData = {
+      labels: loginFrequencyStats.map(u => u.name),
+      datasets: [
+        {
+          label: 'User Login Frequency',
+          data: loginFrequencyStats.map(u => u.loginCount),
+          borderColor: 'rgba(16, 185, 129, 1)',
+          backgroundColor: 'rgba(16, 185, 129, 0.2)',
+          fill: true,
+          tension: 0.35,
+          pointRadius: 5,
+          pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+        }
+      ]
+    };
+
+    return {
+      success: true,
+      timestamp: new Date().toISOString(),
+      courseCompletionStats,
+      studentGradeStats,
+      loginFrequencyStats,
+      charts: {
+        barChart: barChartData,
+        lineChart: lineChartData,
+      }
     };
   }
 

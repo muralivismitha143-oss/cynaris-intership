@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-All%2020%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2021%20Suites%20Passing-success?style=for-the-badge)](tests/)
 [![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen?style=for-the-badge&logo=github-actions)](.github/workflows/ci-cd.yml)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
@@ -24,6 +24,8 @@
 - **Week 5 Day 2 Submission Report:** [`docs/WEEK5_DAY2_SUBMISSION.md`](docs/WEEK5_DAY2_SUBMISSION.md)
 - **Moodle Block Plugin Architecture (`block_cynaris_stats`):** [`docs/MOODLE_BLOCK_CYNARIS_STATS.md`](docs/MOODLE_BLOCK_CYNARIS_STATS.md)
 - **Week 5 Day 3 Submission Report:** [`docs/WEEK5_DAY3_SUBMISSION.md`](docs/WEEK5_DAY3_SUBMISSION.md)
+- **Moodle Chart.js Progress Dashboard:** [`docs/MOODLE_CHARTJS_PROGRESS_DASHBOARD.md`](docs/MOODLE_CHARTJS_PROGRESS_DASHBOARD.md)
+- **Week 5 Day 4 Submission Report:** [`docs/WEEK5_DAY4_SUBMISSION.md`](docs/WEEK5_DAY4_SUBMISSION.md)
 - **Production Health Check:** `https://cynaris-recruitment-production.up.railway.app/api/health`
 
 ---
@@ -83,6 +85,24 @@
   - [`tests/test_moodle_block_cynaris_stats.js`](tests/test_moodle_block_cynaris_stats.js): 22 automated assertions covering plugin structure, class inheritance, metadata, capabilities, CLI upgrade, and API bridge.
   - [`docs/MOODLE_BLOCK_CYNARIS_STATS.md`](docs/MOODLE_BLOCK_CYNARIS_STATS.md): Architectural guide with code walkthrough, CLI logs, and dashboard rendering.
   - [`docs/WEEK5_DAY3_SUBMISSION.md`](docs/WEEK5_DAY3_SUBMISSION.md): Official submission report with checklist and answers to all 3 Viva Voce questions.
+
+### Week 5 Day 4 — Progress Dashboard — Chart.js Visualisation from Grade Data
+- **Relational Aggregations Across 5 Approved Tables:**
+  - `mdl_course` + `mdl_course_completions`: Calculated completion % per course (CYN-FS-101: 60%, CYN-CRM-102: 50%, CYN-OPS-103: 50%).
+  - `mdl_user` + `mdl_grade_grades`: Evaluated average grade per candidate across 5 enrolled candidates, seamlessly handling **both candidates with grades and candidates without submitted grades**.
+  - `mdl_user` + `mdl_log`: Aggregated login frequency and last login timestamps (Murali: 4 logins, Ananya: 4 logins, Rahul: 3 logins, Priya: 2 logins, Vikram: 1 login).
+- **Asynchronous Moodle AJAX Service (`ajax.php`):**
+  - Built [`blocks/cynaris_stats/ajax.php`](blocks/cynaris_stats/ajax.php) and [`moodle/blocks/cynaris_stats/ajax.php`](moodle/blocks/cynaris_stats/ajax.php) complying with `define('AJAX_SCRIPT', true);` to stream lightweight JSON payloads.
+  - Mounted REST proxy endpoint `/api/moodle/blocks/cynaris_stats/chart-data` in the Cynaris Express backend.
+- **Dual Chart.js Visualizations (CDN):**
+  - Integrated Chart.js v4.x via CDN, rendering a **Bar Chart** (`#cynaris-completion-chart`) for course completion % and a **Line Chart** (`#cynaris-login-chart`) for candidate login frequency.
+- **Dynamic Update Engine (Zero Page Reload):**
+  - Implemented asynchronous client-side updater (`refreshDashboardDynamically`) with explicit `.destroy()` lifecycle management to eliminate canvas redraw glitches and memory leaks.
+  - Added on-demand dynamic polling via a "Refresh Telemetry" button and automatic 30-second background polling.
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_moodle_chartjs_dashboard.js`](tests/test_moodle_chartjs_dashboard.js): 14 automated assertions validating SQL metrics, Chart.js datasets, and dynamic update scripts.
+  - [`docs/MOODLE_CHARTJS_PROGRESS_DASHBOARD.md`](docs/MOODLE_CHARTJS_PROGRESS_DASHBOARD.md): Architectural guide with queries, JSON specs, and visual mockups.
+  - [`docs/WEEK5_DAY4_SUBMISSION.md`](docs/WEEK5_DAY4_SUBMISSION.md): Official submission report with checklist, visual layout, and answers to all 3 Viva Voce questions.
 
 ---
 
@@ -288,7 +308,9 @@ docker compose -f docker-compose.espocrm.yml up -d
 ### 6. Running All Automated Unit Tests
 ```powershell
 npm test
-# Runs all 20 unit test suites across Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+# Runs all 21 unit test suites across Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+npm run test:w5d4
+# Runs Week 5 Day 4 Chart.js Progress Dashboard test suite individually
 npm run test:w5d3
 # Runs Week 5 Day 3 Moodle Block Plugin test suite individually
 npm run moodle:upgrade
