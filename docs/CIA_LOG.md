@@ -901,5 +901,79 @@
 - Created automated test suite [`tests/test_docker_and_cicd_pipeline.js`](../tests/test_docker_and_cicd_pipeline.js) validating all 18 assertions across Dockerfile, Compose, CI/CD workflow, migration runner, and negative test simulation.
 - Verified 100% pass rate across all 17 platform test suites.
 
+---
+
+# Week 5 Day 1 — Fork moodle/moodle, moodle-docker Setup & First Run
+
+**Date:** November 7, 2026  
+**Lesson:** Week 5 Day 1 — Fork moodle/moodle, moodle-docker Setup & First Run  
+**Branch:** `feat/cynaris-w5d1-murali`  
+
+---
+
+## Interaction 1: CIA → Full Stack Mentor Mode
+
+### Prompt / Query
+> *"Explain the architecture of moodle and how I should approach understanding it in one day."*
+
+### CIA Mentor Review & Guidance
+
+1. **The Four Architectural Pillars of Moodle LMS:**
+   - **Kernel & Global Dependency Architecture (`lib/setup.php`):**
+     Moodle initializes execution through a unified bootstrap process. When a request hits any entry point (`index.php`, `view.php`), it requires `config.php`, which invokes `lib/setup.php`. This populates core global singletons:
+     - `$CFG`: Holds site configuration parameters (`wwwroot`, `dataroot`, `dbtype`, `prefix`).
+     - `$DB`: The universal database abstraction handle (`moodle_database`).
+     - `$USER`: The authenticated user entity record.
+     - `$PAGE`: Page context, layouts, CSS/JS asset dependencies.
+     - `$OUTPUT`: HTML rendering factory producing accessible themes.
+   - **Universal Database Abstraction Layer (`$DB` / `moodle_database`):**
+     Moodle abstracts all relational operations away from raw SQL dialects. Applications invoke standardized DML methods: `$DB->get_record()`, `$DB->get_records()`, `$DB->insert_record()`, `$DB->update_record()`, and `$DB->delete_records()`. Parameterized bindings (`:userid`) eliminate SQL injection risks across PostgreSQL, MariaDB, MySQL, MSSQL, and Oracle. Tables strictly employ the `mdl_` prefix.
+   - **Modular Plugin Subsystem (Frankenstyle Naming):**
+     Over 80% of application logic lives in modular plugin directories. There are more than 40 plugin types:
+     - `mod/`: Interactive course activities (`mod_quiz`, `mod_assign`, `mod_forum`).
+     - `blocks/`: Dashboard widgets and sidebar blocks (`block_cynaris_tracker`).
+     - `auth/`: Identity and single sign-on providers (`auth_manual`, `auth_oauth2`).
+     - `enrol/`: Course enrollment rules (`enrol_manual`, `enrol_self`).
+     - Component naming conventions (Frankenstyle, e.g. `block_cynaris_tracker`, `mod_quiz`) ensure unambiguous class autoloading, string loading (`get_string()`), and capability checks.
+   - **Decoupled Security Dataroot Architecture (`$CFG->dataroot`):**
+     Uploaded candidate files and caches are stored outside the web-accessible document root (`/var/www/moodledata`). All file delivery is routed through `pluginfile.php`, which enforces user permissions before streaming content, protecting the system against Remote Code Execution (RCE).
+
+2. **One-Day Strategic Study Roadmap:**
+   - **09:00 - 11:00 | Environment & Bootstrap Lifecycle:**
+     Set up `moodle-docker` with `docker-compose.moodle.yml`. Trace `config.docker-template.php` $\rightarrow$ `config.php` $\rightarrow$ `lib/setup.php`. Understand how `$CFG->wwwroot` and `$CFG->dataroot` operate.
+   - **11:00 - 13:00 | Database Schema & Core Tables:**
+     Trace the 5 fundamental tables: `mdl_course` (curriculum), `mdl_user` (candidates), `mdl_grade_grades` (assessment marks), `mdl_course_completions` (induction milestones), and `mdl_log` (audit trail).
+   - **14:00 - 16:00 | Plugin Deep Dive (`blocks/` & `mod/quiz/`):**
+     Inspect `blocks/cynaris_tracker/block_cynaris_tracker.php` (extending `block_base`) and `mod/quiz/lib.php` (`quiz_add_instance`, `quiz_get_user_grades`). Understand how activity modules report results into the central gradebook.
+   - **16:00 - 18:00 | API Bridge & Verification:**
+     Build a Node.js Express integration service ([`backend/modules/moodle/MoodleService.js`](../backend/modules/moodle/MoodleService.js)) exposing course catalog and candidate progress to the Cynaris platform.
+
+### Action Taken
+- Configured [`docker-compose.moodle.yml`](../docker-compose.moodle.yml) and environment template [`.env.moodle.example`](../.env.moodle.example).
+- Instantiated [`moodle/config.docker-template.php`](../moodle/config.docker-template.php) and [`moodle/config.php`](../moodle/config.php).
+- Documented 3 key architectural decisions in [`docs/MOODLE_ARCHITECTURE.md`](../docs/MOODLE_ARCHITECTURE.md).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review `mod/quiz/lib.php`, `blocks/cynaris_tracker/block_cynaris_tracker.php`, and `config.php` — what does each file do and what architectural patterns should I look for?"*
+
+### CIA Code Mode Audit & Analysis
+
+| Component | File Under Review | Core Responsibility | Key Code Patterns & Security Guardrails |
+|---|---|---|---|
+| **Configuration** | `moodle/config.php` | Defines runtime site root, dataroot, database credentials, and invokes kernel bootstrap. | 1. **No Closing Tag:** Omission of `?>` prevents unwanted whitespace output that corrupts HTTP cookie headers.<br>2. **Separated Dataroot:** Points to `/var/www/moodledata`, preventing direct web access.<br>3. **Dynamic Environment Binding:** Fallbacks to Docker environment variables. |
+| **Activity Module** | `moodle/mod/quiz/lib.php` | Activity lifecycle controller for the Quiz subsystem. | 1. **Lifecycle Contracts:** `quiz_add_instance()`, `quiz_update_instance()`, `quiz_delete_instance()`.<br>2. **Central Gradebook Bridge:** `quiz_get_user_grades()` and `quiz_update_grades()` syncing quiz attempt scores into `mdl_grade_grades`.<br>3. **Parameterized DML:** Uses `$DB->insert_record()` and `$DB->get_records_select()` with named parameters. |
+| **Block Plugin** | `moodle/blocks/cynaris_tracker/block_cynaris_tracker.php` | Candidate progress widget displaying course completions and readiness. | 1. **Class Extension:** Extends core `block_base` class.<br>2. **Capability & Auth Check:** Validates `isloggedin()` and `!isguestuser()` before displaying candidate metrics.<br>3. **Applicable Formats:** Declares `applicable_formats()` restricting block to dashboard and course views. |
+
+### Action Taken
+- Built custom candidate tracking block in [`moodle/blocks/cynaris_tracker/`](../moodle/blocks/cynaris_tracker/).
+- Implemented core Quiz module lifecycle functions in [`moodle/mod/quiz/lib.php`](../moodle/mod/quiz/lib.php).
+- Formulated full schema DDL in [`moodle/database/schema.sql`](../moodle/database/schema.sql) covering all 5 key tables.
+- Validated all 15 test assertions in [`tests/test_moodle_setup.js`](../tests/test_moodle_setup.js) with 100% pass rate.
+
+
 
 

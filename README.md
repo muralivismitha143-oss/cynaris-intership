@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-All%2017%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2018%20Suites%20Passing-success?style=for-the-badge)](tests/)
 [![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen?style=for-the-badge&logo=github-actions)](.github/workflows/ci-cd.yml)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
@@ -18,7 +18,31 @@
 - **GitHub Actions Automated Pipeline:** [https://github.com/muralivismitha143-oss/cynaris-intership/actions](https://github.com/muralivismitha143-oss/cynaris-intership/actions)
 - **Docker Hub Container Registry:** [https://hub.docker.com/r/muralivismitha143/cynaris-recruitment-platform](https://hub.docker.com/r/muralivismitha143/cynaris-recruitment-platform)
 - **Week 4 Day 6 Submission Report:** [`docs/WEEK4_DAY6_SUBMISSION.md`](docs/WEEK4_DAY6_SUBMISSION.md)
+- **Moodle LMS Architecture Blueprint:** [`docs/MOODLE_ARCHITECTURE.md`](docs/MOODLE_ARCHITECTURE.md)
+- **Week 5 Day 1 Submission Report:** [`docs/WEEK5_DAY1_SUBMISSION.md`](docs/WEEK5_DAY1_SUBMISSION.md)
 - **Production Health Check:** `https://cynaris-recruitment-production.up.railway.app/api/health`
+
+---
+
+## 🎓 Week 5: Project 3 — Moodle LMS Integration & Enterprise Training Architecture
+
+### Week 5 Day 1 — Fork moodle/moodle, moodle-docker Setup & First Run
+- **Moodle Docker Multi-Container Environment:**
+  - Configured [`docker-compose.moodle.yml`](docker-compose.moodle.yml) running Moodle v4.3+ on Apache/PHP 8.1 (Port `8000`), PostgreSQL 14 (Port `5432`), and MailHog SMTP Catcher (Port `8025`).
+  - Generated environment template [`.env.moodle.example`](.env.moodle.example) and instantiated active configuration [`moodle/config.php`](moodle/config.php) from [`moodle/config.docker-template.php`](moodle/config.docker-template.php).
+- **Three Key Architectural Decisions Documented:**
+  - Universal Database Abstraction Layer (`$DB` / `moodle_database` parameterized DML).
+  - Modular Pluggable Component Architecture (Frankenstyle naming across 40+ plugin subsystems).
+  - Decoupled Security Dataroot Architecture (`$CFG->dataroot` outside webroot, served via `pluginfile.php`).
+- **Plugins, Modules & Database Schemas:**
+  - Implemented custom Block plugin [`moodle/blocks/cynaris_tracker/`](moodle/blocks/cynaris_tracker/) for candidate progress monitoring.
+  - Implemented core Quiz module functions in [`moodle/mod/quiz/lib.php`](moodle/mod/quiz/lib.php) (`quiz_add_instance`, `quiz_get_user_grades`).
+  - Defined relational DDL schemas with indexes for the 5 key tables in [`moodle/database/schema.sql`](moodle/database/schema.sql): `mdl_course`, `mdl_grade_grades`, `mdl_course_completions`, `mdl_user`, `mdl_log`.
+- **Cynaris Moodle API Bridge:**
+  - Engineered [`backend/modules/moodle/MoodleService.js`](backend/modules/moodle/MoodleService.js) and mounted REST router [`backend/routes/moodleRouter.js`](backend/routes/moodleRouter.js) on `/api/moodle`.
+- **Documentation & Viva Guide:**
+  - [`docs/MOODLE_ARCHITECTURE.md`](docs/MOODLE_ARCHITECTURE.md): Full architectural specification, folder structure, and database schemas.
+  - [`docs/WEEK5_DAY1_SUBMISSION.md`](docs/WEEK5_DAY1_SUBMISSION.md): Submission report with simulated screenshots and 3 Viva Voce answers.
 
 ---
 
@@ -208,16 +232,25 @@ docker compose up -d --build
 # Health Check: http://localhost:3000/api/health
 ```
 
-### 4. EspoCRM Docker Environment (Week 3)
+### 4. Moodle LMS Docker Environment (Week 5)
+```powershell
+docker compose -f docker-compose.moodle.yml up -d
+# Moodle LMS Web UI: http://localhost:8000
+# MailHog SMTP Web UI: http://localhost:8025
+```
+
+### 5. EspoCRM Docker Environment (Week 3)
 ```powershell
 docker compose -f docker-compose.espocrm.yml up -d
 # EspoCRM UI: http://localhost:8080
 ```
 
-### 5. Running All Automated Unit Tests
+### 6. Running All Automated Unit Tests
 ```powershell
 npm test
-# Runs all 17 unit test suites across CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+# Runs all 18 unit test suites across Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+npm run test:w5d1
+# Runs Week 5 Day 1 Moodle Setup test suite individually
 npm run test:w4d6
 # Runs Week 4 Day 6 CI/CD & Docker test suite individually
 npm run test:w4d5
