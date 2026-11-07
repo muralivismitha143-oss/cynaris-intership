@@ -1103,6 +1103,66 @@
 - Developed test suite [`tests/test_moodle_block_cynaris_stats.js`](../tests/test_moodle_block_cynaris_stats.js) validating all 22 assertions.
 - Verified 100% pass rate across all 20 test suites in `npm test`.
 
+---
+
+# Week 5 Day 4 — Progress Dashboard — Chart.js Visualisation from Grade Data
+
+**Date:** November 7, 2026  
+**Lesson:** Week 5 Day 4 — Progress Dashboard — Chart.js Visualisation from Grade Data  
+**Branch:** `feat/cynaris-w5d4-murali`  
+
+---
+
+## Interaction 1: CIA → Full Stack Mentor Mode
+
+### Prompt / Query
+> *"I am upgrading `block_cynaris_stats` from an initial scaffold to a production-ready Progress Dashboard. We need to query the 5 approved Moodle tables (`mdl_course`, `mdl_grade_grades`, `mdl_course_completions`, `mdl_user`, `mdl_log`) to calculate: (1) completion % per course, (2) average grade per student with 3+ enrolled students (some with grades, some without), and (3) last login & login frequency per user. We must return this data via a Moodle AJAX service, render Chart.js bar and line charts, and update dynamically with no page reloads. What architectural patterns and edge case guardrails should I apply?"*
+
+### CIA Mentor Review & Guidance
+
+1. **Relational Query Architecture across the 5 Approved Tables:**
+   - **Course Completion Rates:** Join `mdl_course` with `mdl_course_completions`. Calculate total enrolled students vs students with `status = 1` or valid `timecompleted > 0`. Use `ROUND((completed / total) * 100, 1)`. Ensure `LEFT JOIN` so newly published courses with 0 completions don't disappear.
+   - **Student Grade Averages:** Join `mdl_user` with `mdl_grade_grades`. Crucial edge case: **handling enrolled students who have not yet submitted any assessments**. A candidate like Priya has 0 attempts; an `INNER JOIN` would drop them from the report. Use a `LEFT JOIN` with `COUNT(gg.id)` and `COALESCE(ROUND(AVG(gg.finalgrade), 2), 0.00)`. Explicitly flag `has_grades: false` so the frontend displays a clean "No Grades" badge rather than misleading zeros.
+   - **Login Frequency & Recency:** Filter `mdl_log` by `module = 'login'` and `action = 'login'`. Group by candidate ID to compute total login count and `MAX(time)` for the most recent session timestamp.
+
+2. **Moodle AJAX Service Standards (`AJAX_SCRIPT`):**
+   - Moodle endpoints serving JSON must declare `define('AJAX_SCRIPT', true);` before bootstrapping `config.php` to suppress HTML header output.
+   - Set HTTP response header: `Content-Type: application/json; charset=utf-8`.
+   - Provide structured data tailored for Chart.js (`labels`, `datasets` with colors, borders, and fills).
+
+3. **Dynamic Client-Side Chart Lifecycle & Zero-Reload Updates:**
+   - **Preventing Canvas Glitches & Memory Leaks:** Chart.js binds an internal controller instance to the HTML5 `<canvas>`. If you call `new Chart(ctx, ...)` on an existing canvas without calling `chartInstance.destroy()`, the old chart remains in memory, causing visual flickers on hover and memory leaks. Always track instances and call `.destroy()` before re-rendering.
+   - **Dynamic Fetch Engine:** Implement an asynchronous update function (`refreshDashboardDynamically`) triggered both on-demand via a "Refresh Telemetry" button and automatically via a 30-second interval (`setInterval`).
+
+### Action Taken
+- Created [`blocks/cynaris_stats/ajax.php`](../blocks/cynaris_stats/ajax.php) and [`moodle/blocks/cynaris_stats/ajax.php`](../moodle/blocks/cynaris_stats/ajax.php) declaring `define('AJAX_SCRIPT', true);`.
+- Upgraded `get_content()` in [`blocks/cynaris_stats/block_cynaris_stats.php`](../blocks/cynaris_stats/block_cynaris_stats.php) to render two Chart.js canvases (Bar Chart for course completion % and Line Chart for login frequency).
+- Incorporated client-side dynamic polling with instance `.destroy()` cleanup.
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review the Chart.js integration and AJAX data flow in `MoodleService.js` and `block_cynaris_stats.php`. How do we test for edge cases like 3+ students with and without grades, empty logins, canvas resizing, and cross-origin fetch fallback?"*
+
+### CIA Code Mode Audit & Analysis
+
+| Component | Code Inspection | Potential Edge Case | Architectural Solution & Guardrail |
+|---|---|---|---|
+| **Multi-Student Dataset** | `studentGradeStats` mapped across 5 students | Candidate enrolled with zero assessment submissions (e.g. Priya Sharma, Mentor) causing division-by-zero or crash. | Added guard: `hasGrades = attempts > 0; averageGrade = hasGrades ? round(sum / attempts, 2) : 0.00;`. Formatted table with distinct "No Grades" styling. |
+| **Course Completion Rate** | `courseCompletionStats` | New course with zero enrolled students dividing by zero (`0 / 0 = NaN`). | Added ternary guard: `total > 0 ? round((completed / total) * 100, 1) : 0.0`. |
+| **Chart.js Instance Lifecycle** | `initCharts()` | Re-instantiating Chart.js during dynamic polling without destroying previous instance. | Guarded with: `if (completionChartInstance) completionChartInstance.destroy(); if (loginChartInstance) loginChartInstance.destroy();`. |
+| **Canvas Responsiveness** | HTML5 `<canvas>` elements | Charts expanding unbounded or breaking fixed layout in Moodle sidebar blocks. | Wrapped canvases in fixed-height responsive containers (`style="position:relative; height:180px; width:100%;"`) and configured `responsive: true, maintainAspectRatio: false`. |
+| **AJAX Fallback URLs** | `refreshDashboardDynamically()` | Fetch failing in Docker or local Express proxy environments due to URL routing differences. | Implemented fallback array: attempts `/api/moodle/blocks/cynaris_stats/chart-data` first, then falls back to `/blocks/cynaris_stats/ajax.php`. |
+
+### Action Taken
+- Extended [`backend/modules/moodle/MoodleService.js`](../backend/modules/moodle/MoodleService.js) with `getChartDashboardData()` generating Chart.js datasets for Bar and Line charts.
+- Mounted `/api/moodle/blocks/cynaris_stats/chart-data` and `/ajax/cynaris_stats` in [`backend/routes/moodleRouter.js`](../backend/routes/moodleRouter.js).
+- Built automated test suite [`tests/test_moodle_chartjs_dashboard.js`](../tests/test_moodle_chartjs_dashboard.js) with 14 assertions validating SQL metrics, Chart.js structure, and dynamic update scripts.
+- Verified 100% pass rate across all 21 test suites in `npm test`.
+
+
 
 
 
