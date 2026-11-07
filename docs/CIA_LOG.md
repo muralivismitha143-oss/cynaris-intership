@@ -1032,6 +1032,78 @@
 - Created dedicated test suite [`tests/test_moodle_core_tables_and_queries.js`](../tests/test_moodle_core_tables_and_queries.js) with 13 automated assertions, passing 100%.
 - Verified full regression: all 19 test suites passing via `npm test`.
 
+---
+
+# Week 5 Day 3 — Plugin Scaffold — Build block_cynaris_stats Block Plugin
+
+**Date:** November 7, 2026  
+**Lesson:** Week 5 Day 3 — Plugin Scaffold — Build block_cynaris_stats Block Plugin  
+**Branch:** `feat/cynaris-w5d3-murali`  
+
+---
+
+## Interaction 1: CIA → Full Stack Mentor Mode
+
+### Prompt / Query
+> *"I am scaffolding a new Moodle block plugin named `block_cynaris_stats`. Please review my implementation plan covering `block_cynaris_stats.php`, `version.php`, `lang/en/block_cynaris_stats.php`, `db/access.php`, and headless CLI upgrade execution via `php admin/cli/upgrade.php`. What Moodle architectural standards and Frankenstyle conventions must I adhere to?"*
+
+### CIA Mentor Review & Guidance
+
+1. **Frankenstyle Naming & Folder Conventions:**
+   - In Moodle, block plugins must strictly follow the `block_<name>` component naming convention.
+   - The directory must be `blocks/cynaris_stats/`.
+   - The primary class name must be `class block_cynaris_stats extends block_base`.
+   - The language file must reside at `lang/en/block_cynaris_stats.php` and define `$string['pluginname']`.
+
+2. **Block Lifecycle Contracts (`block_base`):**
+   - **`init()`:** Mandatory lifecycle method called when the block is loaded into the page object. Must set `$this->title = get_string('pluginname', 'block_cynaris_stats');`.
+   - **`get_content()`:** Generates the presentation layer. Crucial pattern: **content caching**. You must check `if ($this->content !== null) return $this->content;`. If null, instantiate `$this->content = new stdClass();`, set `$this->content->text`, and set `$this->content->footer`.
+   - **`applicable_formats()`:** Must return an associative array specifying which page layouts allow this block (e.g., `'all' => true`, `'my' => true`, `'course-view' => true`).
+   - **`instance_allow_multiple()`:** Should return `false` unless users need multiple stats blocks on the exact same dashboard page.
+   - **`has_config()`:** Should return `false` if the block has no global admin settings in `settings.php`.
+
+3. **Version & Capabilities Standards:**
+   - **`version.php`:** Must define `$plugin->component = 'block_cynaris_stats'`, `$plugin->version` in `YYYYMMDDXX` format, `$plugin->requires` (e.g. 2023042400 for Moodle 4.2+), `$plugin->maturity = MATURITY_STABLE`, and `$plugin->release`.
+   - **`db/access.php`:** Must define capabilities `'block/cynaris_stats:myaddinstance'` (for users adding blocks to their dashboard) and `'block/cynaris_stats:addinstance'` (for teachers/managers adding blocks to course pages).
+
+4. **Headless CLI Upgrade (`admin/cli/upgrade.php`):**
+   - In production or automated CI pipelines, upgrades must run headlessly without manual browser clicks. `admin/cli/upgrade.php` discovers new plugins, registers them into `mdl_config_plugins`, applies database migrations, and purges Moodle Universal Caches (MUC).
+
+### Action Taken
+- Created `blocks/cynaris_stats/` and `moodle/blocks/cynaris_stats/` containing:
+  - `block_cynaris_stats.php` extending `block_base` with `init()`, `get_content()`, `applicable_formats()`, and `instance_allow_multiple()`.
+  - `version.php` defining `$plugin->component = 'block_cynaris_stats'` with version `2023100900`.
+  - `lang/en/block_cynaris_stats.php` with internationalized string definitions.
+  - `db/access.php` defining system and block context capabilities.
+- Implemented `admin/cli/upgrade.php` and `moodle/admin/cli/upgrade.php` with companion Node.js CLI runner `backend/modules/moodle/cliUpgrade.js`.
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review the initial scaffold implementation of `block_cynaris_stats::get_content()` and check for potential edge cases: caching invalidation, guest user access, multi-instance collisions, and integration with the Cynaris platform REST bridge."*
+
+### CIA Code Mode Audit & Analysis
+
+| Component | Code Inspection | Potential Edge Case | Architectural Solution & Guardrail |
+|---|---|---|---|
+| **Content Caching** | `if ($this->content !== null) return $this->content;` | If called multiple times during page render, re-computing statistics wastes DB queries. | Employs Moodle's built-in memoization pattern; returns existing `$this->content` immediately. |
+| **Initial Scaffold** | Initial scaffold requirement specifies returning a hardcoded statistics string. | Breaking downstream visual layouts if HTML is malformed or unstyled. | Formatted scaffold HTML with clear metrics: Active Candidates (5), Completed Induction Courses (3), Avg Assessment Score (91.0%), and Onboarding Readiness (95%), styled with inline CSS. |
+| **Multi-Instance** | `instance_allow_multiple()` | Users or admins adding redundant copies of the stats block to the same page, cluttering UI. | Set `instance_allow_multiple() => false` to enforce singleton block per page layout. |
+| **Page Layouts** | `applicable_formats()` | Block appearing in inappropriate sub-contexts (e.g., popup modals or error pages). | Declared explicit format map: `'my' => true` (Dashboard), `'course-view' => true` (Courses), `'site' => true` (Frontpage). |
+| **CLI & API Bridge** | `moodleService.getBlockPlugins()` & `GET /api/moodle/blocks/cynaris_stats` | Headless environments lacking host PHP binary unable to discover or verify plugin. | Built bidirectional support: compliant PHP CLI script (`admin/cli/upgrade.php`) and Node.js bridge service exposing REST telemetry. |
+
+### Action Taken
+- Extended [`backend/modules/moodle/MoodleService.js`](../backend/modules/moodle/MoodleService.js) with `getBlockPlugins()`, `getStatsBlockContent('scaffold')`, and `runCliUpgrade()`.
+- Mounted new endpoints in [`backend/routes/moodleRouter.js`](../backend/routes/moodleRouter.js):
+  - `GET /api/moodle/blocks`
+  - `GET /api/moodle/blocks/cynaris_stats`
+  - `POST /api/moodle/admin/upgrade`
+- Developed test suite [`tests/test_moodle_block_cynaris_stats.js`](../tests/test_moodle_block_cynaris_stats.js) validating all 22 assertions.
+- Verified 100% pass rate across all 20 test suites in `npm test`.
+
+
 
 
 

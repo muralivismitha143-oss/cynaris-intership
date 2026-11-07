@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-All%2019%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2020%20Suites%20Passing-success?style=for-the-badge)](tests/)
 [![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen?style=for-the-badge&logo=github-actions)](.github/workflows/ci-cd.yml)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
@@ -22,6 +22,8 @@
 - **Week 5 Day 1 Submission Report:** [`docs/WEEK5_DAY1_SUBMISSION.md`](docs/WEEK5_DAY1_SUBMISSION.md)
 - **Moodle 5 Core Tables Workshop:** [`docs/MOODLE_5_CORE_TABLES_WORKSHOP.md`](docs/MOODLE_5_CORE_TABLES_WORKSHOP.md)
 - **Week 5 Day 2 Submission Report:** [`docs/WEEK5_DAY2_SUBMISSION.md`](docs/WEEK5_DAY2_SUBMISSION.md)
+- **Moodle Block Plugin Architecture (`block_cynaris_stats`):** [`docs/MOODLE_BLOCK_CYNARIS_STATS.md`](docs/MOODLE_BLOCK_CYNARIS_STATS.md)
+- **Week 5 Day 3 Submission Report:** [`docs/WEEK5_DAY3_SUBMISSION.md`](docs/WEEK5_DAY3_SUBMISSION.md)
 - **Production Health Check:** `https://cynaris-recruitment-production.up.railway.app/api/health`
 
 ---
@@ -63,6 +65,24 @@
   - [`tests/test_moodle_core_tables_and_queries.js`](tests/test_moodle_core_tables_and_queries.js): 13 automated assertions validating schema, queries, and constraints.
   - [`docs/MOODLE_5_CORE_TABLES_WORKSHOP.md`](docs/MOODLE_5_CORE_TABLES_WORKSHOP.md): Comprehensive workshop notes with schemas, ER diagrams, and SQL execution tables.
   - [`docs/WEEK5_DAY2_SUBMISSION.md`](docs/WEEK5_DAY2_SUBMISSION.md): Official submission report with simulated outputs and answers to all 3 Viva Voce questions.
+
+### Week 5 Day 3 — Plugin Scaffold — Build block_cynaris_stats Block Plugin
+- **Moodle Block Plugin Architecture (`blocks/cynaris_stats/`):**
+  - Scaffolded native Moodle block plugin following Frankenstyle conventions: controller [`blocks/cynaris_stats/block_cynaris_stats.php`](blocks/cynaris_stats/block_cynaris_stats.php) subclassing `block_base`.
+  - Implemented core lifecycle contracts: `init()` (title localization via `get_string()`), `get_content()` (memoized content caching returning styled candidate stats), `applicable_formats()`, and `instance_allow_multiple()`.
+- **Plugin Metadata & Capabilities (`version.php` & `db/access.php`):**
+  - Formulated `$plugin->component = 'block_cynaris_stats'` with version `2023100900`, requires `2023042400`, and `MATURITY_STABLE`.
+  - Configured RBAC capabilities in `db/access.php`: `myaddinstance` for users and `addinstance` for course managers/teachers.
+- **Language Strings & Internationalization (`lang/en/`):**
+  - Created complete string catalog in `lang/en/block_cynaris_stats.php` eliminating hardcoded UI text.
+- **Headless CLI Upgrade Utility (`admin/cli/upgrade.php`):**
+  - Developed Moodle CLI upgrade scripts [`admin/cli/upgrade.php`](admin/cli/upgrade.php) and runner [`backend/modules/moodle/cliUpgrade.js`](backend/modules/moodle/cliUpgrade.js) executing non-interactive discovery, DB registration, and cache purging.
+- **Cynaris REST API Bridge Integration:**
+  - Exposed `/api/moodle/blocks`, `/api/moodle/blocks/cynaris_stats`, and `/api/moodle/admin/upgrade` in [`backend/routes/moodleRouter.js`](backend/routes/moodleRouter.js).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_moodle_block_cynaris_stats.js`](tests/test_moodle_block_cynaris_stats.js): 22 automated assertions covering plugin structure, class inheritance, metadata, capabilities, CLI upgrade, and API bridge.
+  - [`docs/MOODLE_BLOCK_CYNARIS_STATS.md`](docs/MOODLE_BLOCK_CYNARIS_STATS.md): Architectural guide with code walkthrough, CLI logs, and dashboard rendering.
+  - [`docs/WEEK5_DAY3_SUBMISSION.md`](docs/WEEK5_DAY3_SUBMISSION.md): Official submission report with checklist and answers to all 3 Viva Voce questions.
 
 ---
 
@@ -268,7 +288,11 @@ docker compose -f docker-compose.espocrm.yml up -d
 ### 6. Running All Automated Unit Tests
 ```powershell
 npm test
-# Runs all 19 unit test suites across Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+# Runs all 20 unit test suites across Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+npm run test:w5d3
+# Runs Week 5 Day 3 Moodle Block Plugin test suite individually
+npm run moodle:upgrade
+# Runs headless Moodle CLI upgrade simulation (admin/cli/upgrade.php)
 npm run test:w5d2
 # Runs Week 5 Day 2 Moodle Core Tables & Queries test suite individually
 npm run test:w5d1
