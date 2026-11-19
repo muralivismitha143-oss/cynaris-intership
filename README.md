@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-All%2023%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2024%20Suites%20Passing-success?style=for-the-badge)](tests/)
 [![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen?style=for-the-badge&logo=github-actions)](.github/workflows/ci-cd.yml)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
@@ -30,6 +30,8 @@
 - **Week 5 Day 5 Submission Report:** [`docs/WEEK5_DAY5_SUBMISSION.md`](docs/WEEK5_DAY5_SUBMISSION.md)
 - **Moodle AI Tutor Architecture Blueprint:** [`docs/MOODLE_AI_TUTOR_INTEGRATION.md`](docs/MOODLE_AI_TUTOR_INTEGRATION.md)
 - **Week 6 Day 1 Submission Report:** [`docs/WEEK6_DAY1_SUBMISSION.md`](docs/WEEK6_DAY1_SUBMISSION.md)
+- **Moodle AI Quiz Generation Architecture:** [`docs/MOODLE_AI_QUIZ_GENERATION.md`](docs/MOODLE_AI_QUIZ_GENERATION.md)
+- **Week 6 Day 2 Submission Report:** [`docs/WEEK6_DAY2_SUBMISSION.md`](docs/WEEK6_DAY2_SUBMISSION.md)
 - **Production Health Check:** `https://cynaris-recruitment-production.up.railway.app/api/health`
 
 ---
@@ -140,6 +142,26 @@
   - [`tests/test_moodle_ai_tutor.js`](tests/test_moodle_ai_tutor.js): 15 automated assertions validating prompt construction, primary Groq execution, OpenRouter failover, local rule fallback, and REST endpoints.
   - [`docs/MOODLE_AI_TUTOR_INTEGRATION.md`](docs/MOODLE_AI_TUTOR_INTEGRATION.md): Architecture specification and failover sequence diagrams.
   - [`docs/WEEK6_DAY1_SUBMISSION.md`](docs/WEEK6_DAY1_SUBMISSION.md): Submission report with checklist, visual layouts, and 3 Viva Voce answers.
+
+### Week 6 Day 2 — AI Quiz Generation: MCQs from Course Content to Question Bank
+- **Multi-Tiered Resilient MCQ Generator Architecture:**
+  - High-throughput primary inference via **Groq** (`llama-3.3-70b-versatile`, $< 350\text{ms}$) generating pedagogical MCQs.
+  - Automated secondary cloud failover to **OpenRouter** (`meta-llama/llama-3.3-70b-instruct`) on Groq rate-limiting or timeouts.
+  - Zero-downtime **Local Deterministic Fallback Engine** generating verified syllabus questions during offline or air-gapped test runs.
+- **Strict Invariant JSON Schema & Validation:**
+  - Enforces 7-field schema per question: `question`, `option_a`, `option_b`, `option_c`, `option_d`, `correct_answer` (strictly $\in \{'A', 'B', 'C', 'D'\}$), and authoritative `explanation`.
+  - Distractor engineering targeting realistic junior developer misconceptions to maximize psychometric evaluation quality.
+- **Moodle Question Bank API & Programmatic Quiz Assembly:**
+  - Decoupled question persistence in `mdl_question` and `mdl_question_answers` with fractional grading weights ($1.0$ for correct, $0.0$ for distractors).
+  - Programmatic quiz factory instantiating `mdl_quiz` and mapping question slots sequentially in `mdl_quiz_slots`.
+  - PHP library parity implemented in [`moodle/mod/quiz/locallib.php`](moodle/mod/quiz/locallib.php).
+- **Moodle UI Deck & Express REST Gateway:**
+  - Embedded AI question generator deck in [`moodle/mod/quiz/view.php`](moodle/mod/quiz/view.php) with question count selector, live preview cards, and W3C ARIA live region indicators (`aria-live="polite"`).
+  - Mounted `POST /api/moodle/quiz/generate`, `POST /api/moodle/quiz/import-to-bank`, `POST /api/moodle/quiz/create`, `GET /api/moodle/courses/:id/question-bank`, and `GET /api/moodle/courses/:id/quizzes` in [`backend/routes/moodleRouter.js`](backend/routes/moodleRouter.js).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_moodle_ai_quiz_generation.js`](tests/test_moodle_ai_quiz_generation.js): 15 comprehensive unit tests covering prompts, Groq inference, OpenRouter failover, local deterministic fallback, validation rules, Question Bank import, quiz creation, PHP locallib parity, and REST routes.
+  - [`docs/MOODLE_AI_QUIZ_GENERATION.md`](docs/MOODLE_AI_QUIZ_GENERATION.md): Complete architecture specification, Question Bank schema, and failover lifecycle.
+  - [`docs/WEEK6_DAY2_SUBMISSION.md`](docs/WEEK6_DAY2_SUBMISSION.md): Submission report with checklist, CIA log, and answers to all 3 Viva Voce questions.
 
 ---
 
@@ -345,7 +367,9 @@ docker compose -f docker-compose.espocrm.yml up -d
 ### 6. Running All Automated Unit Tests
 ```powershell
 npm test
-# Runs all 23 unit test suites across Moodle AI Tutor (Groq + OpenRouter), Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+# Runs all 24 unit test suites across Moodle AI Quiz Generation (Groq + OpenRouter + Question Bank), Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+npm run test:w6d2
+# Runs Week 6 Day 2 AI Quiz Generation & Question Bank test suite individually
 npm run test:w6d1
 # Runs Week 6 Day 1 AI Tutor Integration test suite individually
 npm run test:w5d5

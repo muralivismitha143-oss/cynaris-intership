@@ -1289,3 +1289,71 @@
 - Applied timeout aborts, status code assertions, markdown-stripping JSON parsing, and deterministic curriculum fallbacks.
 - Verified all fallback scenarios via [`tests/test_moodle_ai_tutor.js`](../tests/test_moodle_ai_tutor.js).
 - Confirmed 100% pass rate across all 23 test suites via `npm test`.
+
+---
+
+# Week 6 Day 2: AI Quiz Generation — MCQs from Course Content to Question Bank
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w6d2-murali`  
+**Date:** November 19, 2026  
+**Lesson:** Week 6 Day 2 — AI Quiz Generation — MCQs from Course Content to Question Bank  
+
+---
+
+## Interaction 1: CIA → AI Engineer Mode
+
+### Prompt / Query
+> *"I am designing an AI-powered Multiple Choice Question (MCQ) generation engine for our Moodle LMS. The engine needs to: (1) fetch course metadata (name, summary, syllabus); (2) generate {n} technical MCQs using Groq (`llama-3.3-70b-versatile`) as primary LLM and OpenRouter (`meta-llama/llama-3.3-70b-instruct`) as secondary fallback; (3) enforce a strict 7-key JSON structure per question; (4) create plausible, educationally valuable distractors rather than obvious wrong answers; and (5) import questions into Moodle's Question Bank with correct fraction weighting. What is the optimal prompt structure and validation strategy to prevent malformed responses and ensure high psychometric quality?"*
+
+### CIA AI Engineer Mode Review & Guidance
+
+1. **Psychometric Persona & Quality Benchmarks:**
+   - Define the system persona as a **Senior Lead Technical Educator and Psychometrics Assessment Specialist**.
+   - Direct the LLM away from simple memorization questions (e.g. *"What does SQL stand for?"*) toward **scenario analysis, bug spotting, and conceptual execution tracing** (e.g. event loop phases, React render cycles, or database index usage).
+
+2. **Distractor Engineering:**
+   - Explicitly instruct the model that distractors must represent **plausible, real-world misconceptions held by junior developers** (e.g., believing that `setState` synchronously mutates state, or that microtasks run after `setTimeout`). This significantly increases the diagnostic value of the quiz.
+
+3. **Schema Invariant Contract:**
+   - Prescribe an exact 7-field JSON object structure:
+     - `question`: Clear, self-contained technical problem statement.
+     - `option_a`, `option_b`, `option_c`, `option_d`: Exactly four mutually exclusive options.
+     - `correct_answer`: Exactly one uppercase letter (`'A'`, `'B'`, `'C'`, or `'D'`).
+     - `explanation`: Pedagogical explanation of why the designated answer is correct and why the distractors fail.
+   - Command the model to return **only raw JSON** with no markdown fences, headers, or conversational preamble.
+
+4. **Multi-Stage Sanitization & Validation:**
+   - Never pass raw LLM output directly into database insertion routines.
+   - Run a two-stage parsing pipeline:
+     1. Regex sanitizer: strip markdown codeblock wrappers (` ```json ... ``` `).
+     2. Strict validator: assert all 7 required keys exist, options are non-empty strings, and `correct_answer` is strictly in `['A', 'B', 'C', 'D']`.
+
+### Action Taken
+- Implemented `buildQuizPrompt()` and `validateQuestionStructure()` in [`backend/modules/ai/AiQuizGeneratorService.js`](../backend/modules/ai/AiQuizGeneratorService.js).
+- Created equivalent PHP validation routines in [`moodle/mod/quiz/locallib.php`](../moodle/mod/quiz/locallib.php).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"How should Moodle's Question Bank API be architected to decouple questions from quizzes? How do fractional weights in `mdl_question_answers` work, and how should programmatic quiz creation map question bank items to quiz slots? What edge cases could occur during multi-provider LLM failover?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Failure / Architecture Domain | Technical Risk | Recommended Implementation | Cynaris Platform Implementation |
+|---|---|---|---|
+| **Question-to-Quiz Coupling** | Directly inserting questions into a quiz makes them unusable in future assessments or adaptive tests. | Decouple persistence: save questions to `mdl_question` and Question Bank categories (`mdl_question_categories`). Map to quizzes via `mdl_quiz_slots`. | Implemented `importToQuestionBank()` returning question IDs, then using `createQuizFromQuestions()` to map slot numbers. |
+| **Fraction Grading Weights** | Incorrect fraction values in `mdl_question_answers` break Moodle's grading engine. | For single-choice MCQs, designate `fraction = 1.0` (100%) for `correct_answer` and `fraction = 0.0` (0%) for all distractors. | Implemented fractional mapping across options A, B, C, D in both Node.js service and `moodle/mod/quiz/locallib.php`. |
+| **LLM Provider Outage** | Groq experiencing service downtime or HTTP 429 quota exhaustion. | Seamlessly catch error, record telemetry, and dispatch request to OpenRouter. | Implemented automated failover in `generateQuizQuestions()` logging `fallbackUsed: true` and `fallbackReason`. |
+| **Dual Provider / Offline Mode** | Both Groq and OpenRouter offline (e.g. during offline grading or air-gapped CI). | Provide local deterministic curriculum fallback that returns valid pre-configured MCQs without throwing 500. | Implemented `localDeterministicFallback()` with course-specific questions for courses 101, 102, and 103. |
+| **Instructor Review Step** | Storing AI-generated questions directly without human verification could propagate errors. | Stage generated questions in an interactive preview deck in the UI before committing to the Question Bank. | Added `#cynaris-quizgen-preview` card deck in `moodle/mod/quiz/view.php` with one-click Question Bank import. |
+| **Screen Reader Accessibility** | Dynamic question generation updates not announced to visually impaired instructors. | Use W3C ARIA live region attributes on status indicators. | Added `role="status"` and `aria-live="polite"` to `#cynaris-quizgen-status`. |
+
+### Action Taken
+- Decoupled question import (`/api/moodle/quiz/import-to-bank`) from quiz creation (`/api/moodle/quiz/create`).
+- Added fractional weighting (`fraction: 1.0` vs `0.0`) in `mdl_question_answers`.
+- Implemented three-tier failover (Groq -> OpenRouter -> Local Deterministic Fallback).
+- Verified all edge cases via [`tests/test_moodle_ai_quiz_generation.js`](../tests/test_moodle_ai_quiz_generation.js).
+- Confirmed 100% pass rate across all 24 test suites via `npm test`.
