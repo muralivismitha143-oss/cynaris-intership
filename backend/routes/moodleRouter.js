@@ -16,6 +16,7 @@
 const express = require('express');
 const { moodleService } = require('../modules/moodle/MoodleService');
 const { aiTutorService } = require('../modules/ai/AiTutorService');
+const { aiQuizGeneratorService } = require('../modules/ai/AiQuizGeneratorService');
 
 const router = express.Router();
 
@@ -232,6 +233,111 @@ router.get('/ai-tutor/topics', (req, res) => {
     success: true,
     courseCode,
     topics: aiTutorService.getCurriculumTopics(courseCode),
+  });
+});
+
+// ==============================================================================
+// Week 6 Day 2: AI Quiz Generation — MCQs to Question Bank & Quiz Assembly
+// ==============================================================================
+
+// POST /api/moodle/quiz/generate - Generate N MCQs from course content using Groq/OpenRouter
+router.post('/quiz/generate', async (req, res) => {
+  try {
+    const { 
+      courseId, 
+      count, 
+      simulateGroqFailure, 
+      simulateBothFailure,
+      groqApiKey,
+      openRouterApiKey
+    } = req.body || {};
+
+    const targetCourseId = Number(courseId) || 101;
+    const targetCount = Number(count) || 5;
+
+    const options = {
+      simulateGroqFailure: Boolean(simulateGroqFailure || req.query.simulate_groq === 'true'),
+      simulateBothFailure: Boolean(simulateBothFailure || req.query.simulate_both === 'true'),
+      groqApiKey,
+      openRouterApiKey,
+    };
+
+    const result = await aiQuizGeneratorService.generateQuizQuestions(targetCourseId, targetCount, options);
+    res.json(result);
+  } catch (err) {
+    res.status(502).json({
+      success: false,
+      error: 'Failed to generate quiz questions via AI service',
+      details: err.message,
+    });
+  }
+});
+
+// POST /api/moodle/quiz/import-to-bank - Import generated questions into course Question Bank
+router.post('/quiz/import-to-bank', (req, res) => {
+  try {
+    const { courseId, questions } = req.body || {};
+    if (!courseId || !Array.isArray(questions)) {
+      return res.status(400).json({
+        success: false,
+        error: 'courseId and array of questions are required for Question Bank import',
+      });
+    }
+
+    const result = aiQuizGeneratorService.importToQuestionBank(Number(courseId), questions);
+    res.status(201).json(result);
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      error: 'Failed to import questions to question bank',
+      details: err.message,
+    });
+  }
+});
+
+// POST /api/moodle/quiz/create - Programmatically assemble a Moodle Quiz with Question Bank slots
+router.post('/quiz/create', (req, res) => {
+  try {
+    const { courseId, quizName, questionIds } = req.body || {};
+    if (!courseId || !Array.isArray(questionIds) || questionIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'courseId and questionIds array are required to create a quiz',
+      });
+    }
+
+    const result = aiQuizGeneratorService.createQuizFromQuestions(Number(courseId), quizName, questionIds);
+    res.status(201).json(result);
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      error: 'Failed to create quiz from question bank',
+      details: err.message,
+    });
+  }
+});
+
+// GET /api/moodle/courses/:id/question-bank - Retrieve Question Bank for course
+router.get('/courses/:id/question-bank', (req, res) => {
+  const courseId = Number(req.params.id) || 101;
+  const questions = aiQuizGeneratorService.getCourseQuestionBank(courseId);
+  res.json({
+    success: true,
+    courseId,
+    total: questions.length,
+    questions,
+  });
+});
+
+// GET /api/moodle/courses/:id/quizzes - Retrieve all assembled quizzes for course
+router.get('/courses/:id/quizzes', (req, res) => {
+  const courseId = Number(req.params.id) || 101;
+  const quizzes = aiQuizGeneratorService.getCourseQuizzes(courseId);
+  res.json({
+    success: true,
+    courseId,
+    total: quizzes.length,
+    quizzes,
   });
 });
 

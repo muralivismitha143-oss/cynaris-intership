@@ -387,6 +387,116 @@ header('Content-Type: text/html; charset=utf-8');
         }
         </script>
 
+        <!-- Week 6 Day 2: AI Quiz Generation & Question Bank Integration -->
+        <div id="cynaris-quiz-generator-container" style="margin-top: 1.5rem; background: #ffffff; border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 1.25rem;">📝</span>
+                    <h3 style="margin: 0; font-size: 1.05rem; color: var(--text-main);">AI Assessment Generator & Question Bank Engine</h3>
+                </div>
+                <span id="cynaris-quizgen-status-badge" role="status" aria-live="polite" style="font-size: 11px; font-weight: 600; color: #0284c7; background: #e0f2fe; padding: 3px 8px; border-radius: 12px;">
+                    ● Question Bank API: Ready
+                </span>
+            </div>
+            <p style="margin: 0 0 1rem 0; font-size: 0.88rem; color: var(--text-muted);">
+                Generate fresh, curriculum-aligned multiple-choice questions (MCQs) using Groq AI with automated OpenRouter failover, then import them directly into Moodle's Question Bank.
+            </p>
+
+            <div style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap;">
+                <label style="font-size: 0.85rem; font-weight: 600; color: #475569;">Question Count:</label>
+                <select id="cynaris-quizgen-count" style="padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.85rem;">
+                    <option value="3">3 Questions</option>
+                    <option value="5" selected>5 Questions (Standard)</option>
+                    <option value="10">10 Questions</option>
+                </select>
+                <button type="button" id="cynaris-quizgen-btn" onclick="generateAiQuizQuestions()" style="background: #0284c7; color: white; border: none; border-radius: 6px; padding: 0.5rem 1rem; font-weight: 600; font-size: 0.85rem; cursor: pointer;">
+                    ⚡ Generate MCQs from Course
+                </button>
+            </div>
+
+            <div id="cynaris-quizgen-results" style="display: none; margin-top: 1rem; padding: 1rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.88rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">
+                    <strong style="color: #0369a1;" id="cynaris-quizgen-provider">Provider: Groq (llama-3.3-70b-versatile)</strong>
+                    <span id="cynaris-quizgen-meta" style="font-size: 11px; color: #64748b;">5 Questions • Imported to Question Bank</span>
+                </div>
+                <div id="cynaris-quizgen-list" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
+            </div>
+        </div>
+
+        <script>
+        async function generateAiQuizQuestions() {
+            const btn = document.getElementById('cynaris-quizgen-btn');
+            const badge = document.getElementById('cynaris-quizgen-status-badge');
+            const count = document.getElementById('cynaris-quizgen-count').value;
+            const results = document.getElementById('cynaris-quizgen-results');
+            const list = document.getElementById('cynaris-quizgen-list');
+
+            btn.disabled = true;
+            btn.textContent = 'Generating MCQs...';
+            badge.textContent = '● Synthesizing Questions with Groq...';
+            badge.style.color = '#ea580c';
+            badge.style.background = '#ffedd5';
+
+            try {
+                // 1. Generate Questions via AI Service
+                const genRes = await fetch('/api/moodle/quiz/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        courseId: <?php echo (int)($matchedQuiz['courseid'] ?? 101); ?>,
+                        count: parseInt(count, 10)
+                    })
+                });
+                const genData = await genRes.json();
+
+                if (genData.success && genData.questions) {
+                    // 2. Import into Question Bank
+                    const importRes = await fetch('/api/moodle/quiz/import-to-bank', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            courseId: genData.courseId,
+                            questions: genData.questions
+                        })
+                    });
+                    const importData = await importRes.json();
+
+                    results.style.display = 'block';
+                    document.getElementById('cynaris-quizgen-provider').textContent = 
+                        'Provider: ' + genData.provider + ' (' + genData.model + ')' + (genData.fallbackUsed ? ' [Fallback]' : '');
+                    document.getElementById('cynaris-quizgen-meta').textContent = 
+                        importData.importedCount + ' Questions Imported to Question Bank (' + genData.latencyMs + 'ms)';
+
+                    list.innerHTML = genData.questions.map((q, idx) => `
+                        <div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; padding:0.75rem;">
+                            <div style="font-weight:600; color:#1e293b; margin-bottom:0.35rem;">Q${idx + 1}: ${q.question}</div>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.25rem; font-size:0.8rem; margin-bottom:0.35rem;">
+                                <div style="padding:4px; border-radius:4px; background:${q.correct_answer === 'A' ? '#dcfce7; font-weight:600;' : '#f1f5f9;'}">A) ${q.option_a}</div>
+                                <div style="padding:4px; border-radius:4px; background:${q.correct_answer === 'B' ? '#dcfce7; font-weight:600;' : '#f1f5f9;'}">B) ${q.option_b}</div>
+                                <div style="padding:4px; border-radius:4px; background:${q.correct_answer === 'C' ? '#dcfce7; font-weight:600;' : '#f1f5f9;'}">C) ${q.option_c}</div>
+                                <div style="padding:4px; border-radius:4px; background:${q.correct_answer === 'D' ? '#dcfce7; font-weight:600;' : '#f1f5f9;'}">D) ${q.option_d}</div>
+                            </div>
+                            <div style="font-size:0.75rem; color:#15803d; background:#f0fdf4; padding:4px 8px; border-radius:4px;">
+                                <strong>Rationale:</strong> ${q.explanation}
+                            </div>
+                        </div>
+                    `).join('');
+
+                    badge.textContent = '● Imported to Question Bank';
+                    badge.style.color = '#15803d';
+                    badge.style.background = '#dcfce7';
+                }
+            } catch (err) {
+                console.error('Quiz generation error:', err);
+                badge.textContent = '● Offline Engine Used';
+                badge.style.color = '#dc2626';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '⚡ Generate MCQs from Course';
+            }
+        }
+        </script>
+
         <div class="btn-group">
             <a href="?id=<?php echo (int)$matchedQuiz['id']; ?>&action=start"
                class="btn"
