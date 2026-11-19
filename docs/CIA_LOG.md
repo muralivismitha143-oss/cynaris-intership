@@ -1224,3 +1224,68 @@
 - Applied refined fixes directly to `moodle/mod/quiz/view.php`, `blocks/cynaris_stats/block_cynaris_stats.php`, `moodle/blocks/cynaris_stats/block_cynaris_stats.php`, and `backend/modules/moodle/MoodleService.js`.
 - Created dedicated test suite [`tests/test_moodle_ui_bug_fixes.js`](../tests/test_moodle_ui_bug_fixes.js) with 11 automated assertions.
 - Verified 100% pass rate across all 22 test suites via `npm test`.
+
+
+---
+
+# Week 6 Day 1 — AI Tutor Integration: Groq Primary, OpenRouter Fallback
+
+**Date:** November 19, 2026  
+**Lesson:** Week 6 Day 1 — AI Tutor Integration — Groq Primary, OpenRouter Fallback  
+**Branch:** `feat/cynaris-w6d1-murali`  
+
+---
+
+## Interaction 1: CIA → AI Engineer Mode
+
+### Prompt / Query
+> *"I am integrating an AI Tutor into our Moodle LMS and Cynaris Training Platform. The requirements are: (1) primary LLM inference using Groq (`llama-3.3-70b-versatile`); (2) automated failover to OpenRouter (`meta-llama/llama-3.3-70b-instruct`) on rate limits (429), timeouts, or service downtime; (3) graceful local deterministic fallback for zero downtime; (4) candidate context injection (student name, course code, score, topic, quiz); and (5) Socratic pedagogical prompting that guides interns without trivially giving away exam answers. What is the optimal system and user prompt design to enforce structured JSON output and prevent hallucinations?"*
+
+### CIA AI Engineer Mode Review & Guidance
+
+1. **Persona & Pedagogical Role Definition:**
+   - Establish the AI's identity as a **Senior Staff Software Engineer and Master Technical Educator**.
+   - Explicitly instruct the model to use the **Socratic method**: emphasize foundational engineering principles, execution phases, and common developer pitfalls rather than merely outputting raw answers.
+
+2. **Grounded Context Injection:**
+   - Inject the student's operational context dynamically into the prompt:
+     - `Student Name`: Personalizes the response.
+     - `Course Code & Name`: Anchors the curriculum domain (e.g. `CYN-FS-101 Full Stack Engineering`).
+     - `Assessment Score`: Calibrates technical depth (e.g., beginner vs advanced).
+     - `Quiz Context`: Grounds the explanation in the specific assessment topic.
+   - Enforce anti-hallucination guardrails: *"Grounded strictly in the Cynaris training curriculum (Node.js ES6+, React Hooks, MySQL prepared statements, Moodle DBAL)."*
+
+3. **Strict JSON Schema Output Contract:**
+   - Mandate JSON with exact semantic keys:
+     - `conceptExplanation`: Crisp, authoritative definition in 2 to 3 sentences.
+     - `stepByStepBreakdown`: An array of exactly 3 numbered logical execution phases.
+     - `codeExample`: A clean, executable snippet demonstrating the concept.
+     - `quizHint`: A targeted Socratic hint facilitating independent problem-solving.
+     - `recommendedAction`: Concrete follow-up practice step.
+   - Set `response_format: { type: "json_object" }` on Groq and include markdown stripping logic for open-weights models on OpenRouter.
+
+### Action Taken
+- Implemented `buildPrompt()` in [`backend/modules/ai/AiTutorService.js`](../backend/modules/ai/AiTutorService.js) and [`moodle/local/cynaris_ai_tutor/AiTutor.php`](../moodle/local/cynaris_ai_tutor/AiTutor.php).
+- Documented prompt design, constraints, and JSON schema directly in code comments.
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review my AI Tutor implementation in `AiTutorService.js` and `moodleRouter.js`. What edge cases and error handling gaps could lead to service crashes or degraded candidate experience? How should timeouts, HTTP 429s, network disconnects, and fallback logging be structured?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Failure Scenario | Risk / Defect | Recommended Architectural Safeguard | Implemented in Cynaris |
+|---|---|---|---|
+| **Upstream Network Latency** | Groq or OpenRouter hanging indefinitely, locking the Node.js event loop or HTTP response. | Wrap external fetch in `AbortController` with explicit timeout (e.g., 6000ms). | Implemented `AbortController` with `setTimeout(() => controller.abort(), this.timeoutMs)` in both `callGroq` and `callOpenRouter`. |
+| **HTTP 429 / Rate Limit** | Groq quota exhausted during high-concurrency intern evaluations. | Catch non-200 responses, inspect status code, log telemetry, and immediately trigger secondary provider. | Evaluates `!response.ok`, extracts error message, logs `fallbackReason`, and executes `callOpenRouter()`. |
+| **Markdown Fences in JSON** | Open-source LLMs returning ```json ... ``` code blocks causing `JSON.parse` syntax errors. | Clean output using regex before parsing. | Implemented `cleanAndParseJson()` stripping backtick fences before JSON deserialization. |
+| **Air-Gapped / Dual Outage** | Both Groq and OpenRouter offline, returning 500 error to student. | Provide deterministic curriculum engine so the UI never crashes and always returns valid educational data. | Implemented `localDeterministicFallback()` matching keywords (event loop, Chart.js, SQL, Moodle). |
+| **Screen Reader Inaccessibility** | Dynamic AI responses appearing on screen without assistive notification. | Add W3C ARIA live regions to tutor status badges. | Added `role="status"` and `aria-live="polite"` on `#cynaris-tutor-status-badge`. |
+
+### Action Taken
+- Applied timeout aborts, status code assertions, markdown-stripping JSON parsing, and deterministic curriculum fallbacks.
+- Verified all fallback scenarios via [`tests/test_moodle_ai_tutor.js`](../tests/test_moodle_ai_tutor.js).
+- Confirmed 100% pass rate across all 23 test suites via `npm test`.
