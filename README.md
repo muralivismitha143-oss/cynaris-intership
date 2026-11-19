@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-All%2021%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2024%20Suites%20Passing-success?style=for-the-badge)](tests/)
 [![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen?style=for-the-badge&logo=github-actions)](.github/workflows/ci-cd.yml)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
@@ -26,6 +26,12 @@
 - **Week 5 Day 3 Submission Report:** [`docs/WEEK5_DAY3_SUBMISSION.md`](docs/WEEK5_DAY3_SUBMISSION.md)
 - **Moodle Chart.js Progress Dashboard:** [`docs/MOODLE_CHARTJS_PROGRESS_DASHBOARD.md`](docs/MOODLE_CHARTJS_PROGRESS_DASHBOARD.md)
 - **Week 5 Day 4 Submission Report:** [`docs/WEEK5_DAY4_SUBMISSION.md`](docs/WEEK5_DAY4_SUBMISSION.md)
+- **Moodle Assessment UI Bug Report:** [`docs/MOODLE_ASSESSMENT_UI_BUG_REPORT.md`](docs/MOODLE_ASSESSMENT_UI_BUG_REPORT.md)
+- **Week 5 Day 5 Submission Report:** [`docs/WEEK5_DAY5_SUBMISSION.md`](docs/WEEK5_DAY5_SUBMISSION.md)
+- **Moodle AI Tutor Architecture Blueprint:** [`docs/MOODLE_AI_TUTOR_INTEGRATION.md`](docs/MOODLE_AI_TUTOR_INTEGRATION.md)
+- **Week 6 Day 1 Submission Report:** [`docs/WEEK6_DAY1_SUBMISSION.md`](docs/WEEK6_DAY1_SUBMISSION.md)
+- **Moodle AI Quiz Generation Architecture:** [`docs/MOODLE_AI_QUIZ_GENERATION.md`](docs/MOODLE_AI_QUIZ_GENERATION.md)
+- **Week 6 Day 2 Submission Report:** [`docs/WEEK6_DAY2_SUBMISSION.md`](docs/WEEK6_DAY2_SUBMISSION.md)
 - **Production Health Check:** `https://cynaris-recruitment-production.up.railway.app/api/health`
 
 ---
@@ -103,6 +109,59 @@
   - [`tests/test_moodle_chartjs_dashboard.js`](tests/test_moodle_chartjs_dashboard.js): 14 automated assertions validating SQL metrics, Chart.js datasets, and dynamic update scripts.
   - [`docs/MOODLE_CHARTJS_PROGRESS_DASHBOARD.md`](docs/MOODLE_CHARTJS_PROGRESS_DASHBOARD.md): Architectural guide with queries, JSON specs, and visual mockups.
   - [`docs/WEEK5_DAY4_SUBMISSION.md`](docs/WEEK5_DAY4_SUBMISSION.md): Official submission report with checklist, visual layout, and answers to all 3 Viva Voce questions.
+
+### Week 5 Day 5 — Assessment Engine Study + UI Bug Fix + PR
+- **Systematic UI/UX Bug Investigation & Root Cause Isolation:**
+  - Audited Moodle Assessment Engine (`mod_quiz`) and Telemetry Dashboard (`block_cynaris_stats`), identifying 3 concrete issues affecting responsiveness, parameter safety, layout collision, and asynchronous concurrency.
+- **Three Concrete Bug Fixes Committed Independently:**
+  - **Issue #101 (`031fed4`):** Fixed `moodle/mod/quiz/view.php` by adding `<meta name="viewport" content="width=device-width, initial-scale=1.0">`, sanitizing query inputs with `filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT)`, and dynamically rendering previous attempt scores and accessible CTA buttons ("Retake Assessment" vs "Start Timed Attempt").
+  - **Issue #102 (`2f272e0`):** Fixed `block_cynaris_stats.php` Chart.js canvas overflow on narrow viewports by configuring `autoSkip: true`, `maxRotation: 40`, and `font: { size: 10 }`. Added `#cynaris-chart-skeleton` shimmer loader, and enforced `table-layout: fixed;` with text-overflow ellipsis on student grade rows.
+  - **Issue #103 (`42dbaa7`):** Eliminated asynchronous race conditions in `block_cynaris_stats.php` by implementing a boolean mutex lock (`isRefreshing`), visually disabling the refresh button during fetch with guaranteed reset in `finally`, and adding W3C ARIA live region attributes (`role="status"`, `aria-live="polite"`, `aria-atomic="true"`).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_moodle_ui_bug_fixes.js`](tests/test_moodle_ui_bug_fixes.js): 11 automated assertions covering parameter validation, viewport tags, Chart.js autoSkip, skeleton shimmer, mutex locks, and ARIA attributes.
+  - [`docs/MOODLE_ASSESSMENT_UI_BUG_REPORT.md`](docs/MOODLE_ASSESSMENT_UI_BUG_REPORT.md): Formal bug report with reproduction steps, root causes, before/after diffs, and verification logs.
+  - [`docs/WEEK5_DAY5_SUBMISSION.md`](docs/WEEK5_DAY5_SUBMISSION.md): Official submission report with CIA comparisons, checklist, and answers to all 3 Viva Voce questions.
+
+---
+
+## 🤖 Week 6: AI-Powered Learning Assistant & Advanced Moodle Workflows
+
+### Week 6 Day 1 — AI Tutor Integration: Groq Primary, OpenRouter Fallback
+- **Multi-Tiered Resilient AI Tutor Architecture:**
+  - Primary inference via **Groq** (`llama-3.3-70b-versatile`) delivering sub-350ms Socratic pedagogical explanations.
+  - Automated fallback to **OpenRouter** (`meta-llama/llama-3.3-70b-instruct`) on Groq rate limits, HTTP 5xx errors, or 6000ms timeouts.
+  - Zero-downtime **Local Curriculum Rule Engine** (`deterministic-curriculum-v1`) for air-gapped test environments and offline reliability.
+- **Context-Aware Socratic Prompt Engineering:**
+  - Enforces JSON output with `conceptExplanation`, `stepByStepBreakdown` (3 execution phases), `codeExample`, `quizHint`, and `recommendedAction`.
+  - Context injection anchors learning in candidate performance and Cynaris course curricula (`CYN-FS-101`, `CYN-CRM-102`, `CYN-OPS-103`).
+- **Moodle UI & REST API Gateway:**
+  - Embedded interactive AI preparation assistant in [`moodle/mod/quiz/view.php`](moodle/mod/quiz/view.php) and quick drawer in [`blocks/cynaris_stats/block_cynaris_stats.php`](blocks/cynaris_stats/block_cynaris_stats.php).
+  - Mounted `POST /api/moodle/ai-tutor/ask`, `GET /api/moodle/ai-tutor/health`, and `GET /api/moodle/ai-tutor/topics` in [`backend/routes/moodleRouter.js`](backend/routes/moodleRouter.js).
+  - Implemented PHP service parity in [`moodle/local/cynaris_ai_tutor/AiTutor.php`](moodle/local/cynaris_ai_tutor/AiTutor.php).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_moodle_ai_tutor.js`](tests/test_moodle_ai_tutor.js): 15 automated assertions validating prompt construction, primary Groq execution, OpenRouter failover, local rule fallback, and REST endpoints.
+  - [`docs/MOODLE_AI_TUTOR_INTEGRATION.md`](docs/MOODLE_AI_TUTOR_INTEGRATION.md): Architecture specification and failover sequence diagrams.
+  - [`docs/WEEK6_DAY1_SUBMISSION.md`](docs/WEEK6_DAY1_SUBMISSION.md): Submission report with checklist, visual layouts, and 3 Viva Voce answers.
+
+### Week 6 Day 2 — AI Quiz Generation: MCQs from Course Content to Question Bank
+- **Multi-Tiered Resilient MCQ Generator Architecture:**
+  - High-throughput primary inference via **Groq** (`llama-3.3-70b-versatile`, $< 350\text{ms}$) generating pedagogical MCQs.
+  - Automated secondary cloud failover to **OpenRouter** (`meta-llama/llama-3.3-70b-instruct`) on Groq rate-limiting or timeouts.
+  - Zero-downtime **Local Deterministic Fallback Engine** generating verified syllabus questions during offline or air-gapped test runs.
+- **Strict Invariant JSON Schema & Validation:**
+  - Enforces 7-field schema per question: `question`, `option_a`, `option_b`, `option_c`, `option_d`, `correct_answer` (strictly $\in \{'A', 'B', 'C', 'D'\}$), and authoritative `explanation`.
+  - Distractor engineering targeting realistic junior developer misconceptions to maximize psychometric evaluation quality.
+- **Moodle Question Bank API & Programmatic Quiz Assembly:**
+  - Decoupled question persistence in `mdl_question` and `mdl_question_answers` with fractional grading weights ($1.0$ for correct, $0.0$ for distractors).
+  - Programmatic quiz factory instantiating `mdl_quiz` and mapping question slots sequentially in `mdl_quiz_slots`.
+  - PHP library parity implemented in [`moodle/mod/quiz/locallib.php`](moodle/mod/quiz/locallib.php).
+- **Moodle UI Deck & Express REST Gateway:**
+  - Embedded AI question generator deck in [`moodle/mod/quiz/view.php`](moodle/mod/quiz/view.php) with question count selector, live preview cards, and W3C ARIA live region indicators (`aria-live="polite"`).
+  - Mounted `POST /api/moodle/quiz/generate`, `POST /api/moodle/quiz/import-to-bank`, `POST /api/moodle/quiz/create`, `GET /api/moodle/courses/:id/question-bank`, and `GET /api/moodle/courses/:id/quizzes` in [`backend/routes/moodleRouter.js`](backend/routes/moodleRouter.js).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_moodle_ai_quiz_generation.js`](tests/test_moodle_ai_quiz_generation.js): 15 comprehensive unit tests covering prompts, Groq inference, OpenRouter failover, local deterministic fallback, validation rules, Question Bank import, quiz creation, PHP locallib parity, and REST routes.
+  - [`docs/MOODLE_AI_QUIZ_GENERATION.md`](docs/MOODLE_AI_QUIZ_GENERATION.md): Complete architecture specification, Question Bank schema, and failover lifecycle.
+  - [`docs/WEEK6_DAY2_SUBMISSION.md`](docs/WEEK6_DAY2_SUBMISSION.md): Submission report with checklist, CIA log, and answers to all 3 Viva Voce questions.
 
 ---
 
@@ -308,7 +367,13 @@ docker compose -f docker-compose.espocrm.yml up -d
 ### 6. Running All Automated Unit Tests
 ```powershell
 npm test
-# Runs all 21 unit test suites across Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+# Runs all 24 unit test suites across Moodle AI Quiz Generation (Groq + OpenRouter + Question Bank), Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+npm run test:w6d2
+# Runs Week 6 Day 2 AI Quiz Generation & Question Bank test suite individually
+npm run test:w6d1
+# Runs Week 6 Day 1 AI Tutor Integration test suite individually
+npm run test:w5d5
+# Runs Week 5 Day 5 Assessment Engine Study & UI Bug Fixes test suite individually
 npm run test:w5d4
 # Runs Week 5 Day 4 Chart.js Progress Dashboard test suite individually
 npm run test:w5d3

@@ -1168,3 +1168,192 @@
 
 
 
+
+---
+
+# Week 5 Day 5 — Assessment Engine Study + UI Bug Fix + PR
+
+**Date:** November 7, 2026  
+**Lesson:** Week 5 Day 5 — Assessment Engine Study + UI Bug Fix + PR  
+**Branch:** `feat/cynaris-w5d5-murali`  
+
+---
+
+## Interaction 1: CIA → QA Engineer Mode
+
+### Prompt / Query
+> *"I am auditing the Moodle assessment workflow (`moodle/mod/quiz/view.php`) and the telemetry dashboard (`blocks/cynaris_stats/block_cynaris_stats.php`). We need to identify, reproduce, and root-cause 3 distinct UI/UX and architectural bugs: (1) an assessment quiz view issue regarding mobile viewport, parameter handling, and attempt history; (2) a dashboard layout/visual issue with Chart.js canvas overflow, label collisions, and skeleton loading; and (3) a dynamic telemetry concurrency race condition on the refresh button with accessibility gaps. What are the concrete failure modes, reproduction steps, and root cause hypotheses for these issues?"*
+
+### CIA QA Engineer Review & Bug Reproduction Analysis
+
+1. **Issue #101 Hypothesis (Assessment Quiz View - `mod/quiz/view.php`):**
+   - **Failure Mode A (Mobile Viewport Defect):** When rendering standalone activity PHP templates outside Moodle's full `$OUTPUT->header()` theme pipeline, omitting `<meta name="viewport" content="width=device-width, initial-scale=1.0">` causes mobile browsers (WebKit/Blink) to assume a desktop layout width of 980px. Touch targets shrink below WCAG minimums (48x48px), forcing pinch-and-zoom.
+   - **Failure Mode B (Parameter Injection & Type Safety):** Directly reading `$_GET['id']` without type coercion or filter validation opens the script to PHP notices, unhandled type mismatches, or SQL injection vectors if passed to raw queries.
+   - **Failure Mode C (Static Attempt Feedback):** If a student has already completed the assessment, displaying a static "Start Timed Attempt" button without showing past attempt grades (`candidateAttempt`) creates confusion on whether their submission was registered.
+
+2. **Issue #102 Hypothesis (Progress Dashboard Layout - `block_cynaris_stats.php`):**
+   - **Failure Mode A (Chart.js Axis Collision):** Chart.js default tick options on categorical x-axes attempt to draw all labels. In narrow sidebar blocks ($< 280\text{px}$), labels rotate to 50 degrees and collide with each other or truncate off the canvas edges unless `autoSkip: true`, `maxRotation: 40`, and smaller fonts (`size: 10`) are set.
+   - **Failure Mode B (Table Cell Overflow):** Standard tables with `table-layout: auto` expand horizontally to fit candidate names. Long names like "Ananya Deshmukh" cause horizontal layout breakage unless `table-layout: fixed` and `text-overflow: ellipsis` are enforced.
+   - **Failure Mode C (Cumulative Layout Shift):** Asynchronous fetching without an initial skeleton placeholder induces a jarring visual layout shift when the canvas injects into the DOM.
+
+3. **Issue #103 Hypothesis (Dynamic Telemetry Refresh Concurrency & A11y):**
+   - **Failure Mode A (Asynchronous Race Condition):** Rapid clicks on the "Refresh Telemetry" button invoke multiple concurrent `fetch()` promises. Since network latencies vary, responses resolve out-of-order, causing erratic canvas destruction and re-rendering.
+   - **Failure Mode B (Button Lock Defect):** Lack of a visual `disabled` state allows continuous user input while a network transaction is pending.
+   - **Failure Mode C (Screen Reader Accessibility):** Dynamic badge updates ("Live: Synced" to "Syncing...") without W3C ARIA live regions (`role="status"`, `aria-live="polite"`, `aria-atomic="true"`) remain invisible to assistive screen readers.
+
+### Action Taken
+- Documented the reproduction workflows in [`docs/MOODLE_ASSESSMENT_UI_BUG_REPORT.md`](../docs/MOODLE_ASSESSMENT_UI_BUG_REPORT.md).
+- Formulated concrete test specifications to verify each bug fix.
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review the code changes for fixing Issues #101, #102, and #103 across `moodle/mod/quiz/view.php`, `blocks/cynaris_stats/block_cynaris_stats.php`, and `backend/modules/moodle/MoodleService.js`. Specifically compare your proposed fix implementations against the actual production requirements, pointing out where your initial suggestions were accurate and where they needed refinement."*
+
+### CIA Code Mode Audit & CIA Suggestion vs. Actual Fix Comparison
+
+| Issue | Code Inspected | CIA Initial Suggestion | Actual Production Fix Implemented | Evaluation (Where CIA was Right vs Refinement Needed) |
+|---|---|---|---|---|
+| **#101** | `moodle/mod/quiz/view.php` | Add standard `<meta name="viewport">` and cast `(int)$_GET['id']`. | Used `filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT)` with fallback to default ID `1`, integrated dynamic attempt lookup via `$moodleService->getCandidateQuizAttempt()`, and rendered previous attempt score with contextual button text ("Retake Assessment" vs "Start Timed Attempt") and `aria-label`. | **Refinement:** CIA's `(int)` cast sanitized types, but `filter_input` is more secure and idiomatic in modern PHP. Furthermore, CIA initially overlooked rendering previous attempt feedback banners, which was essential for candidate UX. |
+| **#102** | `block_cynaris_stats.php` | Reduce canvas height and set `responsive: true`. | Added `scales.x.ticks` options (`autoSkip: true, maxRotation: 40, font: { size: 10 }`), wrapped candidate grade table in `table-layout: fixed; width: 100%;` with `text-overflow: ellipsis;` and column widths (`58%` and `42%`), and implemented `#cynaris-chart-skeleton` shimmer animation with `cynarisPulse`. | **Accurate & Expanded:** CIA accurately diagnosed Chart.js label collision. The actual fix expanded on this by adding the CSS skeleton shimmer and fixed table typography. |
+| **#103** | `block_cynaris_stats.php` | Add `setTimeout` debounce function on button click. | Implemented a boolean mutex lock `let isRefreshing = false;` with immediate return if locked (`if (isRefreshing) return;`), disabled the button (`refreshBtn.disabled = true; refreshBtn.style.opacity = '0.6'`), added W3C ARIA live region attributes (`role="status"`, `aria-live="polite"`, `aria-atomic="true"`), and guaranteed state unlocking inside a `finally {}` block. | **Refinement:** CIA suggested a timer debounce (`setTimeout`). However, in network I/O, timer debounce does not prevent race conditions if network latency exceeds the debounce delay. A boolean mutex lock combined with button disabling and guaranteed release in `finally` is architecturally superior and robust against network latency fluctuations. |
+
+### Action Taken
+- Applied refined fixes directly to `moodle/mod/quiz/view.php`, `blocks/cynaris_stats/block_cynaris_stats.php`, `moodle/blocks/cynaris_stats/block_cynaris_stats.php`, and `backend/modules/moodle/MoodleService.js`.
+- Created dedicated test suite [`tests/test_moodle_ui_bug_fixes.js`](../tests/test_moodle_ui_bug_fixes.js) with 11 automated assertions.
+- Verified 100% pass rate across all 22 test suites via `npm test`.
+
+
+---
+
+# Week 6 Day 1 — AI Tutor Integration: Groq Primary, OpenRouter Fallback
+
+**Date:** November 19, 2026  
+**Lesson:** Week 6 Day 1 — AI Tutor Integration — Groq Primary, OpenRouter Fallback  
+**Branch:** `feat/cynaris-w6d1-murali`  
+
+---
+
+## Interaction 1: CIA → AI Engineer Mode
+
+### Prompt / Query
+> *"I am integrating an AI Tutor into our Moodle LMS and Cynaris Training Platform. The requirements are: (1) primary LLM inference using Groq (`llama-3.3-70b-versatile`); (2) automated failover to OpenRouter (`meta-llama/llama-3.3-70b-instruct`) on rate limits (429), timeouts, or service downtime; (3) graceful local deterministic fallback for zero downtime; (4) candidate context injection (student name, course code, score, topic, quiz); and (5) Socratic pedagogical prompting that guides interns without trivially giving away exam answers. What is the optimal system and user prompt design to enforce structured JSON output and prevent hallucinations?"*
+
+### CIA AI Engineer Mode Review & Guidance
+
+1. **Persona & Pedagogical Role Definition:**
+   - Establish the AI's identity as a **Senior Staff Software Engineer and Master Technical Educator**.
+   - Explicitly instruct the model to use the **Socratic method**: emphasize foundational engineering principles, execution phases, and common developer pitfalls rather than merely outputting raw answers.
+
+2. **Grounded Context Injection:**
+   - Inject the student's operational context dynamically into the prompt:
+     - `Student Name`: Personalizes the response.
+     - `Course Code & Name`: Anchors the curriculum domain (e.g. `CYN-FS-101 Full Stack Engineering`).
+     - `Assessment Score`: Calibrates technical depth (e.g., beginner vs advanced).
+     - `Quiz Context`: Grounds the explanation in the specific assessment topic.
+   - Enforce anti-hallucination guardrails: *"Grounded strictly in the Cynaris training curriculum (Node.js ES6+, React Hooks, MySQL prepared statements, Moodle DBAL)."*
+
+3. **Strict JSON Schema Output Contract:**
+   - Mandate JSON with exact semantic keys:
+     - `conceptExplanation`: Crisp, authoritative definition in 2 to 3 sentences.
+     - `stepByStepBreakdown`: An array of exactly 3 numbered logical execution phases.
+     - `codeExample`: A clean, executable snippet demonstrating the concept.
+     - `quizHint`: A targeted Socratic hint facilitating independent problem-solving.
+     - `recommendedAction`: Concrete follow-up practice step.
+   - Set `response_format: { type: "json_object" }` on Groq and include markdown stripping logic for open-weights models on OpenRouter.
+
+### Action Taken
+- Implemented `buildPrompt()` in [`backend/modules/ai/AiTutorService.js`](../backend/modules/ai/AiTutorService.js) and [`moodle/local/cynaris_ai_tutor/AiTutor.php`](../moodle/local/cynaris_ai_tutor/AiTutor.php).
+- Documented prompt design, constraints, and JSON schema directly in code comments.
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review my AI Tutor implementation in `AiTutorService.js` and `moodleRouter.js`. What edge cases and error handling gaps could lead to service crashes or degraded candidate experience? How should timeouts, HTTP 429s, network disconnects, and fallback logging be structured?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Failure Scenario | Risk / Defect | Recommended Architectural Safeguard | Implemented in Cynaris |
+|---|---|---|---|
+| **Upstream Network Latency** | Groq or OpenRouter hanging indefinitely, locking the Node.js event loop or HTTP response. | Wrap external fetch in `AbortController` with explicit timeout (e.g., 6000ms). | Implemented `AbortController` with `setTimeout(() => controller.abort(), this.timeoutMs)` in both `callGroq` and `callOpenRouter`. |
+| **HTTP 429 / Rate Limit** | Groq quota exhausted during high-concurrency intern evaluations. | Catch non-200 responses, inspect status code, log telemetry, and immediately trigger secondary provider. | Evaluates `!response.ok`, extracts error message, logs `fallbackReason`, and executes `callOpenRouter()`. |
+| **Markdown Fences in JSON** | Open-source LLMs returning ```json ... ``` code blocks causing `JSON.parse` syntax errors. | Clean output using regex before parsing. | Implemented `cleanAndParseJson()` stripping backtick fences before JSON deserialization. |
+| **Air-Gapped / Dual Outage** | Both Groq and OpenRouter offline, returning 500 error to student. | Provide deterministic curriculum engine so the UI never crashes and always returns valid educational data. | Implemented `localDeterministicFallback()` matching keywords (event loop, Chart.js, SQL, Moodle). |
+| **Screen Reader Inaccessibility** | Dynamic AI responses appearing on screen without assistive notification. | Add W3C ARIA live regions to tutor status badges. | Added `role="status"` and `aria-live="polite"` on `#cynaris-tutor-status-badge`. |
+
+### Action Taken
+- Applied timeout aborts, status code assertions, markdown-stripping JSON parsing, and deterministic curriculum fallbacks.
+- Verified all fallback scenarios via [`tests/test_moodle_ai_tutor.js`](../tests/test_moodle_ai_tutor.js).
+- Confirmed 100% pass rate across all 23 test suites via `npm test`.
+
+---
+
+# Week 6 Day 2: AI Quiz Generation — MCQs from Course Content to Question Bank
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w6d2-murali`  
+**Date:** November 19, 2026  
+**Lesson:** Week 6 Day 2 — AI Quiz Generation — MCQs from Course Content to Question Bank  
+
+---
+
+## Interaction 1: CIA → AI Engineer Mode
+
+### Prompt / Query
+> *"I am designing an AI-powered Multiple Choice Question (MCQ) generation engine for our Moodle LMS. The engine needs to: (1) fetch course metadata (name, summary, syllabus); (2) generate {n} technical MCQs using Groq (`llama-3.3-70b-versatile`) as primary LLM and OpenRouter (`meta-llama/llama-3.3-70b-instruct`) as secondary fallback; (3) enforce a strict 7-key JSON structure per question; (4) create plausible, educationally valuable distractors rather than obvious wrong answers; and (5) import questions into Moodle's Question Bank with correct fraction weighting. What is the optimal prompt structure and validation strategy to prevent malformed responses and ensure high psychometric quality?"*
+
+### CIA AI Engineer Mode Review & Guidance
+
+1. **Psychometric Persona & Quality Benchmarks:**
+   - Define the system persona as a **Senior Lead Technical Educator and Psychometrics Assessment Specialist**.
+   - Direct the LLM away from simple memorization questions (e.g. *"What does SQL stand for?"*) toward **scenario analysis, bug spotting, and conceptual execution tracing** (e.g. event loop phases, React render cycles, or database index usage).
+
+2. **Distractor Engineering:**
+   - Explicitly instruct the model that distractors must represent **plausible, real-world misconceptions held by junior developers** (e.g., believing that `setState` synchronously mutates state, or that microtasks run after `setTimeout`). This significantly increases the diagnostic value of the quiz.
+
+3. **Schema Invariant Contract:**
+   - Prescribe an exact 7-field JSON object structure:
+     - `question`: Clear, self-contained technical problem statement.
+     - `option_a`, `option_b`, `option_c`, `option_d`: Exactly four mutually exclusive options.
+     - `correct_answer`: Exactly one uppercase letter (`'A'`, `'B'`, `'C'`, or `'D'`).
+     - `explanation`: Pedagogical explanation of why the designated answer is correct and why the distractors fail.
+   - Command the model to return **only raw JSON** with no markdown fences, headers, or conversational preamble.
+
+4. **Multi-Stage Sanitization & Validation:**
+   - Never pass raw LLM output directly into database insertion routines.
+   - Run a two-stage parsing pipeline:
+     1. Regex sanitizer: strip markdown codeblock wrappers (` ```json ... ``` `).
+     2. Strict validator: assert all 7 required keys exist, options are non-empty strings, and `correct_answer` is strictly in `['A', 'B', 'C', 'D']`.
+
+### Action Taken
+- Implemented `buildQuizPrompt()` and `validateQuestionStructure()` in [`backend/modules/ai/AiQuizGeneratorService.js`](../backend/modules/ai/AiQuizGeneratorService.js).
+- Created equivalent PHP validation routines in [`moodle/mod/quiz/locallib.php`](../moodle/mod/quiz/locallib.php).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"How should Moodle's Question Bank API be architected to decouple questions from quizzes? How do fractional weights in `mdl_question_answers` work, and how should programmatic quiz creation map question bank items to quiz slots? What edge cases could occur during multi-provider LLM failover?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Failure / Architecture Domain | Technical Risk | Recommended Implementation | Cynaris Platform Implementation |
+|---|---|---|---|
+| **Question-to-Quiz Coupling** | Directly inserting questions into a quiz makes them unusable in future assessments or adaptive tests. | Decouple persistence: save questions to `mdl_question` and Question Bank categories (`mdl_question_categories`). Map to quizzes via `mdl_quiz_slots`. | Implemented `importToQuestionBank()` returning question IDs, then using `createQuizFromQuestions()` to map slot numbers. |
+| **Fraction Grading Weights** | Incorrect fraction values in `mdl_question_answers` break Moodle's grading engine. | For single-choice MCQs, designate `fraction = 1.0` (100%) for `correct_answer` and `fraction = 0.0` (0%) for all distractors. | Implemented fractional mapping across options A, B, C, D in both Node.js service and `moodle/mod/quiz/locallib.php`. |
+| **LLM Provider Outage** | Groq experiencing service downtime or HTTP 429 quota exhaustion. | Seamlessly catch error, record telemetry, and dispatch request to OpenRouter. | Implemented automated failover in `generateQuizQuestions()` logging `fallbackUsed: true` and `fallbackReason`. |
+| **Dual Provider / Offline Mode** | Both Groq and OpenRouter offline (e.g. during offline grading or air-gapped CI). | Provide local deterministic curriculum fallback that returns valid pre-configured MCQs without throwing 500. | Implemented `localDeterministicFallback()` with course-specific questions for courses 101, 102, and 103. |
+| **Instructor Review Step** | Storing AI-generated questions directly without human verification could propagate errors. | Stage generated questions in an interactive preview deck in the UI before committing to the Question Bank. | Added `#cynaris-quizgen-preview` card deck in `moodle/mod/quiz/view.php` with one-click Question Bank import. |
+| **Screen Reader Accessibility** | Dynamic question generation updates not announced to visually impaired instructors. | Use W3C ARIA live region attributes on status indicators. | Added `role="status"` and `aria-live="polite"` to `#cynaris-quizgen-status`. |
+
+### Action Taken
+- Decoupled question import (`/api/moodle/quiz/import-to-bank`) from quiz creation (`/api/moodle/quiz/create`).
+- Added fractional weighting (`fraction: 1.0` vs `0.0`) in `mdl_question_answers`.
+- Implemented three-tier failover (Groq -> OpenRouter -> Local Deterministic Fallback).
+- Verified all edge cases via [`tests/test_moodle_ai_quiz_generation.js`](../tests/test_moodle_ai_quiz_generation.js).
+- Confirmed 100% pass rate across all 24 test suites via `npm test`.
