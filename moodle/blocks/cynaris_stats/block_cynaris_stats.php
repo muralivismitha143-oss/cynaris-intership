@@ -240,6 +240,24 @@ class block_cynaris_stats extends block_base {
     </div>
     <div id="cynaris-block-tutor-res" style="display:none; font-size:11px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; padding:6px; color:#334155;"></div>
   </div>
+
+  <!-- Week 6 Day 3: AI Learning Recommendations from Grade + Completion Data -->
+  <div id="cynaris-recommendations-section" style="margin-top:12px; padding-top:10px; border-top:1px dashed #cbd5e1;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+      <span style="font-size:12px; font-weight:600; color:#0369a1;">🎯 AI Learning Recommendations</span>
+      <span id="cynaris-rec-badge" style="font-size:10px; color:#15803d; background:#dcfce7; padding:1px 6px; border-radius:10px;">Groq Active</span>
+    </div>
+    <div style="display:flex; gap:4px; margin-bottom:6px;">
+      <select id="cynaris-rec-user-select" style="font-size:11px; padding:3px 4px; border:1px solid #cbd5e1; border-radius:4px; flex-grow:1;">
+        <option value="2">Murali V (Current Intern)</option>
+        <option value="4">Rahul Deshmukh</option>
+        <option value="5">Ananya Iyer</option>
+        <option value="6">Vikram Aditya</option>
+      </select>
+      <button id="cynaris-get-recommendations-btn" type="button" onclick="fetchLearningRecommendations()" style="background:#0284c7; color:#fff; border:none; border-radius:4px; padding:4px 8px; font-size:11px; cursor:pointer;">Generate</button>
+    </div>
+    <div id="cynaris-rec-result" role="status" aria-live="polite" style="display:none; font-size:11px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; padding:8px; color:#334155;"></div>
+  </div>
 </div>
 
 <!-- Chart.js CDN Library Inclusion -->
@@ -442,6 +460,78 @@ class block_cynaris_stats extends block_base {
       if (resEl) {
         resEl.style.display = 'block';
         resEl.textContent = 'AI Tutor temporarily offline. Please try again.';
+      }
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  };
+
+  // AI Learning Recommendations Handler (Week 6 Day 3)
+  window.fetchLearningRecommendations = async function() {
+    const select = document.getElementById('cynaris-rec-user-select');
+    const btn = document.getElementById('cynaris-get-recommendations-btn');
+    const badge = document.getElementById('cynaris-rec-badge');
+    const resEl = document.getElementById('cynaris-rec-result');
+    const userId = select ? select.value : '2';
+
+    if (btn) btn.disabled = true;
+    if (badge) {
+      badge.textContent = 'Analyzing...';
+      badge.style.background = '#ffedd5';
+      badge.style.color = '#ea580c';
+    }
+    if (resEl) {
+      resEl.style.display = 'block';
+      resEl.innerHTML = '<span style="color:#64748b;">⏳ Generating personalized learning path...</span>';
+    }
+
+    try {
+      const res = await fetch('/api/moodle/users/' + encodeURIComponent(userId) + '/recommendations');
+      const data = await res.json();
+      if (resEl && data.data) {
+        const d = data.data;
+        const tierColor = d.studentSummary.tier === 'Advanced' ? '#15803d' : (d.studentSummary.tier === 'Proficient' ? '#0369a1' : '#b45309');
+        const tierBg = d.studentSummary.tier === 'Advanced' ? '#dcfce7' : (d.studentSummary.tier === 'Proficient' ? '#e0f2fe' : '#fef3c7');
+
+        let html = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">' +
+          '<strong>' + (data.student ? data.student.name : 'Candidate') + '</strong>' +
+          '<span style="font-size:10px; font-weight:bold; color:' + tierColor + '; background:' + tierBg + '; padding:1px 6px; border-radius:4px;">' + d.studentSummary.tier + ' Tier</span>' +
+          '</div>';
+
+        html += '<p style="margin:2px 0 6px 0; color:#475569; font-size:10px;">' + d.studentSummary.analysis + '</p>';
+
+        if (d.strengths && d.strengths.length) {
+          html += '<div style="margin-top:4px;"><strong>💪 Key Strengths:</strong><ul style="margin:2px 0 6px 14px; padding:0;">';
+          d.strengths.slice(0, 2).forEach(s => {
+            html += '<li>' + s.topic + ' <span style="color:#64748b; font-size:10px;">(' + s.evidence + ')</span></li>';
+          });
+          html += '</ul></div>';
+        }
+
+        if (d.recommendedActions && d.recommendedActions.length) {
+          html += '<div style="margin-top:4px;"><strong>⚡ Priority Action Plan:</strong><ol style="margin:2px 0 6px 14px; padding:0;">';
+          d.recommendedActions.slice(0, 3).forEach(a => {
+            html += '<li><strong>' + a.action + '</strong> <span style="color:#0284c7; font-size:10px;">[' + (a.targetCourse || 'General') + ' ~ ' + (a.estimatedHours || 2) + 'h]</span></li>';
+          });
+          html += '</ol></div>';
+        }
+
+        html += '<div style="margin-top:6px; padding-top:4px; border-top:1px solid #e2e8f0; font-size:10px; color:#64748b;">' +
+          '🎯 <strong>Target Milestone:</strong> ' + d.nextMilestone.goal + ' (' + d.nextMilestone.targetDateDays + ' days) • ' +
+          '<span>Readiness: ' + d.nextMilestone.readinessScore + '%</span>' +
+          '<div style="color:#0284c7; margin-top:2px;">Provider: ' + data.provider + ' (' + data.model + ') • ' + data.latencyMs + 'ms</div>' +
+          '</div>';
+
+        resEl.innerHTML = html;
+      }
+      if (badge) {
+        badge.textContent = data.fallbackUsed ? 'Fallback' : 'Groq Active';
+        badge.style.background = data.fallbackUsed ? '#fef3c7' : '#dcfce7';
+        badge.style.color = data.fallbackUsed ? '#b45309' : '#15803d';
+      }
+    } catch (e) {
+      if (resEl) {
+        resEl.innerHTML = '<span style="color:#dc2626;">Failed to load recommendations. Please check server connection.</span>';
       }
     } finally {
       if (btn) btn.disabled = false;

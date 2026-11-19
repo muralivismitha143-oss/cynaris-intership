@@ -17,6 +17,7 @@ const express = require('express');
 const { moodleService } = require('../modules/moodle/MoodleService');
 const { aiTutorService } = require('../modules/ai/AiTutorService');
 const { aiQuizGeneratorService } = require('../modules/ai/AiQuizGeneratorService');
+const { aiRecommendationService } = require('../modules/ai/AiRecommendationService');
 
 const router = express.Router();
 
@@ -339,6 +340,79 @@ router.get('/courses/:id/quizzes', (req, res) => {
     total: quizzes.length,
     quizzes,
   });
+});
+
+/**
+ * ==============================================================================
+ * Week 6 Day 3: AI Learning Recommendations from Grade + Completion Data
+ * ==============================================================================
+ */
+
+// GET /api/moodle/recommendations/health - Provider & engine health status
+router.get('/recommendations/health', (req, res) => {
+  res.json(aiRecommendationService.getHealth());
+});
+
+// POST /api/moodle/recommendations/generate - Generate recommendations for candidate
+router.post('/recommendations/generate', async (req, res) => {
+  try {
+    const { userId, studentProfile, simulateGroqFailure, simulateBothFailure } = req.body || {};
+
+    let profile = studentProfile;
+    if (!profile && userId) {
+      profile = moodleService.getCandidateProgress(userId);
+    }
+
+    if (!profile) {
+      return res.status(400).json({
+        success: false,
+        error: 'Candidate profile or valid userId is required to generate recommendations',
+      });
+    }
+
+    const options = {
+      simulateGroqFailure: Boolean(simulateGroqFailure || req.query.simulate_groq === 'true'),
+      simulateBothFailure: Boolean(simulateBothFailure || req.query.simulate_both === 'true'),
+    };
+
+    const result = await aiRecommendationService.generateRecommendations(profile, options);
+    res.json(result);
+  } catch (err) {
+    res.status(502).json({
+      success: false,
+      error: 'Failed to generate recommendations via AI service',
+      details: err.message,
+    });
+  }
+});
+
+// GET /api/moodle/users/:id/recommendations - Generate recommendations for specific user by ID
+router.get('/users/:id/recommendations', async (req, res) => {
+  try {
+    const userId = Number(req.params.id);
+    const profile = moodleService.getCandidateProgress(userId);
+
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        error: `User #${userId} not found in Moodle LMS records`,
+      });
+    }
+
+    const options = {
+      simulateGroqFailure: req.query.simulate_groq === 'true',
+      simulateBothFailure: req.query.simulate_both === 'true',
+    };
+
+    const result = await aiRecommendationService.generateRecommendations(profile, options);
+    res.json(result);
+  } catch (err) {
+    res.status(502).json({
+      success: false,
+      error: 'Failed to generate user recommendations',
+      details: err.message,
+    });
+  }
 });
 
 module.exports = router;
