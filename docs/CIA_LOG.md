@@ -1357,3 +1357,69 @@
 - Implemented three-tier failover (Groq -> OpenRouter -> Local Deterministic Fallback).
 - Verified all edge cases via [`tests/test_moodle_ai_quiz_generation.js`](../tests/test_moodle_ai_quiz_generation.js).
 - Confirmed 100% pass rate across all 24 test suites via `npm test`.
+
+---
+
+# Week 6 Day 3: AI Learning Recommendations from Grade + Completion Data
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w6d3-murali`  
+**Date:** November 19, 2026  
+**Lesson:** Week 6 Day 3 — AI Learning Recommendations from Grade + Completion Data  
+
+---
+
+## Interaction 1: CIA → AI Engineer Mode
+
+### Prompt / Query
+> *"I am designing an AI Learning Recommendation capability for our Moodle LMS integration. The system aggregates student assessment scores (`mdl_grade_grades`), course completion records (`mdl_course_completions`), course metadata (`mdl_course`), and user details (`mdl_user`). I need to use Groq (`llama-3.3-70b-versatile`) as primary LLM and OpenRouter (`meta-llama/llama-3.3-70b-instruct`) as secondary failover. What is the optimal prompt structure and pedagogical rules to synthesize strengths, growth areas, prioritized next actions, and candidate performance tiers without hallucination?"*
+
+### CIA AI Engineer Mode Review & Guidance
+
+1. **Pedagogical Persona & Calibration:**
+   - Establish the persona as a **Lead AI Learning Path Architect and Senior Staff Mentor**.
+   - Embed clear, quantitative scoring rules:
+     - Grade $\ge 80\%$: Recognized as **technical mastery / key strength**.
+     - Grade $60-79\%$: **Proficient** but needs targeted refinement.
+     - Grade $< 60\%$ or incomplete module: **Critical growth area / knowledge gap**.
+
+2. **Actionable Remediation Structuring:**
+   - Instead of generic advice (e.g. *"study more"*), require the model to produce **prioritized actions** (`priority: 1, 2, 3`) with specific `targetCourse` and realistic `estimatedHours` (e.g., 2 to 4 hours).
+   - Require a concrete target milestone with an estimated completion timeframe in days.
+
+3. **Strict JSON Schema Contract:**
+   - Define a rigid schema:
+     - `studentSummary`: object with `tier` ('Advanced', 'Proficient', 'Needs Support'), `averageGrade`, `completionRate`, and `analysis`.
+     - `strengths`: array of `{ topic, evidence }`.
+     - `growthAreas`: array of `{ topic, evidence }`.
+     - `recommendedActions`: array of `{ priority, action, targetCourse, estimatedHours }`.
+     - `nextMilestone`: object with `goal`, `targetDateDays`, `readinessScore`.
+     - `pedagogicalEncouragement`: personalized motivational message.
+   - Set `response_format: { type: "json_object" }` for Groq, and apply regex sanitization to strip markdown codeblocks.
+
+### Action Taken
+- Implemented `buildRecommendationPrompt()` and `validateRecommendationStructure()` in [`backend/modules/ai/AiRecommendationService.js`](../backend/modules/ai/AiRecommendationService.js).
+- Added equivalent PHP validation methods in [`moodle/local/cynaris_recommendations/RecommendationService.php`](../moodle/local/cynaris_recommendations/RecommendationService.php).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review my AI Recommendation engine code in `AiRecommendationService.js`, `moodleRouter.js`, and `block_cynaris_stats.php`. What error handling gaps, latency bottlenecks, or failover vulnerabilities should be safeguarded against?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Failure Scenario | Risk / Failure Mode | Recommended Architectural Safeguard | Implemented in Cynaris |
+|---|---|---|---|
+| **Upstream Provider Timeout** | Groq or OpenRouter hanging under high global token generation load. | Enforce explicit `AbortController` timeout (e.g. 6000ms). | Implemented `timeout: this.timeoutMs` with request abort handler in `_postJson()`. |
+| **Quota Exhaustion (HTTP 429)** | High-concurrency internship cohort exhausting Groq TPM/RPM limits. | Automatically catch non-200 responses, log fallback reason, and route to OpenRouter. | Implemented automated failover in `generateRecommendations()`. |
+| **Dual Provider / Air-Gapped Failure** | Both Groq and OpenRouter unavailable during network disconnects or CI testing. | Implement rule-based deterministic fallback calculating real grade metrics in memory so the system never returns 500. | Implemented `localDeterministicFallback()` calculating exact averages and course completions. |
+| **Malformed LLM Output** | Open-source models wrapping JSON in markdown backticks or conversational text. | Sanitize input using regex extracting outer `{ ... }` bounds. | Implemented `cleanAndParseJson()` stripping backtick codeblocks. |
+| **Non-Existent Student Lookup** | Passing an invalid or non-existent student ID in REST routes. | Return clean HTTP 404 with descriptive error message rather than unhandled exception. | Added `if (!profile) return res.status(404).json(...)` in `/users/:id/recommendations`. |
+| **Screen Reader Accessibility** | Dynamic recommendation generation updating without alerting visually impaired users. | Add W3C ARIA live region attributes to recommendation result container. | Added `role="status"` and `aria-live="polite"` on `#cynaris-rec-result`. |
+
+### Action Taken
+- Added timeout aborts, multi-tier failover, deterministic rule-based calculation, and 404 guards.
+- Verified all scenarios via [`tests/test_moodle_ai_recommendations.js`](../tests/test_moodle_ai_recommendations.js).
+- Confirmed 100% pass rate across all 25 test suites via `npm test`.

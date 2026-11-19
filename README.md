@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-All%2024%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2025%20Suites%20Passing-success?style=for-the-badge)](tests/)
 [![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen?style=for-the-badge&logo=github-actions)](.github/workflows/ci-cd.yml)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
@@ -32,6 +32,8 @@
 - **Week 6 Day 1 Submission Report:** [`docs/WEEK6_DAY1_SUBMISSION.md`](docs/WEEK6_DAY1_SUBMISSION.md)
 - **Moodle AI Quiz Generation Architecture:** [`docs/MOODLE_AI_QUIZ_GENERATION.md`](docs/MOODLE_AI_QUIZ_GENERATION.md)
 - **Week 6 Day 2 Submission Report:** [`docs/WEEK6_DAY2_SUBMISSION.md`](docs/WEEK6_DAY2_SUBMISSION.md)
+- **Moodle AI Learning Recommendations Architecture:** [`docs/MOODLE_AI_RECOMMENDATIONS.md`](docs/MOODLE_AI_RECOMMENDATIONS.md)
+- **Week 6 Day 3 Submission Report:** [`docs/WEEK6_DAY3_SUBMISSION.md`](docs/WEEK6_DAY3_SUBMISSION.md)
 - **Production Health Check:** `https://cynaris-recruitment-production.up.railway.app/api/health`
 
 ---
@@ -162,6 +164,25 @@
   - [`tests/test_moodle_ai_quiz_generation.js`](tests/test_moodle_ai_quiz_generation.js): 15 comprehensive unit tests covering prompts, Groq inference, OpenRouter failover, local deterministic fallback, validation rules, Question Bank import, quiz creation, PHP locallib parity, and REST routes.
   - [`docs/MOODLE_AI_QUIZ_GENERATION.md`](docs/MOODLE_AI_QUIZ_GENERATION.md): Complete architecture specification, Question Bank schema, and failover lifecycle.
   - [`docs/WEEK6_DAY2_SUBMISSION.md`](docs/WEEK6_DAY2_SUBMISSION.md): Submission report with checklist, CIA log, and answers to all 3 Viva Voce questions.
+
+### Week 6 Day 3 — AI Learning Recommendations from Grade + Completion Data
+- **Multi-Tiered Resilient Recommendation Engine:**
+  - Primary inference via **Groq** (`llama-3.3-70b-versatile`, $< 350\text{ms}$) synthesizing candidate trajectory from grades and completions.
+  - Automated secondary failover to **OpenRouter** (`meta-llama/llama-3.3-70b-instruct`) on Groq rate limits, HTTP 5xx errors, or timeouts.
+  - Zero-downtime **Local Deterministic Fallback Engine** calculating mathematical averages, completion percentages, and milestone targets during offline or air-gapped test runs.
+- **5 Core Moodle Tables Data Ingestion:**
+  - Harvests candidate identity (`mdl_user`), course catalog (`mdl_course`), assessment grades (`mdl_grade_grades`), track completions (`mdl_course_completions`), and login activity (`mdl_log`).
+  - Classifies candidate into performance tiers: `Advanced` ($\ge 90\%$ avg, $\ge 50\%$ completion), `Proficient` ($\ge 80\%$), or `Needs Support`.
+- **Strict JSON Contract & Prioritized Action Plan:**
+  - Enforces structured JSON output with `studentSummary`, `strengths`, `growthAreas`, `recommendedActions` (with priority, target course, estimated hours), `nextMilestone`, and tailored `pedagogicalEncouragement`.
+- **Moodle Block Plugin UI & REST Gateway:**
+  - Embedded interactive AI recommendation deck in [`blocks/cynaris_stats/block_cynaris_stats.php`](blocks/cynaris_stats/block_cynaris_stats.php) and [`moodle/blocks/cynaris_stats/block_cynaris_stats.php`](moodle/blocks/cynaris_stats/block_cynaris_stats.php) with candidate selector, trigger button, and W3C ARIA live region indicators (`aria-live="polite"`).
+  - Mounted `GET /api/moodle/recommendations/health`, `POST /api/moodle/recommendations/generate`, and `GET /api/moodle/users/:id/recommendations` in [`backend/routes/moodleRouter.js`](backend/routes/moodleRouter.js).
+  - Implemented Frankenstyle PHP parity in [`moodle/local/cynaris_recommendations/RecommendationService.php`](moodle/local/cynaris_recommendations/RecommendationService.php).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_moodle_ai_recommendations.js`](tests/test_moodle_ai_recommendations.js): 14 unit assertions covering prompts, Groq inference, OpenRouter failover, local rule fallback, schema validation, tier differentiation, PHP parity, and REST routes.
+  - [`docs/MOODLE_AI_RECOMMENDATIONS.md`](docs/MOODLE_AI_RECOMMENDATIONS.md): Architecture guide, schema contracts, tier matrix, and failover sequence.
+  - [`docs/WEEK6_DAY3_SUBMISSION.md`](docs/WEEK6_DAY3_SUBMISSION.md): Submission report with self-review checklist, CIA log, and answers to all 3 Viva Voce questions.
 
 ---
 
@@ -367,7 +388,9 @@ docker compose -f docker-compose.espocrm.yml up -d
 ### 6. Running All Automated Unit Tests
 ```powershell
 npm test
-# Runs all 24 unit test suites across Moodle AI Quiz Generation (Groq + OpenRouter + Question Bank), Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+# Runs all 25 unit test suites across Moodle AI Learning Recommendations (Groq + OpenRouter + 5 Core Tables), Moodle AI Quiz Generation, Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+npm run test:w6d3
+# Runs Week 6 Day 3 AI Learning Recommendations test suite individually
 npm run test:w6d2
 # Runs Week 6 Day 2 AI Quiz Generation & Question Bank test suite individually
 npm run test:w6d1
