@@ -227,6 +227,19 @@ class block_cynaris_stats extends block_base {
     </button>
     <small id="cynaris-last-updated" role="status" aria-live="polite" style="color:#94a3b8; font-size:10px;">Updated: Just now</small>
   </div>
+
+  <!-- Week 6 Day 1: AI Tutor Integration Section (Groq Primary + OpenRouter Fallback) -->
+  <div style="margin-top:12px; padding-top:10px; border-top:1px dashed #cbd5e1;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+      <span style="font-size:12px; font-weight:600; color:#0369a1;">🤖 AI Technical Tutor</span>
+      <span id="cynaris-tutor-badge" style="font-size:10px; color:#15803d; background:#dcfce7; padding:1px 6px; border-radius:10px;">Groq Active</span>
+    </div>
+    <div style="display:flex; gap:4px; margin-bottom:6px;">
+      <input type="text" id="cynaris-block-tutor-q" placeholder="Ask AI Tutor a question..." style="width:100%; font-size:11px; padding:4px 6px; border:1px solid #cbd5e1; border-radius:4px;" />
+      <button id="cynaris-block-tutor-btn" type="button" onclick="askBlockAiTutor()" style="background:#0284c7; color:#fff; border:none; border-radius:4px; padding:4px 8px; font-size:11px; cursor:pointer;">Ask</button>
+    </div>
+    <div id="cynaris-block-tutor-res" style="display:none; font-size:11px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; padding:6px; color:#334155;"></div>
+  </div>
 </div>
 
 <!-- Chart.js CDN Library Inclusion -->
@@ -386,6 +399,54 @@ class block_cynaris_stats extends block_base {
   if (refreshBtn) {
     refreshBtn.addEventListener('click', refreshDashboardDynamically);
   }
+
+  // AI Tutor Quick Query Handler (Week 6 Day 1)
+  window.askBlockAiTutor = async function() {
+    const input = document.getElementById('cynaris-block-tutor-q');
+    const btn = document.getElementById('cynaris-block-tutor-btn');
+    const badge = document.getElementById('cynaris-tutor-badge');
+    const resEl = document.getElementById('cynaris-block-tutor-res');
+    const q = (input && input.value) ? input.value.trim() : '';
+    if (!q) return;
+
+    if (btn) btn.disabled = true;
+    if (badge) {
+      badge.textContent = 'Thinking...';
+      badge.style.background = '#ffedd5';
+      badge.style.color = '#ea580c';
+    }
+
+    try {
+      const res = await fetch('/api/moodle/ai-tutor/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentName: 'Candidate',
+          courseCode: 'CYN-FS-101',
+          question: q
+        })
+      });
+      const data = await res.json();
+      if (resEl && data.data) {
+        resEl.style.display = 'block';
+        resEl.innerHTML = '<strong>' + (data.data.conceptExplanation || '') + '</strong>' +
+          (data.data.codeExample ? '<pre style=\"margin:4px 0; background:#0f172a; color:#f8fafc; padding:4px; border-radius:3px; overflow-x:auto;\">' + data.data.codeExample + '</pre>' : '') +
+          '<div style=\"color:#0369a1; font-size:10px; margin-top:3px;\">Provider: ' + data.provider + ' (' + data.model + ') • ' + data.latencyMs + 'ms</div>';
+      }
+      if (badge) {
+        badge.textContent = data.fallbackUsed ? 'Fallback' : 'Groq Active';
+        badge.style.background = data.fallbackUsed ? '#fef3c7' : '#dcfce7';
+        badge.style.color = data.fallbackUsed ? '#b45309' : '#15803d';
+      }
+    } catch (e) {
+      if (resEl) {
+        resEl.style.display = 'block';
+        resEl.textContent = 'AI Tutor temporarily offline. Please try again.';
+      }
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  };
 
   // Dynamic auto-polling interval every 30 seconds
   setInterval(refreshDashboardDynamically, 30000);

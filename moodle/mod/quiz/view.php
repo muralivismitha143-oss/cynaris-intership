@@ -258,6 +258,135 @@ header('Content-Type: text/html; charset=utf-8');
             </p>
         <?php endif; ?>
 
+        <!-- Week 6 Day 1: AI Tutor Integration — Groq Primary, OpenRouter Fallback -->
+        <div id="cynaris-ai-tutor-container" style="margin-top: 2rem; background: #ffffff; border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 1.25rem;">🤖</span>
+                    <h3 style="margin: 0; font-size: 1.05rem; color: var(--text-main);">AI Technical Tutor & Exam Preparation Assistant</h3>
+                </div>
+                <span id="cynaris-tutor-status-badge" role="status" aria-live="polite" style="font-size: 11px; font-weight: 600; color: #0284c7; background: #e0f2fe; padding: 3px 8px; border-radius: 12px;">
+                    ● Primary: Groq LLaMA 3.3 70B (Ready)
+                </span>
+            </div>
+            <p style="margin: 0 0 1rem 0; font-size: 0.88rem; color: var(--text-muted);">
+                Need clarification on concepts tested in this assessment? Ask the Cynaris AI Tutor for Socratic explanations, step-by-step guidance, and code examples.
+            </p>
+            
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
+                <button type="button" class="btn-topic" onclick="askAiTutorPredefined('Explain the Node.js event loop phases and asynchronous non-blocking I/O.')" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; color: #475569;">
+                    💡 Event Loop & Libuv
+                </button>
+                <button type="button" class="btn-topic" onclick="askAiTutorPredefined('How do SQL prepared statements protect against injection in Moodle DBAL?')" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; color: #475569;">
+                    💡 Prepared Statements & DBAL
+                </button>
+                <button type="button" class="btn-topic" onclick="askAiTutorPredefined('How to prevent Chart.js label collisions on narrow mobile viewports?')" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; color: #475569;">
+                    💡 Chart.js AutoSkip Ticks
+                </button>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem;">
+                <input type="text" id="cynaris-tutor-input" placeholder="Ask a question about this assessment..." style="flex: 1; padding: 0.6rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem;" onkeypress="if(event.key === 'Enter') submitAiTutorQuestion();" />
+                <button type="button" id="cynaris-tutor-submit-btn" onclick="submitAiTutorQuestion()" style="background: #0284c7; color: white; border: none; border-radius: 6px; padding: 0.6rem 1.2rem; font-weight: 600; cursor: pointer;">
+                    Ask Tutor
+                </button>
+            </div>
+
+            <div id="cynaris-tutor-output" style="display: none; margin-top: 1rem; padding: 1rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.9rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <strong style="color: #0369a1;" id="cynaris-tutor-provider-label">Provider: Groq (llama-3.3-70b-versatile)</strong>
+                    <span id="cynaris-tutor-latency-label" style="font-size: 11px; color: #64748b;">Latency: ~250ms</span>
+                </div>
+                <div id="cynaris-tutor-explanation" style="margin-bottom: 0.75rem; color: #1e293b; line-height: 1.4;"></div>
+                <div id="cynaris-tutor-steps" style="margin-bottom: 0.75rem;"></div>
+                <pre id="cynaris-tutor-code" style="background: #0f172a; color: #f8fafc; padding: 0.75rem; border-radius: 4px; overflow-x: auto; font-size: 12px; margin-bottom: 0.75rem;"></pre>
+                <div id="cynaris-tutor-hint" style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 0.5rem 0.75rem; border-radius: 4px; color: #92400e; font-size: 12px;"></div>
+            </div>
+        </div>
+
+        <script>
+        async function submitAiTutorQuestion() {
+            const input = document.getElementById('cynaris-tutor-input');
+            const q = input.value.trim();
+            if (!q) return;
+            await askAiTutor(q);
+        }
+
+        function askAiTutorPredefined(questionText) {
+            const input = document.getElementById('cynaris-tutor-input');
+            input.value = questionText;
+            askAiTutor(questionText);
+        }
+
+        async function askAiTutor(questionText) {
+            const btn = document.getElementById('cynaris-tutor-submit-btn');
+            const badge = document.getElementById('cynaris-tutor-status-badge');
+            const output = document.getElementById('cynaris-tutor-output');
+            
+            btn.disabled = true;
+            btn.textContent = 'Thinking...';
+            badge.textContent = '● Querying AI Tutor...';
+            badge.style.color = '#ea580c';
+            badge.style.background = '#ffedd5';
+
+            try {
+                const res = await fetch('/api/moodle/ai-tutor/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        studentId: 2,
+                        studentName: 'Murali',
+                        courseCode: 'CYN-FS-101',
+                        courseName: <?php echo json_encode($courseName); ?>,
+                        quizName: <?php echo json_encode($matchedQuiz['itemname']); ?>,
+                        question: questionText
+                    })
+                });
+                const data = await res.json();
+                if (data.success && data.data) {
+                    output.style.display = 'block';
+                    document.getElementById('cynaris-tutor-provider-label').textContent = 
+                        'Provider: ' + data.provider + ' (' + data.model + ')' + (data.fallbackUsed ? ' [Fallback Active]' : '');
+                    document.getElementById('cynaris-tutor-latency-label').textContent = 'Latency: ' + data.latencyMs + 'ms';
+                    document.getElementById('cynaris-tutor-explanation').textContent = data.data.conceptExplanation;
+                    
+                    const stepsEl = document.getElementById('cynaris-tutor-steps');
+                    stepsEl.innerHTML = '<strong style="display:block; margin-bottom:4px; font-size:12px; color:#475569;">Step-by-Step Breakdown:</strong>' +
+                        '<ol style="margin:0; padding-left:1.2rem; font-size:12px; color:#334155;">' +
+                        (data.data.stepByStepBreakdown || []).map(s => '<li>' + s + '</li>').join('') +
+                        '</ol>';
+                    
+                    const codeEl = document.getElementById('cynaris-tutor-code');
+                    if (data.data.codeExample) {
+                        codeEl.style.display = 'block';
+                        codeEl.textContent = data.data.codeExample;
+                    } else {
+                        codeEl.style.display = 'none';
+                    }
+
+                    const hintEl = document.getElementById('cynaris-tutor-hint');
+                    if (data.data.quizHint) {
+                        hintEl.style.display = 'block';
+                        hintEl.innerHTML = '<strong>Quiz Hint:</strong> ' + data.data.quizHint;
+                    } else {
+                        hintEl.style.display = 'none';
+                    }
+
+                    badge.textContent = data.fallbackUsed ? '● OpenRouter Fallback' : '● Groq Primary Active';
+                    badge.style.color = data.fallbackUsed ? '#b45309' : '#15803d';
+                    badge.style.background = data.fallbackUsed ? '#fef3c7' : '#dcfce7';
+                }
+            } catch (err) {
+                console.error('AI Tutor error:', err);
+                badge.textContent = '● Offline Fallback Active';
+                badge.style.color = '#dc2626';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Ask Tutor';
+            }
+        }
+        </script>
+
         <div class="btn-group">
             <a href="?id=<?php echo (int)$matchedQuiz['id']; ?>&action=start"
                class="btn"
