@@ -15,6 +15,9 @@
 
 const express = require('express');
 const { moodleService } = require('../modules/moodle/MoodleService');
+const { aiTutorService } = require('../modules/ai/AiTutorService');
+const { aiQuizGeneratorService } = require('../modules/ai/AiQuizGeneratorService');
+const { aiRecommendationService } = require('../modules/ai/AiRecommendationService');
 
 const router = express.Router();
 
@@ -155,6 +158,261 @@ router.post('/admin/upgrade', (req, res) => {
     message: 'Moodle CLI upgrade executed successfully',
     details: upgradeResult,
   });
+});
+
+// ==============================================================================
+// Week 6 Day 1: AI Tutor Integration — Groq Primary, OpenRouter Fallback
+// ==============================================================================
+
+// POST /api/moodle/ai-tutor/ask - Query the AI Tutor with automated failover
+router.post('/ai-tutor/ask', async (req, res) => {
+  try {
+    const { 
+      studentId, 
+      studentName, 
+      courseCode, 
+      courseName, 
+      topic, 
+      question, 
+      currentGrade, 
+      quizName,
+      simulateGroqFailure,
+      simulateBothFailure,
+      groqApiKey,
+      openRouterApiKey
+    } = req.body || {};
+
+    let resolvedName = studentName;
+    let resolvedGrade = currentGrade;
+
+    // Optional dynamic lookup if studentId provided
+    if (studentId && (!resolvedName || resolvedGrade === undefined)) {
+      const candidate = moodleService.getCandidateProgress(studentId);
+      if (candidate) {
+        resolvedName = resolvedName || candidate.candidateName;
+        resolvedGrade = resolvedGrade !== undefined ? resolvedGrade : candidate.averageGrade;
+      }
+    }
+
+    const context = {
+      studentName: resolvedName || 'Candidate',
+      courseCode: courseCode || 'CYN-FS-101',
+      courseName: courseName || 'Full Stack Engineering & Enterprise LMS',
+      topic: topic || 'Full Stack Architecture',
+      question: question || 'How does asynchronous execution work in the Node.js event loop?',
+      currentGrade: resolvedGrade,
+      quizName: quizName || null,
+    };
+
+    const options = {
+      simulateGroqFailure: Boolean(simulateGroqFailure || req.query.simulate_groq === 'true'),
+      simulateBothFailure: Boolean(simulateBothFailure || req.query.simulate_both === 'true'),
+      groqApiKey,
+      openRouterApiKey,
+    };
+
+    const result = await aiTutorService.askTutor(context, options);
+    res.json(result);
+  } catch (err) {
+    res.status(502).json({
+      success: false,
+      error: 'AI Tutor service encountered an unhandled exception',
+      details: err.message,
+    });
+  }
+});
+
+// GET /api/moodle/ai-tutor/health - AI Tutor health, models, and provider status
+router.get('/ai-tutor/health', (req, res) => {
+  res.json(aiTutorService.getHealth());
+});
+
+// GET /api/moodle/ai-tutor/topics - Curriculum topics for student study
+router.get('/ai-tutor/topics', (req, res) => {
+  const courseCode = req.query.courseCode || 'CYN-FS-101';
+  res.json({
+    success: true,
+    courseCode,
+    topics: aiTutorService.getCurriculumTopics(courseCode),
+  });
+});
+
+// ==============================================================================
+// Week 6 Day 2: AI Quiz Generation — MCQs to Question Bank & Quiz Assembly
+// ==============================================================================
+
+// POST /api/moodle/quiz/generate - Generate N MCQs from course content using Groq/OpenRouter
+router.post('/quiz/generate', async (req, res) => {
+  try {
+    const { 
+      courseId, 
+      count, 
+      simulateGroqFailure, 
+      simulateBothFailure,
+      groqApiKey,
+      openRouterApiKey
+    } = req.body || {};
+
+    const targetCourseId = Number(courseId) || 101;
+    const targetCount = Number(count) || 5;
+
+    const options = {
+      simulateGroqFailure: Boolean(simulateGroqFailure || req.query.simulate_groq === 'true'),
+      simulateBothFailure: Boolean(simulateBothFailure || req.query.simulate_both === 'true'),
+      groqApiKey,
+      openRouterApiKey,
+    };
+
+    const result = await aiQuizGeneratorService.generateQuizQuestions(targetCourseId, targetCount, options);
+    res.json(result);
+  } catch (err) {
+    res.status(502).json({
+      success: false,
+      error: 'Failed to generate quiz questions via AI service',
+      details: err.message,
+    });
+  }
+});
+
+// POST /api/moodle/quiz/import-to-bank - Import generated questions into course Question Bank
+router.post('/quiz/import-to-bank', (req, res) => {
+  try {
+    const { courseId, questions } = req.body || {};
+    if (!courseId || !Array.isArray(questions)) {
+      return res.status(400).json({
+        success: false,
+        error: 'courseId and array of questions are required for Question Bank import',
+      });
+    }
+
+    const result = aiQuizGeneratorService.importToQuestionBank(Number(courseId), questions);
+    res.status(201).json(result);
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      error: 'Failed to import questions to question bank',
+      details: err.message,
+    });
+  }
+});
+
+// POST /api/moodle/quiz/create - Programmatically assemble a Moodle Quiz with Question Bank slots
+router.post('/quiz/create', (req, res) => {
+  try {
+    const { courseId, quizName, questionIds } = req.body || {};
+    if (!courseId || !Array.isArray(questionIds) || questionIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'courseId and questionIds array are required to create a quiz',
+      });
+    }
+
+    const result = aiQuizGeneratorService.createQuizFromQuestions(Number(courseId), quizName, questionIds);
+    res.status(201).json(result);
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      error: 'Failed to create quiz from question bank',
+      details: err.message,
+    });
+  }
+});
+
+// GET /api/moodle/courses/:id/question-bank - Retrieve Question Bank for course
+router.get('/courses/:id/question-bank', (req, res) => {
+  const courseId = Number(req.params.id) || 101;
+  const questions = aiQuizGeneratorService.getCourseQuestionBank(courseId);
+  res.json({
+    success: true,
+    courseId,
+    total: questions.length,
+    questions,
+  });
+});
+
+// GET /api/moodle/courses/:id/quizzes - Retrieve all assembled quizzes for course
+router.get('/courses/:id/quizzes', (req, res) => {
+  const courseId = Number(req.params.id) || 101;
+  const quizzes = aiQuizGeneratorService.getCourseQuizzes(courseId);
+  res.json({
+    success: true,
+    courseId,
+    total: quizzes.length,
+    quizzes,
+  });
+});
+
+/**
+ * ==============================================================================
+ * Week 6 Day 3: AI Learning Recommendations from Grade + Completion Data
+ * ==============================================================================
+ */
+
+// GET /api/moodle/recommendations/health - Provider & engine health status
+router.get('/recommendations/health', (req, res) => {
+  res.json(aiRecommendationService.getHealth());
+});
+
+// POST /api/moodle/recommendations/generate - Generate recommendations for candidate
+router.post('/recommendations/generate', async (req, res) => {
+  try {
+    const { userId, studentProfile, simulateGroqFailure, simulateBothFailure } = req.body || {};
+
+    let profile = studentProfile;
+    if (!profile && userId) {
+      profile = moodleService.getCandidateProgress(userId);
+    }
+
+    if (!profile) {
+      return res.status(400).json({
+        success: false,
+        error: 'Candidate profile or valid userId is required to generate recommendations',
+      });
+    }
+
+    const options = {
+      simulateGroqFailure: Boolean(simulateGroqFailure || req.query.simulate_groq === 'true'),
+      simulateBothFailure: Boolean(simulateBothFailure || req.query.simulate_both === 'true'),
+    };
+
+    const result = await aiRecommendationService.generateRecommendations(profile, options);
+    res.json(result);
+  } catch (err) {
+    res.status(502).json({
+      success: false,
+      error: 'Failed to generate recommendations via AI service',
+      details: err.message,
+    });
+  }
+});
+
+// GET /api/moodle/users/:id/recommendations - Generate recommendations for specific user by ID
+router.get('/users/:id/recommendations', async (req, res) => {
+  try {
+    const userId = Number(req.params.id);
+    const profile = moodleService.getCandidateProgress(userId);
+
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        error: `User #${userId} not found in Moodle LMS records`,
+      });
+    }
+
+    const options = {
+      simulateGroqFailure: req.query.simulate_groq === 'true',
+      simulateBothFailure: req.query.simulate_both === 'true',
+    };
+
+    const result = await aiRecommendationService.generateRecommendations(profile, options);
+    res.json(result);
+  } catch (err) {
+    res.status(502).json({
+      success: false,
+      error: 'Failed to generate user recommendations',
+      details: err.message,
+    });
+  }
 });
 
 module.exports = router;
