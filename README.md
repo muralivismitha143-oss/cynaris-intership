@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-All%2026%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2027%20Suites%20Passing-success?style=for-the-badge)](tests/)
 [![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen?style=for-the-badge&logo=github-actions)](.github/workflows/ci-cd.yml)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
@@ -14,7 +14,9 @@
 - **Backup / Staging URL (Render):** [https://cynaris-recruitment.onrender.com](https://cynaris-recruitment.onrender.com)
 - **System Architecture Blueprint:** [`ARCHITECTURE.md`](ARCHITECTURE.md)
 - **Week 4 Final Pull Request:** [`docs/WEEK4_FINAL_PR.md`](docs/WEEK4_FINAL_PR.md)
-- **Demo Video Walkthrough (Unlisted):** [https://youtu.be/cynaris-recruitment-w4-fullstack-demo](https://youtu.be/cynaris-recruitment-w4-fullstack-demo)
+- **Week 6 Final Pull Request:** [`docs/WEEK6_FINAL_PR.md`](docs/WEEK6_FINAL_PR.md)
+- **Week 4 Demo Video Walkthrough (Unlisted):** [https://youtu.be/cynaris-recruitment-w4-fullstack-demo](https://youtu.be/cynaris-recruitment-w4-fullstack-demo)
+- **Week 6 Demo Video Walkthrough (Unlisted):** [https://youtu.be/cynaris-recruitment-w6-moodle-capstone-demo](https://youtu.be/cynaris-recruitment-w6-moodle-capstone-demo)
 - **GitHub Actions Automated Pipeline:** [https://github.com/muralivismitha143-oss/cynaris-intership/actions](https://github.com/muralivismitha143-oss/cynaris-intership/actions)
 - **Docker Hub Container Registry:** [https://hub.docker.com/r/muralivismitha143/cynaris-recruitment-platform](https://hub.docker.com/r/muralivismitha143/cynaris-recruitment-platform)
 - **Week 4 Day 6 Submission Report:** [`docs/WEEK4_DAY6_SUBMISSION.md`](docs/WEEK4_DAY6_SUBMISSION.md)
@@ -36,6 +38,8 @@
 - **Week 6 Day 3 Submission Report:** [`docs/WEEK6_DAY3_SUBMISSION.md`](docs/WEEK6_DAY3_SUBMISSION.md)
 - **Moodle Performance Audit & EXPLAIN Query Optimization:** [`docs/MOODLE_PERF_AUDIT_EXPLAIN_INDEXING.md`](docs/MOODLE_PERF_AUDIT_EXPLAIN_INDEXING.md)
 - **Week 6 Day 4 Submission Report:** [`docs/WEEK6_DAY4_SUBMISSION.md`](docs/WEEK6_DAY4_SUBMISSION.md)
+- **Moodle LMS Deployment & Full Capstone Architecture:** [`docs/MOODLE_DEPLOYMENT_AND_CAPSTONE.md`](docs/MOODLE_DEPLOYMENT_AND_CAPSTONE.md)
+- **Week 6 Day 5 Submission Report:** [`docs/WEEK6_DAY5_SUBMISSION.md`](docs/WEEK6_DAY5_SUBMISSION.md)
 - **Production Health Check:** `https://cynaris-recruitment-production.up.railway.app/api/health`
 
 ---
@@ -203,6 +207,22 @@
   - [`tests/test_moodle_perf_audit.js`](tests/test_moodle_perf_audit.js): 16 unit assertions covering prompt construction, Groq inference, OpenRouter failover, local rule fallback, plan generation, composite indexing, PHP parity, and REST routes.
   - [`docs/MOODLE_PERF_AUDIT_EXPLAIN_INDEXING.md`](docs/MOODLE_PERF_AUDIT_EXPLAIN_INDEXING.md): Comprehensive query execution plans, before-vs-after metrics, and InnoDB B-Tree indexing architecture.
   - [`docs/WEEK6_DAY4_SUBMISSION.md`](docs/WEEK6_DAY4_SUBMISSION.md): Submission report with self-review checklist, CIA log, and answers to all 3 Viva Voce questions.
+
+### Week 6 Day 5 — Deploy Moodle Fork + Full Documentation + Demo Video
+- **Moodle Multi-Container Docker Topology & Production Verification:**
+  - Production development topology in [`docker-compose.moodle.yml`](docker-compose.moodle.yml) coordinating **Apache / PHP 8.1 (Port 8000)**, **PostgreSQL 14 (Port 5432)**, and **MailHog SMTP Catcher (Port 8025)** with isolated named volume storage (`moodle-data` mounted at `/var/www/moodledata`).
+  - Dynamic environment configuration loader in [`moodle/config.php`](moodle/config.php) resolving DB credentials and secure dataroot isolation without hardcoded secrets.
+- **Upgraded Moodle Frontpage & Capstone Dashboard:**
+  - Frontpage in [`moodle/index.php`](moodle/index.php) displaying 100% operational system status, multi-tiered AI architecture overview, 5 core table schemas, and the 3 foundational architectural decisions.
+  - Quick action navigation linking to Cynaris Stats, Quiz Assessment, Question Bank generator, Node.js API Bridge, and MailHog.
+- **Moodle CLI Deployment Verification & Express REST Gateway:**
+  - Built CLI verification tools in [`moodle/admin/cli/deploy_verify.php`](moodle/admin/cli/deploy_verify.php) and Node.js parity runner [`backend/modules/moodle/cliDeployVerify.js`](backend/modules/moodle/cliDeployVerify.js) (`npm run moodle:verify`).
+  - Mounted Capstone REST overview endpoint `GET /api/moodle/capstone/overview` in [`backend/routes/moodleRouter.js`](backend/routes/moodleRouter.js) returning complete deployment telemetry, database engine details, active AI models, and architectural decisions.
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_moodle_deployment_and_capstone.js`](tests/test_moodle_deployment_and_capstone.js): 13 unit assertions covering Docker topology, secrets isolation, directory hierarchy, 5 core tables, Frankenstyle plugin parity, multi-tier AI pipeline, frontpage accessibility, and REST routes.
+  - [`docs/MOODLE_DEPLOYMENT_AND_CAPSTONE.md`](docs/MOODLE_DEPLOYMENT_AND_CAPSTONE.md): Complete architecture specification, Docker multi-container design, 3 architectural decisions, and full Demo Video Walkthrough script.
+  - [`docs/WEEK6_FINAL_PR.md`](docs/WEEK6_FINAL_PR.md): End-of-week Capstone Pull Request template.
+  - [`docs/WEEK6_DAY5_SUBMISSION.md`](docs/WEEK6_DAY5_SUBMISSION.md): Submission report with self-review checklist, CIA log, simulated screenshots, and answers to all 3 Viva Voce questions.
 
 ---
 
@@ -408,7 +428,11 @@ docker compose -f docker-compose.espocrm.yml up -d
 ### 6. Running All Automated Unit Tests
 ```powershell
 npm test
-# Runs all 26 unit test suites across Moodle Database Performance Audit & Index Optimization, Moodle AI Learning Recommendations (Groq + OpenRouter + 5 Core Tables), Moodle AI Quiz Generation, Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+# Runs all 27 unit test suites across Moodle Deployment & Capstone Architecture, Moodle Database Performance Audit & Index Optimization, Moodle AI Learning Recommendations (Groq + OpenRouter + 5 Core Tables), Moodle AI Quiz Generation, Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+npm run test:w6d5
+# Runs Week 6 Day 5 Moodle Deployment & Capstone Architecture test suite individually
+npm run moodle:verify
+# Runs Moodle CLI deployment verification & health audit
 npm run test:w6d4
 # Runs Week 6 Day 4 Performance Audit & EXPLAIN Optimization test suite individually
 npm run test:w6d3

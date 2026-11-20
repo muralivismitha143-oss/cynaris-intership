@@ -1491,3 +1491,67 @@
 - Verified all scenarios via [`tests/test_moodle_perf_audit.js`](../tests/test_moodle_perf_audit.js).
 - Confirmed 100% pass rate across all 26 test suites via `npm test`.
 
+---
+
+# Week 6 Day 5: Deploy Moodle Fork + Full Documentation + Demo Video
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w6d5-murali`  
+**Date:** November 20, 2026  
+**Lesson:** Week 6 Day 5 — Deploy Moodle Fork + Full Documentation + Demo Video  
+
+---
+
+## Interaction 1: CIA → Full Stack Mentor Mode
+
+### Prompt / Query
+> *"Explain the architecture of Moodle and how I should approach understanding it in one day. What are the key architectural decisions, top-level directory roles, and data flow patterns I must master for an enterprise LMS deployment?"*
+
+### CIA Full Stack Mentor Mode Review & Guidance
+
+1. **The 3 Foundational Pillars of Moodle Architecture:**
+   - **Pillar 1: Database Abstraction Layer (`$DB` / `moodle_database`):**
+     - Moodle completely divorces business logic from underlying RDBMS engines (PostgreSQL, MySQL, MariaDB, Oracle).
+     - Every data access must use parameterized methods (`$DB->get_record()`, `$DB->get_records_sql()`). This guarantees 100% immunity against SQL injection and allows seamless switching from MySQL to PostgreSQL in Docker without code changes.
+   - **Pillar 2: Frankenstyle Pluggable Subsystem Architecture:**
+     - Moodle organizes features into 40+ plugin subsystems (`blocks/`, `mod/`, `local/`, `auth/`, `enrol/`, `theme/`).
+     - Every plugin must follow the strict `[type]_[name]` naming convention (e.g. `block_cynaris_stats`).
+     - Each plugin is an autonomous component with its own database schema (`db/install.xml`), capabilities (`db/access.php`), language bundles (`lang/en/`), and autoloaded classes (`classes/`).
+   - **Pillar 3: Decoupled Security Dataroot Architecture (`$CFG->dataroot`):**
+     - User uploaded files, resumes, and session data are stored strictly outside the web document root (`/var/www/moodledata` vs `/var/www/html`).
+     - Files are never directly served via public HTTP URLs; they must pass through `pluginfile.php` token verification. This completely neutralizes Remote Code Execution (RCE) attacks from malicious file uploads.
+
+2. **One-Day Fast-Track Exploration Strategy:**
+   - **Morning (Infrastructure & Config):** Understand `config.php`, `docker-compose.moodle.yml`, and the 5 core tables (`mdl_course`, `mdl_grade_grades`, `mdl_course_completions`, `mdl_user`, `mdl_log`).
+   - **Afternoon (Plugins & UI):** Explore `mod/quiz/` for assessment flows and `blocks/cynaris_stats/` for reporting widgets and custom dashboard integrations.
+   - **Evening (Enterprise AI Bridge):** Review how external Node.js/Express microservices interface with Moodle via REST endpoints and dual LLM failover.
+
+### Action Taken
+- Configured multi-container Docker topology in [`docker-compose.moodle.yml`](../docker-compose.moodle.yml) and dynamic environment loading in [`moodle/config.php`](../moodle/config.php).
+- Documented 3 key architectural decisions in [`docs/MOODLE_DEPLOYMENT_AND_CAPSTONE.md`](../docs/MOODLE_DEPLOYMENT_AND_CAPSTONE.md).
+
+---
+
+## Interaction 2: CIA → Code Mode (with Monaco Editor)
+
+### Prompt / Query
+> *"What does `moodle/config.php` and `moodle/index.php` do, and what should I look for in terms of security hardening, credential isolation, and error-free frontpage rendering in a production-ready Moodle fork?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Layer | Component Inspected | Identified Risk / Best Practice | Architectural Mitigation Applied |
+|---|---|---|---|
+| **Credential Hardcoding** | `moodle/config.php` | Storing database passwords in plain text in git commits. | Used `getenv('MOODLE_DOCKER_DB_PASSWORD')` with safe environment fallback defaults. |
+| **Dataroot Web Access** | `moodle/config.php` | Locating `$CFG->dataroot` within or accessible to web document root. | Configured `$CFG->dataroot = '/var/www/moodledata'` on an independent Docker named volume. |
+| **Credential Leakage in UI** | `moodle/index.php` | Printing raw `$CFG` manifest including sensitive database password `dbpass`. | Added explicit sanitization `unset($displayConfig['dbpass'])` before rendering JSON manifest. |
+| **Error Handling & Display** | `moodle/config.php` | Leaving verbose debug output (`$CFG->debugdisplay = 1`) enabled in untrusted environments. | Controlled debug levels via configuration flags and ensured frontpage displays clean operational status. |
+| **Directory Permissions** | `moodle/config.php` | Inadequate directory permissions on Linux container storage causing upload failures. | Configured `$CFG->directorypermissions = 02777` ensuring Apache/PHP worker process read/write access. |
+| **Screen Reader Accessibility** | `moodle/index.php` | Dynamic operational status indicators lacking ARIA labels. | Added semantic HTML5 badges and clean status typography. |
+
+### Action Taken
+- Enforced credential masking in [`moodle/index.php`](../moodle/index.php).
+- Added Moodle CLI deployment verification tool in [`moodle/admin/cli/deploy_verify.php`](../moodle/admin/cli/deploy_verify.php) and Node.js parity runner in [`backend/modules/moodle/cliDeployVerify.js`](../backend/modules/moodle/cliDeployVerify.js).
+- Verified all scenarios via [`tests/test_moodle_deployment_and_capstone.js`](../tests/test_moodle_deployment_and_capstone.js).
+- Confirmed 100% pass rate across all 27 test suites via `npm test`.
+
+
