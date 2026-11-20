@@ -32,6 +32,9 @@ Route::prefix('candidate/cia')->name('candidate.cia.')->group(function () {
     // ChromaDB Vector Search Endpoint
     Route::get('/vector-search', [CiaController::class, 'vectorSearch'])->name('vector-search');
     
+    // LlamaIndex RAG + Groq Pipeline Skill Gap Endpoint (Week 7 Day 2)
+    Route::post('/career/skill-gap', [CiaController::class, 'careerSkillGap'])->name('career.skill-gap');
+
     // Health & Provider Diagnostics
     Route::get('/health', [CiaController::class, 'health'])->name('health');
 });

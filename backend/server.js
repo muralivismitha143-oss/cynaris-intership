@@ -115,6 +115,7 @@ app.use("/api/database", dbRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/moodle", moodleRouter);
 app.use("/api/cia", ciaRouter);
+app.use("/candidate/cia", ciaRouter);
 app.use("/static/preferences", express.static(path.join(__dirname, "public/preferences"), {
   maxAge: "1d",
   etag: true,

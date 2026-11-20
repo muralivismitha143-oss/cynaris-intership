@@ -124,4 +124,52 @@ router.post('/vector-search', (req, res) => {
   });
 });
 
+// POST /api/cia/career/skill-gap - LlamaIndex RAG + Groq pipeline skill gap analysis
+router.post('/career/skill-gap', async (req, res) => {
+  try {
+    const {
+      candidateId = 1,
+      targetRoleId,
+      completedLessons,
+      quizScores,
+      candidateSkills,
+      candidate,
+      simulateGroqFailure,
+      simulateBothFailure
+    } = req.body || {};
+
+    if (!targetRoleId) {
+      return res.status(400).json({
+        success: false,
+        error: 'targetRoleId is required for skill gap analysis'
+      });
+    }
+
+    const options = {
+      simulateGroqFailure: Boolean(simulateGroqFailure || req.query.simulate_groq === 'true'),
+      simulateBothFailure: Boolean(simulateBothFailure || req.query.simulate_both === 'true')
+    };
+
+    const result = await careerIntelligenceService.analyzeSkillGapRAG(
+      {
+        candidateId,
+        targetRoleId,
+        completedLessons,
+        quizScores,
+        candidateSkills,
+        candidate
+      },
+      options
+    );
+
+    res.json(result);
+  } catch (err) {
+    res.status(502).json({
+      success: false,
+      error: 'Failed to analyze skill gap via LlamaIndex + Groq RAG pipeline',
+      details: err.message
+    });
+  }
+});
+
 module.exports = router;
