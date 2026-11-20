@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-All%2027%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2028%20Suites%20Passing-success?style=for-the-badge)](tests/)
 [![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen?style=for-the-badge&logo=github-actions)](.github/workflows/ci-cd.yml)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
@@ -40,6 +40,8 @@
 - **Week 6 Day 4 Submission Report:** [`docs/WEEK6_DAY4_SUBMISSION.md`](docs/WEEK6_DAY4_SUBMISSION.md)
 - **Moodle LMS Deployment & Full Capstone Architecture:** [`docs/MOODLE_DEPLOYMENT_AND_CAPSTONE.md`](docs/MOODLE_DEPLOYMENT_AND_CAPSTONE.md)
 - **Week 6 Day 5 Submission Report:** [`docs/WEEK6_DAY5_SUBMISSION.md`](docs/WEEK6_DAY5_SUBMISSION.md)
+- **Career Intelligence CIA Mode Architecture:** [`docs/CAREER_INTELLIGENCE_CIA_ARCHITECTURE.md`](docs/CAREER_INTELLIGENCE_CIA_ARCHITECTURE.md)
+- **Week 7 Day 1 Submission Report:** [`docs/WEEK7_DAY1_SUBMISSION.md`](docs/WEEK7_DAY1_SUBMISSION.md)
 - **Production Health Check:** `https://cynaris-recruitment-production.up.railway.app/api/health`
 
 ---
@@ -223,6 +225,29 @@
   - [`docs/MOODLE_DEPLOYMENT_AND_CAPSTONE.md`](docs/MOODLE_DEPLOYMENT_AND_CAPSTONE.md): Complete architecture specification, Docker multi-container design, 3 architectural decisions, and full Demo Video Walkthrough script.
   - [`docs/WEEK6_FINAL_PR.md`](docs/WEEK6_FINAL_PR.md): End-of-week Capstone Pull Request template.
   - [`docs/WEEK6_DAY5_SUBMISSION.md`](docs/WEEK6_DAY5_SUBMISSION.md): Submission report with self-review checklist, CIA log, simulated screenshots, and answers to all 3 Viva Voce questions.
+
+---
+
+## 🚀 Week 7: Project 4 — Career Intelligence (CIA Mode), Vector Embeddings & Agent Systems
+
+### Week 7 Day 1 — Architecture Design: Career Intelligence CIA Mode + API Contracts
+- **Multi-Tiered AI Career Intelligence & Socratic Trajectory Advisor:**
+  - High-throughput primary inference via **Groq** (`llama-3.3-70b-versatile`, $< 350\text{ms}$) synthesizing candidate trajectory, readiness tier, and prioritized upskilling actions.
+  - Automated secondary failover to **OpenRouter** (`meta-llama/llama-3.3-70b-instruct`) on rate limits, HTTP 5xx errors, or network timeouts.
+  - Zero-downtime **Local Deterministic Fallback Engine** calculating mathematical averages and competency deltas during offline or air-gapped CI test runs.
+- **Quantitative Skill Gap Analysis & Weighted Mathematical Model:**
+  - Formulated normalized multi-attribute utility model calculating weighted skill gaps:
+    $$\text{Gap Score} = 100 \times \left(1 - \frac{\sum w_s \cdot \min(1, \frac{L_{\text{candidate}}}{L_{\text{target}}})}{\sum w_t}\right)$$
+  - Evaluates individual skill deltas, importance weights ($w \in [1, 3]$), and itemizes gaps into severity tiers (`MATCHED`, `MINOR_GAP`, `HIGH_GAP`, `CRITICAL_MISSING`) with realistic remediation hours.
+- **ChromaDB Vector Store Semantic Matching:**
+  - Integrated vector similarity search calculating cosine similarity ($\cos \theta \ge 0.85$) against target role job descriptions in ChromaDB collection `cynaris_job_profiles`.
+- **Laravel / Blade Parity & Express REST Gateway:**
+  - Full-stack parity across Laravel controller [`app/Http/Controllers/Web/CiaController.php`](app/Http/Controllers/Web/CiaController.php), Blade UI [`resources/views/candidate/cia.blade.php`](resources/views/candidate/cia.blade.php) with W3C ARIA live region (`aria-live="polite"`), and web routes [`routes/web.php`](routes/web.php).
+  - Mounted REST API router [`backend/routes/ciaRouter.js`](backend/routes/ciaRouter.js) on `/api/cia` (`/health`, `/roles`, `/analyze-gap`, `/recommendations`, `/vector-search`).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_career_intelligence_cia.js`](tests/test_career_intelligence_cia.js): 19 unit assertions covering prompt construction, Groq inference, OpenRouter failover, local rule fallback, skill gap math, ChromaDB vector matching, Laravel controller parity, Blade accessibility, and REST routes.
+  - [`docs/CAREER_INTELLIGENCE_CIA_ARCHITECTURE.md`](docs/CAREER_INTELLIGENCE_CIA_ARCHITECTURE.md): Complete architecture specification, ChromaDB vector store design, mathematical model, and OpenAPI 3.0 API contracts.
+  - [`docs/WEEK7_DAY1_SUBMISSION.md`](docs/WEEK7_DAY1_SUBMISSION.md): Submission report with self-review checklist, CIA log, and answers to all 3 Viva Voce questions.
 
 ---
 
@@ -428,7 +453,9 @@ docker compose -f docker-compose.espocrm.yml up -d
 ### 6. Running All Automated Unit Tests
 ```powershell
 npm test
-# Runs all 27 unit test suites across Moodle Deployment & Capstone Architecture, Moodle Database Performance Audit & Index Optimization, Moodle AI Learning Recommendations (Groq + OpenRouter + 5 Core Tables), Moodle AI Quiz Generation, Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+# Runs all 28 unit test suites across Career Intelligence (CIA Mode) & Skill Gap Analysis, Moodle Deployment & Capstone Architecture, Moodle Database Performance Audit & Index Optimization, Moodle AI Learning Recommendations (Groq + OpenRouter + 5 Core Tables), Moodle AI Quiz Generation, Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+npm run test:w7d1
+# Runs Week 7 Day 1 Career Intelligence CIA Mode test suite individually
 npm run test:w6d5
 # Runs Week 6 Day 5 Moodle Deployment & Capstone Architecture test suite individually
 npm run moodle:verify

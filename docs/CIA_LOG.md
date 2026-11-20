@@ -1554,4 +1554,69 @@
 - Verified all scenarios via [`tests/test_moodle_deployment_and_capstone.js`](../tests/test_moodle_deployment_and_capstone.js).
 - Confirmed 100% pass rate across all 27 test suites via `npm test`.
 
+---
+
+# Week 7 Day 1: Architecture Design — Career Intelligence CIA Mode + API Contracts
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w7d1-murali`  
+**Date:** November 20, 2026  
+**Lesson:** Week 7 Day 1 — Architecture Design — Career Intelligence CIA Mode + API Contracts  
+
+---
+
+## Interaction 1: CIA → Full Stack Mentor Mode
+
+### Prompt / Query
+> *"I am designing the Career Intelligence Advisor (CIA Mode) architecture for our platform. The system needs to perform quantitative skill gap analysis against target role benchmarks, calculate an objective readiness score, perform semantic matching using a ChromaDB vector store, and generate adaptive career remediation recommendations using Groq (`llama-3.3-70b-versatile`) with OpenRouter (`meta-llama/llama-3.3-70b-instruct`) fallback. Could you review my proposed skill gap mathematical formula, dual-provider failover sequence, and API contracts before I commit?"*
+
+### CIA Full Stack Mentor Mode Review & Guidance
+
+1. **Quantitative Skill Gap Mathematical Modeling:**
+   - Instead of simplistic binary matching (e.g. *"has skill or does not have skill"*), implement a **weighted multi-attribute utility model** where each skill carries:
+     - Target level $L_{\text{target}}(s) \in [1, 5]$.
+     - Candidate verified level $L_{\text{candidate}}(s) \in [0, 5]$.
+     - Importance weight $w_s \in [1.0, 3.0]$ (Critical: 3.0, Important: 2.0, Nice-to-have: 1.0).
+   - Normalize the gap score between 0% and 100%:
+     $$\text{Gap Score} = 100 \times \left(1 - \frac{\sum w_s \cdot \min(1, \frac{L_{\text{cand}}}{L_{\text{target}}})}{\sum w_t}\right)$$
+   - This ensures missing a critical requirement (e.g. System Design) penalizes the candidate proportionately more than a minor supplementary tool.
+
+2. **ChromaDB Vector Store Selection & Cosine Alignment:**
+   - ChromaDB is an outstanding choice for rapid embedding retrieval without heavy distributed infrastructure.
+   - Use cosine similarity ($\cos \theta = \frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{u}\|_2 \|\mathbf{v}\|_2}$) to score semantic similarity against job description embeddings, flagging roles with $\cos \theta \ge 0.85$ as strong trajectory fits.
+
+3. **Three-Tiered LLM Fault Tolerance Strategy:**
+   - Primary: Groq `llama-3.3-70b-versatile` ($< 350\text{ms}$ latency).
+   - Secondary: OpenRouter `meta-llama/llama-3.3-70b-instruct` (catches 429 rate limits and 5xx errors).
+   - Local Safety Net: Deterministic local rule engine calculating averages, deltas, and course recommendations in memory so offline CI and air-gapped test runs never fail with 500 errors.
+
+### Action Taken
+- Implemented weighted skill gap scoring and ChromaDB vector search in [`backend/modules/ai/CareerIntelligenceService.js`](../backend/modules/ai/CareerIntelligenceService.js).
+- Authored full architecture specification in [`docs/CAREER_INTELLIGENCE_CIA_ARCHITECTURE.md`](../docs/CAREER_INTELLIGENCE_CIA_ARCHITECTURE.md).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review my Career Intelligence implementation across `CiaController.php`, `cia.blade.php`, `ciaRouter.js`, and `CareerIntelligenceService.js`. What subtle edge cases, mathematical division-by-zero risks, and accessibility issues should I safeguard against?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Layer | Component Inspected | Identified Risk / Edge Case | Architectural Mitigation Applied |
+|---|---|---|---|
+| **Zero Weight Division** | `CareerIntelligenceService.js` | Calculating gap score on a target role with 0 required skills causing division by zero (`NaN`). | Added defensive guard: `totalWeight > 0 ? (100.0 * (1.0 - (matchedWeight / totalWeight))) : 0.0`. |
+| **Missing Target Role ID** | `ciaRouter.js` | Client posting empty JSON payload to `/api/cia/analyze-gap`. | Added pre-flight validation check returning RFC-compliant `400 Bad Request` with descriptive message. |
+| **Missing Candidate Skills** | `CareerIntelligenceService.js` | Candidate submitting skills as bare numbers or nested objects (`{ level: 4 }`). | Added polymorphic level extractor handling both scalar numbers and `{ level: N }` structures. |
+| **Unbounded Delta Values** | `CareerIntelligenceService.js` | Candidate having a skill level higher than target (e.g. L5 vs L4), causing negative delta in remediation calculation. | Clamped delta using `Math.max(0.0, targetLevel - candidateLevel)`. |
+| **Screen Reader Accessibility** | `cia.blade.php` | Dynamic AI recommendations updating without notifying visually impaired candidates. | Embedded W3C ARIA live region attributes (`role="status"`, `aria-live="polite"`) on `#cia-recommendation-content`. |
+| **Request Timeout Stalling** | `CareerIntelligenceService.js` | Remote LLM endpoints hanging under global load. | Configured strict `timeoutMs: 8000` with native `req.destroy()` timeout abort handler in `_postJson()`. |
+
+### Action Taken
+- Applied division-by-zero guards, clamped non-negative deltas, and polymorphic input handling.
+- Integrated W3C ARIA live region attributes in [`resources/views/candidate/cia.blade.php`](../resources/views/candidate/cia.blade.php).
+- Verified all scenarios via [`tests/test_career_intelligence_cia.js`](../tests/test_career_intelligence_cia.js).
+- Confirmed 100% pass rate across all 28 test suites via `npm test`.
+
+
 
