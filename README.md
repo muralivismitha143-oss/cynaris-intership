@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-All%2028%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2029%20Suites%20Passing-success?style=for-the-badge)](tests/)
 [![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen?style=for-the-badge&logo=github-actions)](.github/workflows/ci-cd.yml)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
@@ -42,6 +42,8 @@
 - **Week 6 Day 5 Submission Report:** [`docs/WEEK6_DAY5_SUBMISSION.md`](docs/WEEK6_DAY5_SUBMISSION.md)
 - **Career Intelligence CIA Mode Architecture:** [`docs/CAREER_INTELLIGENCE_CIA_ARCHITECTURE.md`](docs/CAREER_INTELLIGENCE_CIA_ARCHITECTURE.md)
 - **Week 7 Day 1 Submission Report:** [`docs/WEEK7_DAY1_SUBMISSION.md`](docs/WEEK7_DAY1_SUBMISSION.md)
+- **LlamaIndex + Groq Skill Gap RAG Architecture:** [`docs/LLAMINDEX_GROQ_SKILL_GAP_RAG.md`](docs/LLAMINDEX_GROQ_SKILL_GAP_RAG.md)
+- **Week 7 Day 2 Submission Report:** [`docs/WEEK7_DAY2_SUBMISSION.md`](docs/WEEK7_DAY2_SUBMISSION.md)
 - **Production Health Check:** `https://cynaris-recruitment-production.up.railway.app/api/health`
 
 ---
@@ -249,6 +251,24 @@
   - [`docs/CAREER_INTELLIGENCE_CIA_ARCHITECTURE.md`](docs/CAREER_INTELLIGENCE_CIA_ARCHITECTURE.md): Complete architecture specification, ChromaDB vector store design, mathematical model, and OpenAPI 3.0 API contracts.
   - [`docs/WEEK7_DAY1_SUBMISSION.md`](docs/WEEK7_DAY1_SUBMISSION.md): Submission report with self-review checklist, CIA log, and answers to all 3 Viva Voce questions.
 
+### Week 7 Day 2 — Module 1: Skill Gap Analysis — LlamaIndex + Groq Pipeline
+- **LlamaIndex RAG Retrieval over 50-Skill Taxonomy:**
+  - Curated canonical skills taxonomy in [`data/skills_taxonomy.json`](data/skills_taxonomy.json) defining 50 technical competencies partitioned across 5 engineering domains (Frontend, Backend, Database, Cloud & DevOps, AI & ML).
+  - LlamaIndex keyword relevance retrieval dynamically extracts grounded benchmark context based on candidate profile and target job role, eliminating hallucinations.
+- **Three-Tier Multi-Provider Fallback Cascade:**
+  - High-throughput primary inference via **Groq** (`llama-3.3-70b-versatile`, $< 350\text{ms}$) with strict JSON schema enforcement.
+  - Automated secondary failover to **OpenRouter** (`meta-llama/llama-3.3-70b-instruct`) on rate limiting (HTTP 429), cloud 5xx errors, or network timeouts.
+  - Zero-downtime **Local Deterministic RAG Fallback Engine** calculating weighted skill gaps and domain scores during offline or air-gapped test runs.
+- **ChromaDB Namespace Isolation:**
+  - Enforced per-candidate namespace isolation (`candidate_${candidateId}_skill_gaps`) in ChromaDB preventing cross-candidate data leakage and enabling fast $O(1)$ rehydration.
+- **Chart.js 5-Domain Radar Visualization & Laravel / Express Parity:**
+  - Enhanced candidate view in [`resources/views/candidate/cia.blade.php`](resources/views/candidate/cia.blade.php) with an interactive Chart.js radar chart (`#cia-skill-radar-chart`) comparing candidate proficiency against target benchmarks across all 5 domains, live role switching, and W3C ARIA polite region announcements (`aria-live="polite"`).
+  - Implemented dual-stack parity in Express (`POST /api/cia/career/skill-gap` and `/candidate/cia/career/skill-gap`) and Laravel ([`app/Http/Controllers/Web/CiaController.php`](app/Http/Controllers/Web/CiaController.php), [`routes/web.php`](routes/web.php)).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_llamaindex_skill_gap.js`](tests/test_llamaindex_skill_gap.js): 10 unit assertions covering 50-skill taxonomy, RAG retriever, grounded prompt construction, Groq primary, OpenRouter failover, local rule fallback, ChromaDB namespace persistence, JSON schema validation, Laravel/Blade parity, and REST routes.
+  - [`docs/LLAMINDEX_GROQ_SKILL_GAP_RAG.md`](docs/LLAMINDEX_GROQ_SKILL_GAP_RAG.md): Comprehensive technical architecture guide.
+  - [`docs/WEEK7_DAY2_SUBMISSION.md`](docs/WEEK7_DAY2_SUBMISSION.md): Submission report with self-review checklist, CIA log, and answers to all 3 Viva Voce questions.
+
 ---
 
 ## ⏰ Week 4: Node.js Architecture, Microservices & Smart Automation
@@ -453,7 +473,9 @@ docker compose -f docker-compose.espocrm.yml up -d
 ### 6. Running All Automated Unit Tests
 ```powershell
 npm test
-# Runs all 28 unit test suites across Career Intelligence (CIA Mode) & Skill Gap Analysis, Moodle Deployment & Capstone Architecture, Moodle Database Performance Audit & Index Optimization, Moodle AI Learning Recommendations (Groq + OpenRouter + 5 Core Tables), Moodle AI Quiz Generation, Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+# Runs all 29 unit test suites across LlamaIndex + Groq Skill Gap RAG Pipeline, Career Intelligence (CIA Mode) Architecture & Contracts, Moodle Deployment & Capstone Architecture, Moodle Database Performance Audit & Index Optimization, Moodle AI Learning Recommendations (Groq + OpenRouter + 5 Core Tables), Moodle AI Quiz Generation, Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+npm run test:w7d2
+# Runs Week 7 Day 2 LlamaIndex + Groq Skill Gap RAG test suite individually
 npm run test:w7d1
 # Runs Week 7 Day 1 Career Intelligence CIA Mode test suite individually
 npm run test:w6d5

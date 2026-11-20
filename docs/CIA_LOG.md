@@ -1618,5 +1618,69 @@
 - Verified all scenarios via [`tests/test_career_intelligence_cia.js`](../tests/test_career_intelligence_cia.js).
 - Confirmed 100% pass rate across all 28 test suites via `npm test`.
 
+---
+
+# Week 7 Day 2: Module 1: Skill Gap Analysis — LlamaIndex + Groq Pipeline
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w7d2-murali`  
+**Date:** November 20, 2026  
+**Lesson:** Week 7 Day 2 — Module 1: Skill Gap Analysis — LlamaIndex + Groq Pipeline  
+
+---
+
+## Interaction 1: CIA → AI Engineer Mode
+
+### Prompt / Query
+> *"I am building Module 1 of the Career Intelligence Advisor: Skill Gap Analysis using a LlamaIndex RAG pipeline with Groq as primary LLM and OpenRouter as fallback. How should I design the RAG retrieval mechanism over our 50-skill taxonomy document, construct the grounded prompt, enforce strict JSON schemas for the 5-domain radar chart, and ensure zero-downtime fallback?"*
+
+### CIA AI Engineer Mode Review & Recommendations
+
+1. **Taxonomy Document Curation & Domain Grounding:**
+   - Define a structured benchmark taxonomy (`data/skills_taxonomy.json`) covering 50 skills divided evenly across 5 core engineering domains: *Frontend Engineering*, *Backend Engineering*, *Database & Storage*, *Cloud & DevOps*, and *AI & ML Engineering* (10 skills each).
+   - Each skill should document its canonical title, difficulty level ($1-5$), importance tier (*Critical*, *Important*, *Nice-to-have*), and search keywords.
+2. **LlamaIndex RAG Retrieval Logic:**
+   - Ingest candidate verified skills, completed Moodle lesson history, and target role title/benchmarks.
+   - Run keyword relevance matching over the taxonomy in-memory index to extract the top-k grounded skills, preventing the LLM from inventing obscure or non-existent competencies.
+3. **Prompt Engineering & Schema Enforcement:**
+   - Anchor the system persona as a *"Principal AI Career Architect and LlamaIndex RAG Specialist for the Cynaris Recruitment Platform"*.
+   - In the user prompt, supply candidate profile stats, Moodle quiz scores (e.g. 96.5%), and the retrieved taxonomy slice.
+   - Demand an unambiguous JSON response schema including `score` ($0-100$), `skill_gaps` array, `priority_learning` array, and `radar_chart_data` with values for all 5 domains.
+4. **ChromaDB Namespace Isolation:**
+   - Store every analysis into a dedicated per-candidate namespace (`candidate_${candidateId}_skill_gaps`) in ChromaDB to guarantee strict data privacy and isolation across candidates.
+5. **Zero-Downtime Multi-Tier Fallback:**
+   - Primary: Groq `llama-3.3-70b-versatile` ($< 350\text{ms}$).
+   - Secondary: OpenRouter `meta-llama/llama-3.3-70b-instruct` (active on 429, 5xx, or timeouts).
+   - Local Safety Net: In-memory deterministic rule engine computing mathematical deltas and radar coordinates, ensuring offline CI tests and air-gapped environments remain 100% operational.
+
+### Action Taken
+- Created `data/skills_taxonomy.json` containing 50 skills across 5 domains.
+- Implemented `retrieveTaxonomyContext`, `buildSkillGapRAGPrompt`, `analyzeSkillGapRAG`, `saveToChromaNamespace`, and `validateRAGSkillGapStructure` in [`backend/modules/ai/CareerIntelligenceService.js`](../backend/modules/ai/CareerIntelligenceService.js).
+- Authored full technical documentation in [`docs/LLAMINDEX_GROQ_SKILL_GAP_RAG.md`](../docs/LLAMINDEX_GROQ_SKILL_GAP_RAG.md).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review my implementation across `CareerIntelligenceService.js`, `ciaRouter.js`, `CiaController.php`, and `cia.blade.php`. What potential schema validation flaws, API parameter mismatches, and Chart.js radar rendering errors should I prevent?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Layer | Component Inspected | Identified Risk / Edge Case | Architectural Mitigation Applied |
+|---|---|---|---|
+| **API Parameter Casing** | `CiaController.php` | Frontend sending `target_role_id` (snake_case) or `targetRoleId` (camelCase) causing 400 rejection in Laravel. | Accepted both formats: `$targetRoleId = $request->input('target_role_id') ?: $request->input('targetRoleId');`. |
+| **Numeric Score Overflow** | `CareerIntelligenceService.js` | Malformed LLM response returning scores `< 0` or `> 100` or non-numeric types. | Added assertion in `validateRAGSkillGapStructure`: `typeof score === 'number' && score >= 0 && score <= 100`. |
+| **Radar Chart Re-rendering** | `cia.blade.php` | Creating new `Chart` instances on every role change leaking canvas memory. | Retained single `radarChart` reference and updated datasets via `radarChart.data.datasets[0].data = ...; radarChart.update()`. |
+| **Express Body Parsing** | `ciaRouter.js` | Dispatching simulated requests without `Content-Length` header causing empty `req.body`. | Standardized in-memory dispatcher to set `content-length: Buffer.byteLength(payload)`. |
+| **ChromaDB Namespace Collision** | `CareerIntelligenceService.js` | Multiple candidate requests overwriting the same vector store space. | Formatted namespaces with candidate ID prefix: `candidate_${candidateId}_skill_gaps`. |
+
+### Action Taken
+- Enforced strict JSON schema validation and multi-casing input handling.
+- Enhanced Chart.js 5-domain radar component in [`resources/views/candidate/cia.blade.php`](../resources/views/candidate/cia.blade.php).
+- Created automated test suite [`tests/test_llamaindex_skill_gap.js`](../tests/test_llamaindex_skill_gap.js) (10/10 passed).
+- Verified full test suite parity with all 29 suites passing (`npm test`).
+
+
 
 
