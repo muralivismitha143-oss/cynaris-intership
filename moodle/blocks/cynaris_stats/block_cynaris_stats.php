@@ -258,6 +258,23 @@ class block_cynaris_stats extends block_base {
     </div>
     <div id="cynaris-rec-result" role="status" aria-live="polite" style="display:none; font-size:11px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; padding:8px; color:#334155;"></div>
   </div>
+
+  <!-- Week 6 Day 4: Performance Audit — EXPLAIN Queries + Index Optimisation -->
+  <div id="cynaris-perf-audit-section" style="margin-top:12px; padding-top:10px; border-top:1px dashed #cbd5e1;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+      <span style="font-size:12px; font-weight:600; color:#0369a1;">⚡ SQL Performance & Index Advisor</span>
+      <span id="cynaris-perf-badge" style="font-size:10px; color:#15803d; background:#dcfce7; padding:1px 6px; border-radius:10px;">Groq Active</span>
+    </div>
+    <div style="display:flex; gap:4px; margin-bottom:6px;">
+      <select id="cynaris-perf-query-select" style="font-size:11px; padding:3px 4px; border:1px solid #cbd5e1; border-radius:4px; flex-grow:1;">
+        <option value="query-c-logins">Query (c): User Logins 7 Days (mdl_log)</option>
+        <option value="query-b-averages">Query (b): Grade Averages (mdl_grade_grades)</option>
+        <option value="query-a-completions">Query (a): Course Completions (mdl_course_completions)</option>
+      </select>
+      <button id="cynaris-run-audit-btn" type="button" onclick="runQueryPerformanceAudit()" style="background:#0284c7; color:#fff; border:none; border-radius:4px; padding:4px 8px; font-size:11px; cursor:pointer;">Audit</button>
+    </div>
+    <div id="cynaris-perf-result" role="status" aria-live="polite" style="display:none; font-size:11px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; padding:8px; color:#334155;"></div>
+  </div>
 </div>
 
 <!-- Chart.js CDN Library Inclusion -->
@@ -532,6 +549,82 @@ class block_cynaris_stats extends block_base {
     } catch (e) {
       if (resEl) {
         resEl.innerHTML = '<span style="color:#dc2626;">Failed to load recommendations. Please check server connection.</span>';
+      }
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  };
+
+  // AI SQL Query Performance Audit Handler (Week 6 Day 4)
+  window.runQueryPerformanceAudit = async function() {
+    const select = document.getElementById('cynaris-perf-query-select');
+    const btn = document.getElementById('cynaris-run-audit-btn');
+    const badge = document.getElementById('cynaris-perf-badge');
+    const resEl = document.getElementById('cynaris-perf-result');
+    const selectedQueryType = select ? select.value : 'query-c-logins';
+
+    const queries = {
+      'query-c-logins': "SELECT u.id, COUNT(l.id) FROM mdl_user u LEFT JOIN mdl_log l ON u.id = l.userid AND DATE(FROM_UNIXTIME(l.time)) >= DATE(NOW() - INTERVAL 7 DAY) WHERE u.deleted = 0 GROUP BY u.id",
+      'query-b-averages': "SELECT c.id, AVG(gg.finalgrade) FROM mdl_course c JOIN mdl_grade_items gi ON c.id = gi.courseid JOIN mdl_grade_grades gg ON gi.id = gg.itemid GROUP BY c.id",
+      'query-a-completions': "SELECT u.id, c.fullname, cc.status FROM mdl_user u JOIN mdl_course_completions cc ON u.id = cc.userid JOIN mdl_course c ON cc.course = c.id WHERE u.deleted = 0 ORDER BY c.id ASC"
+    };
+
+    const targetSql = queries[selectedQueryType] || queries['query-c-logins'];
+
+    if (btn) btn.disabled = true;
+    if (badge) {
+      badge.textContent = 'Auditing EXPLAIN...';
+      badge.style.background = '#ffedd5';
+      badge.style.color = '#ea580c';
+    }
+    if (resEl) {
+      resEl.style.display = 'block';
+      resEl.innerHTML = '<span style="color:#64748b;">⏳ Running EXPLAIN and AI index synthesis...</span>';
+    }
+
+    try {
+      const res = await fetch('/api/moodle/perf/audit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: targetSql })
+      });
+      const data = await res.json();
+      if (resEl && data.data) {
+        const d = data.data;
+        const riskColor = d.explainAnalysis.riskLevel === 'CRITICAL' ? '#dc2626' : (d.explainAnalysis.riskLevel === 'WARNING' ? '#ea580c' : '#15803d');
+        const riskBg = d.explainAnalysis.riskLevel === 'CRITICAL' ? '#fee2e2' : (d.explainAnalysis.riskLevel === 'WARNING' ? '#ffedd5' : '#dcfce7');
+
+        let html = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">' +
+          '<strong>EXPLAIN Plan: Access ' + d.explainAnalysis.accessType + ' (' + (data.explainPlan ? data.explainPlan.rows_examined.toLocaleString() : 'N/A') + ' rows)</strong>' +
+          '<span style="font-size:10px; font-weight:bold; color:' + riskColor + '; background:' + riskBg + '; padding:1px 6px; border-radius:4px;">' + d.explainAnalysis.riskLevel + '</span>' +
+          '</div>';
+
+        html += '<div style="margin-top:4px;"><strong>⚠️ Bottlenecks:</strong><ul style="margin:2px 0 6px 14px; padding:0;">';
+        d.explainAnalysis.bottlenecks.forEach(b => {
+          html += '<li>' + b + '</li>';
+        });
+        html += '</ul></div>';
+
+        if (d.indexRecommendations && d.indexRecommendations.length) {
+          html += '<div style="margin-top:4px;"><strong>🚀 Recommended Index:</strong><pre style="margin:2px 0; background:#0f172a; color:#f8fafc; padding:6px; border-radius:4px; font-size:10px; overflow-x:auto;">' + d.indexRecommendations[0].ddl + '</pre>' +
+            '<span style="color:#64748b; font-size:10px;">' + d.indexRecommendations[0].reason + '</span></div>';
+        }
+
+        html += '<div style="margin-top:6px; padding-top:4px; border-top:1px solid #e2e8f0; font-size:10px; color:#15803d; font-weight:600;">' +
+          '📈 Speedup: ' + d.estimatedSpeedup +
+          '<div style="color:#0284c7; font-weight:normal; margin-top:2px;">Provider: ' + data.provider + ' (' + data.model + ') • ' + data.latencyMs + 'ms</div>' +
+          '</div>';
+
+        resEl.innerHTML = html;
+      }
+      if (badge) {
+        badge.textContent = data.fallbackUsed ? 'Fallback' : 'Groq Active';
+        badge.style.background = data.fallbackUsed ? '#fef3c7' : '#dcfce7';
+        badge.style.color = data.fallbackUsed ? '#b45309' : '#15803d';
+      }
+    } catch (e) {
+      if (resEl) {
+        resEl.innerHTML = '<span style="color:#dc2626;">Failed to audit query performance.</span>';
       }
     } finally {
       if (btn) btn.disabled = false;

@@ -18,6 +18,7 @@ const { moodleService } = require('../modules/moodle/MoodleService');
 const { aiTutorService } = require('../modules/ai/AiTutorService');
 const { aiQuizGeneratorService } = require('../modules/ai/AiQuizGeneratorService');
 const { aiRecommendationService } = require('../modules/ai/AiRecommendationService');
+const { aiQueryOptimizerService } = require('../modules/ai/AiQueryOptimizerService');
 
 const router = express.Router();
 
@@ -410,6 +411,70 @@ router.get('/users/:id/recommendations', async (req, res) => {
     res.status(502).json({
       success: false,
       error: 'Failed to generate user recommendations',
+      details: err.message,
+    });
+  }
+});
+
+/**
+ * ==============================================================================
+ * Week 6 Day 4: Performance Audit — EXPLAIN Queries + Index Optimisation
+ * ==============================================================================
+ */
+
+// GET /api/moodle/perf/health - Engine & provider health status
+router.get('/perf/health', (req, res) => {
+  res.json(aiQueryOptimizerService.getHealth());
+});
+
+// GET /api/moodle/perf/benchmarks - Pre-configured query performance benchmarks
+router.get('/perf/benchmarks', (req, res) => {
+  res.json({
+    success: true,
+    benchmarks: aiQueryOptimizerService.getBenchmarks()
+  });
+});
+
+// POST /api/moodle/perf/explain - Generate EXPLAIN execution plan for SQL query
+router.post('/perf/explain', (req, res) => {
+  const { query } = req.body || {};
+  if (!query || typeof query !== 'string' || !query.trim()) {
+    return res.status(400).json({
+      success: false,
+      error: 'SQL query string is required for EXPLAIN analysis',
+    });
+  }
+
+  const explainPlan = aiQueryOptimizerService.generateExplainPlan(query);
+  res.json({
+    success: true,
+    query: query.trim(),
+    explainPlan
+  });
+});
+
+// POST /api/moodle/perf/audit - Perform in-depth AI query performance audit & indexing advice
+router.post('/perf/audit', async (req, res) => {
+  try {
+    const { query, explainPlan, simulateGroqFailure, simulateBothFailure } = req.body || {};
+    if (!query || typeof query !== 'string' || !query.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: 'SQL query string is required to perform performance audit',
+      });
+    }
+
+    const options = {
+      simulateGroqFailure: Boolean(simulateGroqFailure || req.query.simulate_groq === 'true'),
+      simulateBothFailure: Boolean(simulateBothFailure || req.query.simulate_both === 'true'),
+    };
+
+    const result = await aiQueryOptimizerService.auditQueryPerformance({ query, explainPlan }, options);
+    res.json(result);
+  } catch (err) {
+    res.status(502).json({
+      success: false,
+      error: 'Failed to complete query performance audit',
       details: err.message,
     });
   }
