@@ -1423,3 +1423,71 @@
 - Added timeout aborts, multi-tier failover, deterministic rule-based calculation, and 404 guards.
 - Verified all scenarios via [`tests/test_moodle_ai_recommendations.js`](../tests/test_moodle_ai_recommendations.js).
 - Confirmed 100% pass rate across all 25 test suites via `npm test`.
+
+---
+
+# Week 6 Day 4: Performance Audit — EXPLAIN Queries + Index Optimisation
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w6d4-murali`  
+**Date:** November 20, 2026  
+**Lesson:** Week 6 Day 4 — Performance Audit — EXPLAIN Queries + Index Optimisation  
+
+---
+
+## Interaction 1: CIA → AI Engineer Mode
+
+### Prompt / Query
+> *"I am building an automated Database Performance Auditor and Index Optimization Advisor for our Moodle LMS integration. The audit analyzes core queries across `mdl_log`, `mdl_grade_grades`, and `mdl_course_completions`. I need to use Groq (`llama-3.3-70b-versatile`) as primary LLM and OpenRouter (`meta-llama/llama-3.3-70b-instruct`) as secondary failover. How should I structure the prompt to analyze MySQL `EXPLAIN` JSON execution plans, identify non-sargable predicates, recommend composite B-Tree indexes, and quantify performance improvements without hallucinating table schemas?"*
+
+### CIA AI Engineer Mode Review & Guidance
+
+1. **System Prompt & Role Grounding:**
+   - Establish the persona as a **Principal Database Reliability Engineer and High-Performance MySQL Architect**.
+   - Ground the model strictly in MySQL InnoDB storage engine behavior, B-Tree index lookup mechanics, and standard execution plan metrics (`type: ALL`, `type: ref`, `type: range`, `Extra: Using filesort`, `Extra: Using temporary`, `Extra: Using index`).
+
+2. **Explicit Performance Rules & Sargability Enforcement:**
+   - **Rule 1 (Function wrapping in WHERE):** Wrapping indexed columns in functions (e.g. `DATE(FROM_UNIXTIME(l.time)) >= ...`) destroys index sargability, forcing full table scans across millions of rows. Rewriting to bare column comparisons against evaluated constants (e.g. `l.time >= UNIX_TIMESTAMP(CURDATE() - INTERVAL 7 DAY)`) enables range/ref index scans.
+   - **Rule 2 (Covering Indexes):** When an aggregate query queries `itemid`, `userid`, and `finalgrade` on `mdl_grade_grades`, creating a composite B-Tree index `(itemid, userid, finalgrade)` satisfies the query entirely within the leaf pages (`Extra: Using index`), eliminating secondary lookups to clustered primary index pages.
+   - **Rule 3 (Column Cardinality & Ordering):** Place high-cardinality equality filter columns first in composite index definitions (e.g., `(userid, action, time)` on `mdl_log`).
+
+3. **Strict Structured JSON Schema Contract:**
+   - Define a rigid JSON schema:
+     - `analysis`: high-level summary of execution bottlenecks.
+     - `severity`: 'CRITICAL', 'HIGH', 'MEDIUM', or 'LOW'.
+     - `issuesIdentified`: array of strings detailing specific plan defects (e.g., full table scan, missing index, filesort).
+     - `optimizations`: array of `{ originalQuery, optimizedQuery, explanation, speedupEstimate }`.
+     - `recommendedIndexes`: array of `{ table, indexName, columns, indexType, ddl, reason }`.
+     - `estimatedLatencyReduction`: estimated percentage reduction in query latency.
+   - Set `response_format: { type: "json_object" }` for Groq, and apply codeblock stripping sanitizers for OpenRouter.
+
+### Action Taken
+- Implemented `buildAuditPrompt()` and `cleanAndParseJson()` in [`backend/modules/ai/AiQueryOptimizerService.js`](../backend/modules/ai/AiQueryOptimizerService.js).
+- Added equivalent PHP Frankenstyle implementation in [`moodle/local/cynaris_perf/QueryAuditService.php`](../moodle/local/cynaris_perf/QueryAuditService.php).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review my AI Query Optimizer implementation across `AiQueryOptimizerService.js`, `moodleRouter.js`, and `schema_optimizations.sql`. What edge cases, timeout conditions, covering index mechanics, and dual-provider failover diagnostics must be hardened for enterprise production reliability?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Failure Scenario | Risk / Failure Mode | Recommended Architectural Safeguard | Implemented in Cynaris |
+|---|---|---|---|
+| **Upstream Provider Outage / Rate Limit** | Groq API returning HTTP 429 or 503 during peak grading/analytics periods. | Automatic cascading fallback to OpenRouter, with detailed diagnostic logging. | Implemented cascading failover in `auditQuery()`: Groq -> OpenRouter -> Local Rule Engine. |
+| **Complete Network Isolation / Air-Gapped CI** | Both cloud LLM endpoints unreachable during offline CI test runs. | Local deterministic rule engine detecting non-sargable functions, missing indexes, and recommending pre-computed DDL. | Implemented `localDeterministicAudit()` with regex pattern matching for `mdl_log`, `mdl_grade_grades`, and `mdl_course_completions`. |
+| **Request Timeout** | AI API hanging or stalling, causing client requests to block indefinitely. | Strict `AbortController` timeout (e.g. 7000ms) with clean abort signal cleanup. | Implemented `timeout: this.timeoutMs` with abort handler in `_postJson()`. |
+| **Malformed JSON Payload** | Open-source LLMs appending conversational text or backtick fences (` ```json `). | Regex-based JSON sanitization extracting outer bracket pairs before calling `JSON.parse()`. | Added `cleanAndParseJson()` stripping backtick fences and isolating root JSON structures. |
+| **Non-Sargable WHERE Predicate** | Wrapping datetime/timestamp columns in MySQL functions (`DATE(...)`) preventing index utilization. | Recommend rewritten SQL with bare column timestamp range operators and composite indexes. | Created `schema_optimizations.sql` defining composite indexes and documented query rewrites. |
+| **Missing Parameter Validation** | Missing `query` in POST `/api/moodle/perf/explain` or `/api/moodle/perf/audit`. | Pre-flight validation returning HTTP 400 with descriptive error payload. | Added parameter validation checks in `backend/routes/moodleRouter.js`. |
+| **Screen Reader Accessibility** | Dynamic UI performance audit updates not broadcast to screen readers. | Add W3C ARIA live region attributes to audit results container. | Added `role="status"` and `aria-live="polite"` to `#cynaris-perf-result`. |
+
+### Action Taken
+- Implemented three-tier failover (Groq -> OpenRouter -> Local Deterministic Rule Engine).
+- Defined composite B-Tree indexes and EXPLAIN benchmark records in [`moodle/database/schema_optimizations.sql`](../moodle/database/schema_optimizations.sql).
+- Added pre-flight input validation, timeout aborts, and ARIA live regions in `moodleRouter.js` and `block_cynaris_stats.php`.
+- Verified all scenarios via [`tests/test_moodle_perf_audit.js`](../tests/test_moodle_perf_audit.js).
+- Confirmed 100% pass rate across all 26 test suites via `npm test`.
+

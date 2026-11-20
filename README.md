@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-All%2025%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2026%20Suites%20Passing-success?style=for-the-badge)](tests/)
 [![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen?style=for-the-badge&logo=github-actions)](.github/workflows/ci-cd.yml)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
@@ -34,6 +34,8 @@
 - **Week 6 Day 2 Submission Report:** [`docs/WEEK6_DAY2_SUBMISSION.md`](docs/WEEK6_DAY2_SUBMISSION.md)
 - **Moodle AI Learning Recommendations Architecture:** [`docs/MOODLE_AI_RECOMMENDATIONS.md`](docs/MOODLE_AI_RECOMMENDATIONS.md)
 - **Week 6 Day 3 Submission Report:** [`docs/WEEK6_DAY3_SUBMISSION.md`](docs/WEEK6_DAY3_SUBMISSION.md)
+- **Moodle Performance Audit & EXPLAIN Query Optimization:** [`docs/MOODLE_PERF_AUDIT_EXPLAIN_INDEXING.md`](docs/MOODLE_PERF_AUDIT_EXPLAIN_INDEXING.md)
+- **Week 6 Day 4 Submission Report:** [`docs/WEEK6_DAY4_SUBMISSION.md`](docs/WEEK6_DAY4_SUBMISSION.md)
 - **Production Health Check:** `https://cynaris-recruitment-production.up.railway.app/api/health`
 
 ---
@@ -183,6 +185,24 @@
   - [`tests/test_moodle_ai_recommendations.js`](tests/test_moodle_ai_recommendations.js): 14 unit assertions covering prompts, Groq inference, OpenRouter failover, local rule fallback, schema validation, tier differentiation, PHP parity, and REST routes.
   - [`docs/MOODLE_AI_RECOMMENDATIONS.md`](docs/MOODLE_AI_RECOMMENDATIONS.md): Architecture guide, schema contracts, tier matrix, and failover sequence.
   - [`docs/WEEK6_DAY3_SUBMISSION.md`](docs/WEEK6_DAY3_SUBMISSION.md): Submission report with self-review checklist, CIA log, and answers to all 3 Viva Voce questions.
+
+### Week 6 Day 4 — Performance Audit: EXPLAIN Queries + Index Optimisation
+- **Multi-Tiered Database Performance Auditor & Index Advisor:**
+  - Primary inference via **Groq** (`llama-3.3-70b-versatile`, $< 350\text{ms}$) analyzing MySQL JSON `EXPLAIN` execution plans and identifying non-sargable predicates.
+  - Automated secondary failover to **OpenRouter** (`meta-llama/llama-3.3-70b-instruct`) on rate limits, HTTP 5xx errors, or network timeouts.
+  - Zero-downtime **Local Deterministic Fallback Engine** detecting unindexed table scans (`type: ALL`), filesorts, temporary tables, and missing composite keys via deterministic heuristics during offline or air-gapped test runs.
+- **MySQL EXPLAIN Deep-Dive & Sargable Query Optimization:**
+  - Audited 3 critical queries on Moodle core tables (`mdl_log`, `mdl_grade_grades`, and `mdl_course_completions`).
+  - Corrected non-sargable query wrapping `DATE(FROM_UNIXTIME(l.time))` into a bare timestamp range comparison `l.time >= UNIX_TIMESTAMP(...)`, cutting execution time from $445\text{ms}$ to $2.3\text{ms}$ ($193\times$ speedup).
+  - Formulated composite B-Tree indexes in [`moodle/database/schema_optimizations.sql`](moodle/database/schema_optimizations.sql): `idx_mdl_log_user_action_time`, `idx_mdl_grade_item_user_final` (covering index for aggregate grades), and `idx_mdl_completions_user_course_status`.
+- **Moodle Block Plugin UI & Express REST Gateway:**
+  - Embedded interactive Performance Audit & Index Advisor panel in [`blocks/cynaris_stats/block_cynaris_stats.php`](blocks/cynaris_stats/block_cynaris_stats.php) and [`moodle/blocks/cynaris_stats/block_cynaris_stats.php`](moodle/blocks/cynaris_stats/block_cynaris_stats.php) with benchmark query dropdown, trigger button, and W3C ARIA live region indicators (`aria-live="polite"`).
+  - Mounted `GET /api/moodle/perf/health`, `GET /api/moodle/perf/benchmarks`, `POST /api/moodle/perf/explain`, and `POST /api/moodle/perf/audit` in [`backend/routes/moodleRouter.js`](backend/routes/moodleRouter.js).
+  - Implemented Frankenstyle PHP parity in [`moodle/local/cynaris_perf/QueryAuditService.php`](moodle/local/cynaris_perf/QueryAuditService.php).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_moodle_perf_audit.js`](tests/test_moodle_perf_audit.js): 16 unit assertions covering prompt construction, Groq inference, OpenRouter failover, local rule fallback, plan generation, composite indexing, PHP parity, and REST routes.
+  - [`docs/MOODLE_PERF_AUDIT_EXPLAIN_INDEXING.md`](docs/MOODLE_PERF_AUDIT_EXPLAIN_INDEXING.md): Comprehensive query execution plans, before-vs-after metrics, and InnoDB B-Tree indexing architecture.
+  - [`docs/WEEK6_DAY4_SUBMISSION.md`](docs/WEEK6_DAY4_SUBMISSION.md): Submission report with self-review checklist, CIA log, and answers to all 3 Viva Voce questions.
 
 ---
 
@@ -388,7 +408,9 @@ docker compose -f docker-compose.espocrm.yml up -d
 ### 6. Running All Automated Unit Tests
 ```powershell
 npm test
-# Runs all 25 unit test suites across Moodle AI Learning Recommendations (Groq + OpenRouter + 5 Core Tables), Moodle AI Quiz Generation, Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+# Runs all 26 unit test suites across Moodle Database Performance Audit & Index Optimization, Moodle AI Learning Recommendations (Groq + OpenRouter + 5 Core Tables), Moodle AI Quiz Generation, Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+npm run test:w6d4
+# Runs Week 6 Day 4 Performance Audit & EXPLAIN Optimization test suite individually
 npm run test:w6d3
 # Runs Week 6 Day 3 AI Learning Recommendations test suite individually
 npm run test:w6d2
