@@ -7,7 +7,8 @@
     "start": "node backend/server.js",
     "start:reminders": "node backend/smartReminderServer.js",
     "build": "cd backend && npm install",
-    "test": "node tests/test_espocrm_setup.js && node tests/test_react_virtual_dom.js && node tests/test_business_process_mapping.js && node tests/test_react_props_unidirectional.js && node tests/test_crm_workflow_engine.js && node tests/test_react_state_and_forms.js && node tests/test_activity_dashboard_sql.js && node tests/test_react_use_effect.js && node tests/test_ai_conversation_summarizer.js && node tests/test_react_router_client.js && node tests/test_smart_reminders_ai_timing.js && node tests/test_nodejs_architecture_event_loop.js && node tests/test_express_routing_and_preferences.js && node tests/test_rest_api_debugging_and_performance.js && node tests/test_mysql_crud_and_espocrm_deployment.js && node tests/test_jwt_stateless_auth.js && node tests/test_docker_and_cicd_pipeline.js && node tests/test_moodle_setup.js && node tests/test_moodle_core_tables_and_queries.js && node tests/test_moodle_block_cynaris_stats.js && node tests/test_moodle_chartjs_dashboard.js && node tests/test_moodle_ui_bug_fixes.js && node tests/test_moodle_ai_tutor.js && node tests/test_moodle_ai_quiz_generation.js && node tests/test_moodle_ai_recommendations.js && node tests/test_moodle_perf_audit.js && node tests/test_moodle_deployment_and_capstone.js && node tests/test_career_intelligence_cia.js && node tests/test_llamaindex_skill_gap.js && node tests/test_crewai_career_recommendations.js && node tests/test_chromadb_internship_matching.js && node tests/test_langgraph_learning_path.js",
+    "test": "node tests/test_espocrm_setup.js && node tests/test_react_virtual_dom.js && node tests/test_business_process_mapping.js && node tests/test_react_props_unidirectional.js && node tests/test_crm_workflow_engine.js && node tests/test_react_state_and_forms.js && node tests/test_activity_dashboard_sql.js && node tests/test_react_use_effect.js && node tests/test_ai_conversation_summarizer.js && node tests/test_react_router_client.js && node tests/test_smart_reminders_ai_timing.js && node tests/test_nodejs_architecture_event_loop.js && node tests/test_express_routing_and_preferences.js && node tests/test_rest_api_debugging_and_performance.js && node tests/test_mysql_crud_and_espocrm_deployment.js && node tests/test_jwt_stateless_auth.js && node tests/test_docker_and_cicd_pipeline.js && node tests/test_moodle_setup.js && node tests/test_moodle_core_tables_and_queries.js && node tests/test_moodle_block_cynaris_stats.js && node tests/test_moodle_chartjs_dashboard.js && node tests/test_moodle_ui_bug_fixes.js && node tests/test_moodle_ai_tutor.js && node tests/test_moodle_ai_quiz_generation.js && node tests/test_moodle_ai_recommendations.js && node tests/test_moodle_perf_audit.js && node tests/test_moodle_deployment_and_capstone.js && node tests/test_career_intelligence_cia.js && node tests/test_llamaindex_skill_gap.js && node tests/test_crewai_career_recommendations.js && node tests/test_chromadb_internship_matching.js && node tests/test_langgraph_learning_path.js && node tests/test_resume_intelligence_ats.js",
+    "test:w8d1": "node tests/test_resume_intelligence_ats.js",
     "test:w7d5": "node tests/test_langgraph_learning_path.js",
     "test:w7d4": "node tests/test_chromadb_internship_matching.js",
     "test:w7d3": "node tests/test_crewai_career_recommendations.js",
@@ -147,7 +148,11 @@
     "langgraph",
     "learning-path",
     "state-machine",
-    "mermaid-timeline"
+    "mermaid-timeline",
+    "docling",
+    "resume-intelligence",
+    "ats-scoring",
+    "document-conversion"
   ],
   "author": "Murali",
   "license": "ISC",
