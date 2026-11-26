@@ -273,4 +273,45 @@ router.post('/career/learning-path', async (req, res) => {
   }
 });
 
+// POST /api/cia/career/resume-intelligence - Module 5: Resume Intelligence (Docling + Groq ATS Scoring) (Week 8 Day 1)
+router.post('/career/resume-intelligence', async (req, res) => {
+  try {
+    const {
+      applicantId = 1,
+      applicantName = 'Candidate #1',
+      jobTitle,
+      experienceYears,
+      skills,
+      resumeText,
+      targetRoleId,
+      simulateGroqFailure,
+      simulateBothFailure
+    } = req.body || {};
+
+    const options = {
+      simulateGroqFailure: Boolean(simulateGroqFailure || req.query.simulate_groq === 'true'),
+      simulateBothFailure: Boolean(simulateBothFailure || req.query.simulate_both === 'true')
+    };
+
+    const input = {
+      applicantId,
+      applicantName,
+      jobTitle,
+      experienceYears,
+      skills,
+      resumeText,
+      targetRoleId
+    };
+
+    const result = await careerIntelligenceService.analyzeResumeIntelligenceDoclingATS(input, options);
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(502).json({
+      success: false,
+      error: err.message || 'Unable to generate AI resume summary.',
+      details: err.message
+    });
+  }
+});
+
 module.exports = router;

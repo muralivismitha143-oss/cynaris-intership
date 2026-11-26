@@ -44,6 +44,9 @@ Route::prefix('candidate/cia')->name('candidate.cia.')->group(function () {
     // LangGraph Learning Path Generator Endpoint (Week 7 Day 5)
     Route::post('/career/learning-path', [CiaController::class, 'learningPath'])->name('career.learning-path');
 
+    // Module 5: Resume Intelligence (Docling + Groq ATS Scoring) Endpoint (Week 8 Day 1)
+    Route::post('/career/resume-intelligence', [CiaController::class, 'resumeIntelligence'])->name('career.resume-intelligence');
+
     // Health & Provider Diagnostics
     Route::get('/health', [CiaController::class, 'health'])->name('health');
 });
