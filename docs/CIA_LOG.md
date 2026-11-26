@@ -1868,6 +1868,64 @@
 - Created automated test suite [`tests/test_langgraph_learning_path.js`](../tests/test_langgraph_learning_path.js) (14/14 passed).
 - Verified full test suite parity with all 32 suites passing (`npm test`).
 
+---
+
+# Week 8 Day 1: Module 5: Resume Intelligence — Docling + Groq ATS Scoring
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w8d1-murali`  
+**Date:** November 26, 2026  
+**Lesson:** Week 8 Day 1 — Module 5: Resume Intelligence — Docling + Groq ATS Scoring  
+
+---
+
+## Interaction 1: CIA → AI Engineer Mode
+
+### Prompt / Query
+> *"I am implementing Module 5: Resume Intelligence for Week 8 Day 1. The requirements call for integrating IBM Docling document conversion with Groq (llama-3.3-70b-versatile) as primary LLM and OpenRouter (meta-llama/llama-3.3-70b-instruct) as secondary fallback, plus calculating a quantitative ATS compatibility score (0-100%). How should I structure the prompt, document conversion schema, and scoring formula to avoid LLM hallucination and ensure strict candidate evaluation?"*
+
+### CIA AI Engineer Mode Recommendations
+
+1. **Decouple Document Conversion from Evaluation:**
+   - Use IBM Docling to convert semi-structured resumes (PDF/DOCX) into standardized markdown sections (`# Resume Document`, `## Core Technical Skills`, `## Professional Experience`, `## Education & Certifications`). This establishes clean spatial hierarchy and prevents optical character interleaving.
+2. **Deterministic Pre-Computed ATS Metrics:**
+   - Never prompt an LLM to guess an arbitrary percentage score. Compute the ATS score quantitatively before invoking the model using a multi-attribute formula:
+     $$\text{ATS Score} = (R_{\text{keywords}} \times 0.60) + (S_{\text{experience}} \times 0.20) + (S_{\text{structure}} \times 0.20)$$
+   - Pass the verified score and matched/missing keyword arrays directly into the user prompt. The LLM's task is solely to synthesize qualitative screening prose around the verified numbers.
+3. **Structured Anti-Hallucination Prompt Directives:**
+   - Assign the persona of *'Senior Technical Talent Partner and ATS Evaluator at Cynaris Solutions'*.
+   - Mandate strict section headings: `### 📊 ATS Compatibility Score`, `### 📋 Executive Summary`, `### 🌟 Key Technical Competencies`, `### 🎯 Keyword Match & Density Breakdown`, `### 🔍 Interview Probe Points & Potential Gaps`, `### ⚖️ Hiring Recommendation`.
+   - Set `temperature = 0.3` to minimize stochastic variance and set `max_tokens = 600` for crisp latency.
+
+### Action Taken
+- Implemented `parseResumeWithDocling()` and `calculateATSScore()` in `CareerIntelligenceService.js` and `cynaris_recruitment/doctype/job_applicant/job_applicant.py`.
+- Formulated the decoupled System and User prompts in `buildATSAnalysisPrompt()`.
+- Authored full technical architecture in [`docs/RESUME_INTELLIGENCE_DOCLING_GROQ_ATS.md`](../docs/RESUME_INTELLIGENCE_DOCLING_GROQ_ATS.md).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review my Docling + Groq ATS scoring implementation across Frappe DocType, EspoCRM entity metadata, Express routes, Laravel CiaController, and cia.blade.php. What edge cases, failure modes, and type constraints should I safeguard against?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Layer | Component Inspected | Identified Risk / Edge Case | Architectural Mitigation Applied |
+|---|---|---|---|
+| **Frappe DocType Schema** | `job_applicant.json` | Missing schema fields for AI summary and ATS metrics causing persistence drops. | Added `ai_resume_summary` (Long Text), `ats_score` (Float), and `docling_markdown` (Long Text) fields. |
+| **EspoCRM Metadata** | `JobApplicant.json` | CRM entity def lacking custom field mappings for synchronization. | Added `aiResumeSummary` (text) and `atsScore` (float) to entity metadata. |
+| **Dual Provider Fallback** | `CareerIntelligenceService.js` | Cloud API timeouts (HTTP 429/503) or offline developer mode throwing unhandled errors. | Constructed 3-tier cascade: Groq primary $\to$ OpenRouter fallback $\to$ Local deterministic rule engine; return user-friendly error on simulated total failure. |
+| **Docling Parser Resilience** | `CareerIntelligenceService.js` | Applicant submitting null, empty, or object payloads instead of raw text. | Added polymorphic signature accepting string or applicant object, emitting graceful fallback markdown. |
+| **Blade ARIA Accessibility** | `cia.blade.php` | Asynchronous ATS score update not communicated to screen readers. | Wrapped `#docling-status-announcement` in `role="status"` and `aria-live="polite"`. |
+
+### Action Taken
+- Updated Frappe DocType schema and EspoCRM entity definitions.
+- Added polymorphic input parsing and keyword clamping in `CareerIntelligenceService.js`.
+- Integrated `#docling-resume-intelligence-section` in `resources/views/candidate/cia.blade.php`.
+- Created automated test suite [`tests/test_resume_intelligence_ats.js`](../tests/test_resume_intelligence_ats.js) (15/15 passing).
+- Verified full regression test suite with all 33 suites passing (`npm test`).
+
 
 
 

@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-All%2032%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2033%20Suites%20Passing-success?style=for-the-badge)](tests/)
 [![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen?style=for-the-badge&logo=github-actions)](.github/workflows/ci-cd.yml)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
@@ -51,6 +51,8 @@
 - **Week 7 Day 4 Submission Report:** [`docs/WEEK7_DAY4_SUBMISSION.md`](docs/WEEK7_DAY4_SUBMISSION.md)
 - **LangGraph Learning Path Generator:** [`docs/LANGGRAPH_LEARNING_PATH_GENERATOR.md`](docs/LANGGRAPH_LEARNING_PATH_GENERATOR.md)
 - **Week 7 Day 5 Submission Report:** [`docs/WEEK7_DAY5_SUBMISSION.md`](docs/WEEK7_DAY5_SUBMISSION.md)
+- **Resume Intelligence (Docling + Groq ATS) Architecture:** [`docs/RESUME_INTELLIGENCE_DOCLING_GROQ_ATS.md`](docs/RESUME_INTELLIGENCE_DOCLING_GROQ_ATS.md)
+- **Week 8 Day 1 Submission Report:** [`docs/WEEK8_DAY1_SUBMISSION.md`](docs/WEEK8_DAY1_SUBMISSION.md)
 - **Production Health Check:** `https://cynaris-recruitment-production.up.railway.app/api/health`
 
 ---
@@ -335,6 +337,29 @@
 
 ---
 
+## 🎯 Week 8: Project 5 — Advanced AI Systems, Document Intelligence & Production Hardening
+
+### Week 8 Day 1 — Module 5: Resume Intelligence — Docling + Groq ATS Scoring
+- **IBM Docling Document Parsing & Markdown Normalization:**
+  - Converts semi-structured resume documents (PDF, DOCX) into clean, semantic Markdown sections (`# Resume Document`, `## Core Technical Skills`, `## Professional Experience`, `## Education & Certifications`), preserving document spatial hierarchy and list structure without OCR artifact loss.
+- **Quantitative ATS Scoring Mathematical Formulation:**
+  - Deterministic evaluation formula: $\text{ATS Score} = (R_{\text{keywords}} \times 0.60) + (S_{\text{experience}} \times 0.20) + (S_{\text{structure}} \times 0.20)$, clamped between $52.0\%$ and $98.5\%$.
+  - Classifies candidates into standardized readiness tiers: `HIGH MATCH` ($\ge 80\%$), `MEDIUM MATCH` ($65-79.9\%$), and `LOW MATCH` ($< 65\%$).
+- **Multi-Tier Provider Resilience & Fallback:**
+  - High-throughput primary inference on **Groq** (`llama-3.3-70b-versatile`, $< 350\text{ms}$).
+  - Seamless secondary failover to **OpenRouter** (`meta-llama/llama-3.3-70b-instruct`) on rate limits or API outages.
+  - Zero-downtime **Local Deterministic Fallback Engine** ensuring 100% test reliability and offline availability.
+- **Candidate Portal Blade UI & Dual API Parity:**
+  - Embedded `#docling-resume-intelligence-section` in [`resources/views/candidate/cia.blade.php`](resources/views/candidate/cia.blade.php) with ATS score dial (`88.5%`), keyword coverage badges, Docling markdown representation, and trigger script.
+  - Dual REST API endpoints across Express (`POST /api/cia/career/resume-intelligence`, `/api/applicants/:applicant_id/generate-resume-summary`) and Laravel (`POST /career/resume-intelligence`).
+  - Frappe DocType and EspoCRM entity schema enhancements (`ai_resume_summary`, `ats_score`, `docling_markdown`).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_resume_intelligence_ats.js`](tests/test_resume_intelligence_ats.js): 15 unit assertions covering DocType schema, EspoCRM metadata, Docling document conversion, quantitative ATS scoring, prompt architecture, Groq primary, OpenRouter fallback, graceful error handling, Laravel parity, and Blade UI.
+  - Architecture Blueprint: [`docs/RESUME_INTELLIGENCE_DOCLING_GROQ_ATS.md`](docs/RESUME_INTELLIGENCE_DOCLING_GROQ_ATS.md).
+  - Official Submission Report: [`docs/WEEK8_DAY1_SUBMISSION.md`](docs/WEEK8_DAY1_SUBMISSION.md).
+
+---
+
 ## ⏰ Week 4: Node.js Architecture, Microservices & Smart Automation
 
 ### Week 4 Day 6 — CI/CD with GitHub Actions & Docker Containerisation
@@ -537,7 +562,9 @@ docker compose -f docker-compose.espocrm.yml up -d
 ### 6. Running All Automated Unit Tests
 ```powershell
 npm test
-# Runs all 32 unit test suites across LangGraph Workflow Learning Path Generator, ChromaDB Vector Search Internship Matching, CrewAI Career Recommendation Engine, LlamaIndex + Groq Skill Gap RAG Pipeline, Career Intelligence (CIA Mode) Architecture & Contracts, Moodle Deployment & Capstone Architecture, Moodle Database Performance Audit & Index Optimization, Moodle AI Learning Recommendations (Groq + OpenRouter + 5 Core Tables), Moodle AI Quiz Generation, Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+# Runs all 33 unit test suites across Docling + Groq ATS Resume Intelligence, LangGraph Workflow Learning Path Generator, ChromaDB Vector Search Internship Matching, CrewAI Career Recommendation Engine, LlamaIndex + Groq Skill Gap RAG Pipeline, Career Intelligence (CIA Mode) Architecture & Contracts, Moodle Deployment & Capstone Architecture, Moodle Database Performance Audit & Index Optimization, Moodle AI Learning Recommendations (Groq + OpenRouter + 5 Core Tables), Moodle AI Quiz Generation, Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+npm run test:w8d1
+# Runs Week 8 Day 1 Module 5 Docling + Groq ATS Resume Intelligence test suite individually
 npm run test:w7d5
 # Runs Week 7 Day 5 LangGraph Workflow Learning Path Generator test suite individually
 npm run test:w7d4
