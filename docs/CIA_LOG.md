@@ -1681,6 +1681,68 @@
 - Created automated test suite [`tests/test_llamaindex_skill_gap.js`](../tests/test_llamaindex_skill_gap.js) (10/10 passed).
 - Verified full test suite parity with all 29 suites passing (`npm test`).
 
+---
+
+# Week 7 Day 3: Module 2: Career Recommendation Engine — CrewAI Agent
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w7d3-murali`  
+**Date:** November 26, 2026  
+**Lesson:** Week 7 Day 3 — Module 2: Career Recommendation Engine — CrewAI Agent  
+
+---
+
+## Interaction 1: CIA → AI Engineer Mode
+
+### Prompt / Query
+> *"I am designing the CrewAI Career Recommendation Engine for Week 7 Day 3. The system needs to instantiate a specialized agent (CareerAdvisorAgent) with role 'Senior Career Counsellor with 15 years experience in tech placement', coordinate 3 tools (skill_gap_fetcher reading from ChromaDB, job_role_matcher, and learning_recommender), and execute the task: 'Given this intern's skill profile and gaps, recommend 3 career paths with rationale and 6-month roadmap for each.' How should I structure the agent persona, tool synthesis, and grounded task prompt to ensure deterministic, actionable, and hallucination-free outputs across Groq and OpenRouter?"*
+
+### CIA AI Engineer Mode Review & Recommendations
+
+1. **Agent Role & Persona Calibration:**
+   - Anchor the agent with exact seniority: `"Senior Career Counsellor with 15 years experience in tech placement"`.
+   - Frame the backstory as an authoritative placement director who has placed engineers across top-tier startups and multinational tech enterprises (Infosys, TCS, Flipkart, Amazon). This sets an objective, practical counselling tone rather than generic cheerleading.
+2. **Three-Tool Execution Pipeline:**
+   - **Tool (a) `skill_gap_fetcher`:** Ingest candidate skill gaps persisted in ChromaDB namespace `candidate_${candidateId}_skill_gaps` (from Week 7 Day 2). If not yet evaluated, calculate mathematical deltas dynamically.
+   - **Tool (b) `job_role_matcher`:** Match candidate competencies to 3 strategic pathways (Cloud Solutions Architect, AI Systems Engineer, and DevOps/SRE) with suitability scores.
+   - **Tool (c) `learning_recommender`:** Suggest concrete Moodle courses (`CYN-FS-101`, `CYN-OPS-103`, `CYN-AI-201`) and map them into bi-monthly milestones (Month 1-2, 3-4, 5-6).
+3. **Task Prompt Construction & Schema Enforcement:**
+   - In the system prompt, declare the agent persona, goal, backstory, and registered tools.
+   - In the user prompt, supply candidate profile details along with the serial outputs of all 3 tools.
+   - Mandate an explicit JSON schema requiring `summary`, `career_paths` array containing at least 3 objects with `path_title`, `confidence_score` ($0-100$), `rationale`, `required_skills` array, and `roadmap_6_month` array.
+4. **Multi-Tier Fault Tolerance:**
+   - Primary: Groq `llama-3.3-70b-versatile` ($< 350\text{ms}$).
+   - Secondary: OpenRouter `meta-llama/llama-3.3-70b-instruct` (active on 429, 5xx, or network timeouts).
+   - Local Safety Net: In-memory deterministic rule engine (`deterministic-crewai-v1`) guaranteeing 100% test and offline availability.
+
+### Action Taken
+- Implemented `CareerAdvisorAgent`, the 3 tools, and `generateCrewAICareerRecommendations` in [`backend/modules/ai/CareerIntelligenceService.js`](../backend/modules/ai/CareerIntelligenceService.js).
+- Authored full technical documentation in [`docs/CREWAI_CAREER_RECOMMENDATION_ENGINE.md`](../docs/CREWAI_CAREER_RECOMMENDATION_ENGINE.md).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review my CrewAI Career Recommendation Engine implementation across `CareerIntelligenceService.js`, `ciaRouter.js`, `CiaController.php`, and `cia.blade.php`. What potential schema validation edge cases, null dereferencing risks, and async UI rendering glitches should I safeguard against?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Layer | Component Inspected | Identified Risk / Edge Case | Architectural Mitigation Applied |
+|---|---|---|---|
+| **ChromaDB Cache Miss** | `CareerIntelligenceService.js` | Invoking recommendation engine before candidate has visited skill gap tab causing empty namespace error. | Added dynamic calculation fallback in `toolSkillGapFetcher` computing weighted deltas on the fly. |
+| **Malformed Career Path Count** | `CareerIntelligenceService.js` | LLM returning fewer than 3 career paths or omitting required fields. | Implemented `validateCrewAICareerPaths()` checking `payload.career_paths.length >= 3` and validating each milestone. |
+| **Unbounded Confidence Scores** | `CareerIntelligenceService.js` | Model hallucinating confidence scores outside 0-100 range or non-numeric types. | Added assertion in validator ensuring `typeof score === 'number' && score >= 0 && score <= 100`. |
+| **Laravel / Express Parity** | `CiaController.php` & `ciaRouter.js` | Parameter name mismatches (`candidateId` vs `candidate_id`). | Handled both snake_case and camelCase parameters gracefully across both stacks. |
+| **Async Card Re-rendering** | `cia.blade.php` | Rapid role dropdown switching triggering racing fetch requests. | Preserved DOM isolation and rendered cards cleanly into `#crewai-career-cards-container` with dedicated border accents. |
+
+### Action Taken
+- Applied input normalization, ChromaDB fallback logic, and strict schema validation.
+- Enhanced interactive card rendering in [`resources/views/candidate/cia.blade.php`](../resources/views/candidate/cia.blade.php).
+- Created automated test suite [`tests/test_crewai_career_recommendations.js`](../tests/test_crewai_career_recommendations.js) (11/11 passed).
+- Verified full test suite parity with all 30 suites passing (`npm test`).
+
+
 
 
 

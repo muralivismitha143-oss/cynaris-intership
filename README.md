@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-All%2029%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2030%20Suites%20Passing-success?style=for-the-badge)](tests/)
 [![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen?style=for-the-badge&logo=github-actions)](.github/workflows/ci-cd.yml)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
@@ -44,6 +44,8 @@
 - **Week 7 Day 1 Submission Report:** [`docs/WEEK7_DAY1_SUBMISSION.md`](docs/WEEK7_DAY1_SUBMISSION.md)
 - **LlamaIndex + Groq Skill Gap RAG Architecture:** [`docs/LLAMINDEX_GROQ_SKILL_GAP_RAG.md`](docs/LLAMINDEX_GROQ_SKILL_GAP_RAG.md)
 - **Week 7 Day 2 Submission Report:** [`docs/WEEK7_DAY2_SUBMISSION.md`](docs/WEEK7_DAY2_SUBMISSION.md)
+- **CrewAI Career Recommendation Engine:** [`docs/CREWAI_CAREER_RECOMMENDATION_ENGINE.md`](docs/CREWAI_CAREER_RECOMMENDATION_ENGINE.md)
+- **Week 7 Day 3 Submission Report:** [`docs/WEEK7_DAY3_SUBMISSION.md`](docs/WEEK7_DAY3_SUBMISSION.md)
 - **Production Health Check:** `https://cynaris-recruitment-production.up.railway.app/api/health`
 
 ---
@@ -269,6 +271,25 @@
   - [`docs/LLAMINDEX_GROQ_SKILL_GAP_RAG.md`](docs/LLAMINDEX_GROQ_SKILL_GAP_RAG.md): Comprehensive technical architecture guide.
   - [`docs/WEEK7_DAY2_SUBMISSION.md`](docs/WEEK7_DAY2_SUBMISSION.md): Submission report with self-review checklist, CIA log, and answers to all 3 Viva Voce questions.
 
+### Week 7 Day 3 — Module 2: Career Recommendation Engine — CrewAI Agent
+- **CrewAI CareerAdvisorAgent Autonomous Persona:**
+  - Configured `CareerAdvisorAgent` with role `"Senior Career Counsellor with 15 years experience in tech placement"`, goal, and backstory tailored to tech recruitment benchmarks across top Indian startups and IT enterprises.
+- **Three Specialized Agent Tools:**
+  - Tool (a) `skill_gap_fetcher`: Reads stored gap assessments directly from ChromaDB namespace `candidate_${candidateId}_skill_gaps` with dynamic mathematical fallback.
+  - Tool (b) `job_role_matcher`: Evaluates candidate competency profile across 3 strategic tech pathways (Full Stack Cloud Solutions Architect, AI Systems & Intelligent Backend Engineer, DevOps & Site Reliability Architect).
+  - Tool (c) `learning_recommender`: Maps gaps to sequenced Moodle courses (`CYN-FS-101`, `CYN-OPS-103`, `CYN-AI-201`) and outputs structured 6-month progression milestones.
+- **Three-Tier Multi-Provider Fallback Cascade:**
+  - High-throughput primary inference via **Groq** (`llama-3.3-70b-versatile`, $< 350\text{ms}$) with JSON schema mode.
+  - Automated secondary failover to **OpenRouter** (`meta-llama/llama-3.3-70b-instruct`) on rate limits, HTTP 5xx errors, or timeouts.
+  - Zero-downtime **Local Deterministic Fallback Engine** (`deterministic-crewai-v1`) guaranteeing 100% uptime for offline and CI test execution.
+- **Interactive UI Cards & Laravel / Express Parity:**
+  - Enhanced candidate portal [`resources/views/candidate/cia.blade.php`](resources/views/candidate/cia.blade.php) with an autonomous recommendation card deck (`#crewai-recommendations-section`, `#crewai-career-cards-container`) rendering 3 interactive career path cards, confidence badges, required skills tags, and 6-month milestone timelines.
+  - Implemented dual-stack API parity across Express (`POST /api/cia/career/recommend` & `/candidate/cia/career/recommend`) and Laravel ([`app/Http/Controllers/Web/CiaController.php`](app/Http/Controllers/Web/CiaController.php), [`routes/web.php`](routes/web.php)).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_crewai_career_recommendations.js`](tests/test_crewai_career_recommendations.js): 11 unit assertions covering agent specifications, tools execution, task prompt construction, Groq primary, OpenRouter failover, local rule engine, schema validation, Laravel/Blade parity, and REST routes.
+  - [`docs/CREWAI_CAREER_RECOMMENDATION_ENGINE.md`](docs/CREWAI_CAREER_RECOMMENDATION_ENGINE.md): Complete technical architecture specification.
+  - [`docs/WEEK7_DAY3_SUBMISSION.md`](docs/WEEK7_DAY3_SUBMISSION.md): Submission report with self-review checklist, CIA log, and answers to all 3 Viva Voce questions.
+
 ---
 
 ## ⏰ Week 4: Node.js Architecture, Microservices & Smart Automation
@@ -473,7 +494,9 @@ docker compose -f docker-compose.espocrm.yml up -d
 ### 6. Running All Automated Unit Tests
 ```powershell
 npm test
-# Runs all 29 unit test suites across LlamaIndex + Groq Skill Gap RAG Pipeline, Career Intelligence (CIA Mode) Architecture & Contracts, Moodle Deployment & Capstone Architecture, Moodle Database Performance Audit & Index Optimization, Moodle AI Learning Recommendations (Groq + OpenRouter + 5 Core Tables), Moodle AI Quiz Generation, Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+# Runs all 30 unit test suites across CrewAI Career Recommendation Engine, LlamaIndex + Groq Skill Gap RAG Pipeline, Career Intelligence (CIA Mode) Architecture & Contracts, Moodle Deployment & Capstone Architecture, Moodle Database Performance Audit & Index Optimization, Moodle AI Learning Recommendations (Groq + OpenRouter + 5 Core Tables), Moodle AI Quiz Generation, Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+npm run test:w7d3
+# Runs Week 7 Day 3 CrewAI Career Recommendation Engine test suite individually
 npm run test:w7d2
 # Runs Week 7 Day 2 LlamaIndex + Groq Skill Gap RAG test suite individually
 npm run test:w7d1
