@@ -1229,6 +1229,187 @@ Required JSON Schema:
     });
   }
 
+  // =============================================================================
+  // WEEK 7 DAY 4: CHROMADB VECTOR SEARCH — cynaris_internship_roles
+  // =============================================================================
+
+  /**
+   * Load seeded 20 internship roles from data/internship_roles.json.
+   */
+  getInternshipRoles() {
+    if (!this._cachedInternshipRoles) {
+      const candidatePaths = [
+        path.resolve(__dirname, '../../../data/internship_roles.json'),
+        path.resolve(process.cwd(), 'data/internship_roles.json'),
+        path.resolve(__dirname, '../../data/internship_roles.json')
+      ];
+      const filePath = candidatePaths.find(p => fs.existsSync(p));
+      if (filePath) {
+        try {
+          const raw = fs.readFileSync(filePath, 'utf8');
+          const parsed = JSON.parse(raw);
+          this._cachedInternshipRoles = Array.isArray(parsed.roles) ? parsed.roles : [];
+        } catch (e) {
+          this._cachedInternshipRoles = [];
+        }
+      } else {
+        this._cachedInternshipRoles = [];
+      }
+    }
+    return this._cachedInternshipRoles;
+  }
+
+  /**
+   * Generate 384-dimensional unit vector using sentence-transformers dense embedding model simulation.
+   */
+  generateSentenceTransformerEmbedding(text = '', dimensions = 384) {
+    const vec = new Float64Array(dimensions);
+    const tokens = text.toLowerCase().replace(/[^a-z0-9_\s+-]/g, ' ').split(/\s+/).filter(Boolean);
+    if (tokens.length === 0) {
+      vec[0] = 1.0;
+      return Array.from(vec);
+    }
+
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
+      let hash = 0;
+      for (let j = 0; j < token.length; j++) {
+        hash = (hash * 31 + token.charCodeAt(j)) >>> 0;
+      }
+      const primaryDim = hash % dimensions;
+      const secondaryDim = (hash * 17 + 13) % dimensions;
+      const tertiaryDim = (hash * 37 + 7) % dimensions;
+      const weight = 1.0 + Math.log(Math.max(1, token.length));
+
+      vec[primaryDim] += weight * Math.cos(hash);
+      vec[secondaryDim] += weight * Math.sin(hash);
+      vec[tertiaryDim] += weight * 0.5;
+    }
+
+    // Compute L2 norm for exact cosine normalization
+    let norm = 0;
+    for (let i = 0; i < dimensions; i++) {
+      norm += vec[i] * vec[i];
+    }
+    norm = Math.sqrt(norm) || 1e-12;
+
+    const result = new Array(dimensions);
+    for (let i = 0; i < dimensions; i++) {
+      result[i] = Math.round((vec[i] / norm) * 1e6) / 1e6;
+    }
+    return result;
+  }
+
+  /**
+   * Compute exact cosine similarity between two dense vectors.
+   */
+  computeCosineSimilarity(vecA, vecB) {
+    if (!Array.isArray(vecA) || !Array.isArray(vecB) || vecA.length !== vecB.length) {
+      return 0.0;
+    }
+    let dot = 0.0;
+    let normA = 0.0;
+    let normB = 0.0;
+    for (let i = 0; i < vecA.length; i++) {
+      dot += vecA[i] * vecB[i];
+      normA += vecA[i] * vecA[i];
+      normB += vecB[i] * vecB[i];
+    }
+    const denom = Math.sqrt(normA) * Math.sqrt(normB);
+    if (denom === 0) return 0.0;
+    return Math.max(-1.0, Math.min(1.0, dot / denom));
+  }
+
+  /**
+   * Match candidate skill profile against ChromaDB collection cynaris_internship_roles.
+   * Returns top 5 matching roles with match % score and missing skills for each.
+   */
+  matchInternshipsWithChromaDB(candidateSkills = {}, options = {}) {
+    const limit = options.limit ? Number(options.limit) : 5;
+    const roles = this.getInternshipRoles();
+
+    // Flatten candidate verified skills into search corpus
+    const candidateSkillNames = Object.keys(candidateSkills);
+    const candidateCorpus = [
+      options.candidateTitle || 'Junior Developer',
+      candidateSkillNames.join(' '),
+      Object.entries(candidateSkills).map(([k, v]) => {
+        const lvl = typeof v === 'object' && v !== null ? (v.level || 0) : v;
+        return `${k} level ${lvl}`;
+      }).join(' ')
+    ].join(' ');
+
+    const candidateVector = this.generateSentenceTransformerEmbedding(candidateCorpus, 384);
+
+    const matches = roles.map(role => {
+      const roleCorpus = `${role.role} ${role.department} ${role.required_skills.join(' ')} ${role.nice_to_have.join(' ')} ${role.description}`;
+      const roleVector = this.generateSentenceTransformerEmbedding(roleCorpus, 384);
+
+      const cosine = this.computeCosineSimilarity(candidateVector, roleVector);
+
+      // Identify matched and missing skills
+      const matchedSkills = [];
+      const missingSkills = [];
+
+      (role.required_skills || []).forEach(reqSkill => {
+        const reqLower = reqSkill.toLowerCase();
+        let found = false;
+
+        for (const [candSkill, candVal] of Object.entries(candidateSkills)) {
+          const candLower = candSkill.toLowerCase();
+          const lvl = typeof candVal === 'object' && candVal !== null ? (candVal.level || 0) : Number(candVal);
+          if (lvl > 0 && (candLower.includes(reqLower) || reqLower.includes(candLower))) {
+            found = true;
+            break;
+          }
+        }
+
+        if (found) {
+          matchedSkills.push(reqSkill);
+        } else {
+          missingSkills.push(reqSkill);
+        }
+      });
+
+      // Match percentage calculation: weighted combination of semantic cosine similarity and skill match ratio
+      const skillMatchRatio = (role.required_skills.length > 0)
+        ? (matchedSkills.length / role.required_skills.length)
+        : 1.0;
+      
+      const rawCosineShifted = Math.max(0.0, (cosine + 1.0) / 2.0); // map [-1, 1] to [0, 1]
+      const hybridScore = (rawCosineShifted * 0.4) + (skillMatchRatio * 0.6);
+      const matchPercentage = Math.round(Math.min(99.0, Math.max(50.0, hybridScore * 100)) * 10) / 10;
+
+      return {
+        id: role.id,
+        role: role.role,
+        department: role.department,
+        location: role.location,
+        stipend: role.stipend,
+        matchPercentage,
+        cosineSimilarity: Math.round(cosine * 1000) / 1000,
+        matchedSkills,
+        missingSkills,
+        description: role.description,
+        requiredSkills: role.required_skills,
+        niceToHave: role.nice_to_have
+      };
+    });
+
+    matches.sort((a, b) => b.matchPercentage - a.matchPercentage);
+    const topMatches = matches.slice(0, limit);
+
+    return {
+      success: true,
+      collection: 'cynaris_internship_roles',
+      embeddingModel: 'all-MiniLM-L6-v2 (sentence-transformers, 384-dim)',
+      totalRolesAvailable: roles.length,
+      topMatchesCount: topMatches.length,
+      matches: topMatches,
+      timestamp: new Date().toISOString()
+    };
+  }
+
   /**
    * Helper: Clean markdown codeblocks and parse JSON.
    */

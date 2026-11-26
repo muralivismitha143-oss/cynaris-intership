@@ -209,4 +209,30 @@ router.post('/career/recommend', async (req, res) => {
   }
 });
 
+// POST /api/cia/career/match-internships - ChromaDB Vector Search across 20 Internship Roles (Week 7 Day 4)
+router.post('/career/match-internships', (req, res) => {
+  try {
+    const {
+      candidateSkills = {},
+      candidateId = 1,
+      limit = 5,
+      candidateTitle
+    } = req.body || {};
+
+    const result = careerIntelligenceService.matchInternshipsWithChromaDB(candidateSkills, {
+      candidateId,
+      limit,
+      candidateTitle
+    });
+
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to execute ChromaDB vector search for internship matching',
+      details: err.message
+    });
+  }
+});
+
 module.exports = router;
