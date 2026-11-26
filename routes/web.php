@@ -41,6 +41,9 @@ Route::prefix('candidate/cia')->name('candidate.cia.')->group(function () {
     // ChromaDB Vector Search Internship Matching Endpoint (Week 7 Day 4)
     Route::post('/career/match-internships', [CiaController::class, 'matchInternships'])->name('career.match-internships');
 
+    // LangGraph Learning Path Generator Endpoint (Week 7 Day 5)
+    Route::post('/career/learning-path', [CiaController::class, 'learningPath'])->name('career.learning-path');
+
     // Health & Provider Diagnostics
     Route::get('/health', [CiaController::class, 'health'])->name('health');
 });

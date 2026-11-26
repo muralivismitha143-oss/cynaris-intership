@@ -235,4 +235,42 @@ router.post('/career/match-internships', (req, res) => {
   }
 });
 
+// POST /api/cia/career/learning-path - LangGraph State Machine 8-Week Learning Path Generator (Week 7 Day 5)
+router.post('/career/learning-path', async (req, res) => {
+  try {
+    const {
+      candidateId = 1,
+      candidateProfile = {},
+      candidateSkills = {},
+      targetRoleId = 'role_fullstack_lead',
+      dailyCommitmentHours = 2.0,
+      dailyCommitmentTarget,
+      simulateGroqFailure,
+      simulateBothFailure
+    } = req.body || {};
+
+    const options = {
+      simulateGroqFailure: Boolean(simulateGroqFailure || req.query.simulate_groq === 'true'),
+      simulateBothFailure: Boolean(simulateBothFailure || req.query.simulate_both === 'true')
+    };
+
+    const input = {
+      candidateId,
+      candidateProfile,
+      candidateSkills,
+      targetRoleId,
+      dailyCommitmentHours: dailyCommitmentHours || dailyCommitmentTarget || 2.0
+    };
+
+    const result = await careerIntelligenceService.executeLangGraphLearningPathWorkflow(input, options);
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to execute LangGraph learning path workflow',
+      details: err.message
+    });
+  }
+});
+
 module.exports = router;
