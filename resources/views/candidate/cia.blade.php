@@ -306,6 +306,106 @@
             </table>
         </div>
 
+        <!-- CrewAI Career Path Recommendations (3 Interactive Cards) (Week 7 Day 3) -->
+        <div class="card" id="crewai-recommendations-section" style="margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+                <div>
+                    <h3 style="margin: 0; color: #1e293b;">🚀 Autonomous Career Recommendations (CrewAI Agent)</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0.25rem 0 0 0;">
+                        Synthesized by <code>CareerAdvisorAgent</code> using ChromaDB skill gaps, market placement trends, and structured 6-month milestones.
+                    </p>
+                </div>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <span class="badge" id="crewai-agent-badge" style="background: #ede9fe; color: #6d28d9;">Agent: Senior Career Counsellor (15 Yrs Exp)</span>
+                    <button class="btn" id="crewai-refresh-btn" type="button" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">🎯 Refresh Paths</button>
+                </div>
+            </div>
+
+            <div id="crewai-career-cards-container" class="grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.25rem; margin-bottom: 0.5rem;">
+                <!-- Fallback Initial 3 Interactive Cards -->
+                <div class="card career-path-card" style="border: 1px solid #cbd5e1; border-top: 4px solid var(--primary); padding: 1.25rem; background: #ffffff;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                        <h4 style="margin: 0; font-size: 1.05rem; color: #0f172a;">Full Stack Cloud Solutions Architect</h4>
+                        <span class="badge" style="background: #dcfce7; color: #166534; font-weight: 700;">94% Match</span>
+                    </div>
+                    <p style="font-size: 0.82rem; color: #475569; line-height: 1.45; margin-bottom: 0.75rem;">
+                        Exceptional alignment with core full stack stack (Node.js, Express, React). Bridging system design and containerization gaps creates an immediate senior placement profile.
+                    </p>
+                    <div style="margin-bottom: 0.75rem;">
+                        <strong style="font-size: 0.75rem; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px;">Required Competencies:</strong>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.25rem;">
+                            <span class="badge" style="background: #f1f5f9; color: #334155; font-size: 0.75rem;">JavaScript ES6+</span>
+                            <span class="badge" style="background: #f1f5f9; color: #334155; font-size: 0.75rem;">Node.js</span>
+                            <span class="badge" style="background: #f1f5f9; color: #334155; font-size: 0.75rem;">System Design</span>
+                            <span class="badge" style="background: #f1f5f9; color: #334155; font-size: 0.75rem;">Docker</span>
+                        </div>
+                    </div>
+                    <div class="roadmap-box" style="background: #f8fafc; border-radius: 6px; padding: 0.75rem; border: 1px solid #e2e8f0; font-size: 0.8rem;">
+                        <strong style="color: var(--primary); display: block; margin-bottom: 0.35rem;">🗓️ 6-Month Action Roadmap:</strong>
+                        <ul style="margin: 0; padding-left: 1.2rem; color: #334155;">
+                            <li><strong>Month 1-2:</strong> Advanced System Design & Concurrency</li>
+                            <li><strong>Month 3-4:</strong> Container Orchestration & CI/CD Pipelines</li>
+                            <li><strong>Month 5-6:</strong> Enterprise Cloud Deployment & Capstone</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card career-path-card" style="border: 1px solid #cbd5e1; border-top: 4px solid #8b5cf6; padding: 1.25rem; background: #ffffff;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                        <h4 style="margin: 0; font-size: 1.05rem; color: #0f172a;">AI Systems & Intelligent Backend Engineer</h4>
+                        <span class="badge" style="background: #ede9fe; color: #6d28d9; font-weight: 700;">89% Match</span>
+                    </div>
+                    <p style="font-size: 0.82rem; color: #475569; line-height: 1.45; margin-bottom: 0.75rem;">
+                        Capitalizes on proven backend REST API proficiency while elevating modern generative AI patterns (LlamaIndex RAG, Groq LPU inference, and ChromaDB vector embeddings).
+                    </p>
+                    <div style="margin-bottom: 0.75rem;">
+                        <strong style="font-size: 0.75rem; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px;">Required Competencies:</strong>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.25rem;">
+                            <span class="badge" style="background: #f1f5f9; color: #334155; font-size: 0.75rem;">LlamaIndex RAG</span>
+                            <span class="badge" style="background: #f1f5f9; color: #334155; font-size: 0.75rem;">ChromaDB</span>
+                            <span class="badge" style="background: #f1f5f9; color: #334155; font-size: 0.75rem;">Groq LPU</span>
+                            <span class="badge" style="background: #f1f5f9; color: #334155; font-size: 0.75rem;">Python / Node</span>
+                        </div>
+                    </div>
+                    <div class="roadmap-box" style="background: #f8fafc; border-radius: 6px; padding: 0.75rem; border: 1px solid #e2e8f0; font-size: 0.8rem;">
+                        <strong style="color: #8b5cf6; display: block; margin-bottom: 0.35rem;">🗓️ 6-Month Action Roadmap:</strong>
+                        <ul style="margin: 0; padding-left: 1.2rem; color: #334155;">
+                            <li><strong>Month 1-2:</strong> Vector Databases & Embedding Architectures</li>
+                            <li><strong>Month 3-4:</strong> Multi-Tiered Resilient AI Pipelines</li>
+                            <li><strong>Month 5-6:</strong> Autonomous Agent Frameworks (CrewAI)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card career-path-card" style="border: 1px solid #cbd5e1; border-top: 4px solid #10b981; padding: 1.25rem; background: #ffffff;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                        <h4 style="margin: 0; font-size: 1.05rem; color: #0f172a;">DevOps & Site Reliability Architect</h4>
+                        <span class="badge" style="background: #e0f2fe; color: #0369a1; font-weight: 700;">85% Match</span>
+                    </div>
+                    <p style="font-size: 0.82rem; color: #475569; line-height: 1.45; margin-bottom: 0.75rem;">
+                        Leverages strong Linux and Docker containerization fundamentals to specialize in enterprise automation, infrastructure-as-code, and production observability.
+                    </p>
+                    <div style="margin-bottom: 0.75rem;">
+                        <strong style="font-size: 0.75rem; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px;">Required Competencies:</strong>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.25rem;">
+                            <span class="badge" style="background: #f1f5f9; color: #334155; font-size: 0.75rem;">Docker</span>
+                            <span class="badge" style="background: #f1f5f9; color: #334155; font-size: 0.75rem;">Kubernetes</span>
+                            <span class="badge" style="background: #f1f5f9; color: #334155; font-size: 0.75rem;">CI/CD Actions</span>
+                            <span class="badge" style="background: #f1f5f9; color: #334155; font-size: 0.75rem;">APM Logging</span>
+                        </div>
+                    </div>
+                    <div class="roadmap-box" style="background: #f8fafc; border-radius: 6px; padding: 0.75rem; border: 1px solid #e2e8f0; font-size: 0.8rem;">
+                        <strong style="color: #10b981; display: block; margin-bottom: 0.35rem;">🗓️ 6-Month Action Roadmap:</strong>
+                        <ul style="margin: 0; padding-left: 1.2rem; color: #334155;">
+                            <li><strong>Month 1-2:</strong> Production Container Hardening & Multi-Stage Builds</li>
+                            <li><strong>Month 3-4:</strong> Automated CI/CD Deployment Gates</li>
+                            <li><strong>Month 5-6:</strong> High-Availability Site Reliability & APM Observability</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- AI Recommendations Drawer (W3C ARIA compliant) -->
         <div class="ai-panel" id="cia-recommendations-drawer" role="region" aria-label="Career Intelligence Recommendations">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
@@ -341,6 +441,8 @@
             const chromaNamespaceBadge = document.getElementById('radar-chroma-namespace');
             const skillsMatrixBody = document.getElementById('cia-skills-matrix-body');
             const recommendationContent = document.getElementById('cia-recommendation-content');
+            const crewaiCardsContainer = document.getElementById('crewai-career-cards-container');
+            const crewaiRefreshBtn = document.getElementById('crewai-refresh-btn');
 
             const radarLabels = ['Frontend', 'Backend', 'Database', 'Cloud & DevOps', 'AI & ML'];
             let radarChart = null;
@@ -503,11 +605,85 @@
                 }
             }
 
+            async function triggerCrewAICareerRecommendations() {
+                const targetRoleId = roleSelect ? roleSelect.value : 'role_fullstack_lead';
+                try {
+                    const response = await fetch('/candidate/cia/career/recommend', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            candidate_id: 1,
+                            target_role_id: targetRoleId
+                        })
+                    });
+
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    const data = await response.json();
+
+                    if (crewaiCardsContainer && Array.isArray(data.career_paths)) {
+                        crewaiCardsContainer.innerHTML = '';
+                        const borderColors = ['var(--primary)', '#8b5cf6', '#10b981'];
+
+                        data.career_paths.forEach(function (cp, idx) {
+                            const borderColor = borderColors[idx % borderColors.length];
+                            const card = document.createElement('div');
+                            card.className = 'card career-path-card';
+                            card.style.cssText = 'border: 1px solid #cbd5e1; border-top: 4px solid ' + borderColor + '; padding: 1.25rem; background: #ffffff;';
+
+                            let skillsHtml = '';
+                            if (Array.isArray(cp.required_skills)) {
+                                cp.required_skills.forEach(function (sk) {
+                                    skillsHtml += '<span class="badge" style="background: #f1f5f9; color: #334155; font-size: 0.75rem;">' + sk + '</span> ';
+                                });
+                            }
+
+                            let roadmapHtml = '';
+                            if (Array.isArray(cp.roadmap_6_month)) {
+                                cp.roadmap_6_month.forEach(function (rm) {
+                                    roadmapHtml += '<li><strong>' + (rm.month || '') + ':</strong> ' + (rm.focus || '') + ' &mdash; <em style="color: #64748b;">' + (rm.milestone || '') + '</em></li>';
+                                });
+                            }
+
+                            card.innerHTML = 
+                                '<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">' +
+                                    '<h4 style="margin: 0; font-size: 1.05rem; color: #0f172a;">' + (cp.path_title || 'Career Path') + '</h4>' +
+                                    '<span class="badge" style="background: #dcfce7; color: #166534; font-weight: 700;">' + (cp.confidence_score || 90) + '% Match</span>' +
+                                '</div>' +
+                                '<p style="font-size: 0.82rem; color: #475569; line-height: 1.45; margin-bottom: 0.75rem;">' + (cp.rationale || '') + '</p>' +
+                                '<div style="margin-bottom: 0.75rem;">' +
+                                    '<strong style="font-size: 0.75rem; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px;">Required Competencies:</strong>' +
+                                    '<div style="display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.25rem;">' + skillsHtml + '</div>' +
+                                '</div>' +
+                                '<div class="roadmap-box" style="background: #f8fafc; border-radius: 6px; padding: 0.75rem; border: 1px solid #e2e8f0; font-size: 0.8rem;">' +
+                                    '<strong style="color: ' + borderColor + '; display: block; margin-bottom: 0.35rem;">🗓️ 6-Month Action Roadmap:</strong>' +
+                                    '<ul style="margin: 0; padding-left: 1.2rem; color: #334155;">' + roadmapHtml + '</ul>' +
+                                '</div>';
+
+                            crewaiCardsContainer.appendChild(card);
+                        });
+                    }
+                } catch (err) {
+                    console.warn('CrewAI recommendation fetch failover:', err.message);
+                }
+            }
+
             if (roleSelect) {
-                roleSelect.addEventListener('change', triggerSkillGapAnalysis);
+                roleSelect.addEventListener('change', function () {
+                    triggerSkillGapAnalysis();
+                    triggerCrewAICareerRecommendations();
+                });
             }
             if (refreshBtn) {
-                refreshBtn.addEventListener('click', triggerSkillGapAnalysis);
+                refreshBtn.addEventListener('click', function () {
+                    triggerSkillGapAnalysis();
+                    triggerCrewAICareerRecommendations();
+                });
+            }
+            if (crewaiRefreshBtn) {
+                crewaiRefreshBtn.addEventListener('click', triggerCrewAICareerRecommendations);
             }
         });
     </script>

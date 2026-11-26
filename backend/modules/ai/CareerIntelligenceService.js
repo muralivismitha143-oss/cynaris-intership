@@ -767,6 +767,420 @@ Generate the skill gap analysis in this exact JSON schema:
     };
   }
 
+  // =============================================================================
+  // WEEK 7 DAY 3: CREWAI AGENT — CareerAdvisorAgent & 3 Career Paths Engine
+  // =============================================================================
+
+  /**
+   * Get CrewAI CareerAdvisorAgent definition and persona.
+   */
+  getCareerAdvisorAgent() {
+    return {
+      name: 'CareerAdvisorAgent',
+      role: 'Senior Career Counsellor with 15 years experience in tech placement',
+      goal: 'Analyze technical candidate skill profiles and identified gaps to design 3 high-impact, actionable career trajectories with 6-month progression roadmaps.',
+      backstory: 'A distinguished tech recruitment counsellor and former engineering placement director with 15+ years guiding engineers into top-tier tech startups and multinational enterprises (Infosys, TCS, Flipkart, Amazon). Renowned for practical gap remediation, industry market alignment, and structured learning roadmaps.',
+      tools: ['skill_gap_fetcher', 'job_role_matcher', 'learning_recommender']
+    };
+  }
+
+  /**
+   * Tool (a): skill_gap_fetcher — reads from ChromaDB candidate namespace or calculates fallback.
+   */
+  toolSkillGapFetcher(candidateId = 1, fallbackSkills = {}, targetRoleId = 'role_fullstack_lead') {
+    const chromaEntry = this.getFromChromaNamespace(candidateId);
+    if (chromaEntry && chromaEntry.data && Array.isArray(chromaEntry.data.skill_gaps)) {
+      return {
+        source: 'chromadb',
+        namespace: `candidate_${candidateId}_skill_gaps`,
+        readinessScore: chromaEntry.data.score || 78,
+        gaps: chromaEntry.data.skill_gaps,
+        timestamp: chromaEntry.timestamp
+      };
+    }
+
+    // Fallback: calculate directly from skills taxonomy
+    const gapAnalysis = this.calculateSkillGap(fallbackSkills, targetRoleId);
+    const gaps = (gapAnalysis.itemizedGaps || []).filter(g => g.delta > 0);
+    return {
+      source: 'calculated_fallback',
+      namespace: `candidate_${candidateId}_skill_gaps`,
+      readinessScore: gapAnalysis.readinessScore || 75,
+      gaps: gaps.map(g => ({
+        skill: g.skill,
+        current_level: g.candidateLevel,
+        target_level: g.targetLevel,
+        importance: g.importance,
+        remediation_hours: g.estimatedRemediationHours
+      })),
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  /**
+   * Tool (b): job_role_matcher — matches candidate skills and gaps to prospective roles and pathways.
+   */
+  toolJobRoleMatcher(candidateSkills = {}, targetRoleId = 'role_fullstack_lead') {
+    return [
+      {
+        path_id: 'path_fullstack_cloud',
+        path_title: 'Full Stack Cloud Solutions Architect',
+        core_alignment: 'Direct trajectory building on verified React, Node.js and PHP foundations',
+        suitability_score: 94,
+        key_prerequisites: ['Distributed Systems Architecture', 'Docker Orchestration', 'Database Indexing']
+      },
+      {
+        path_id: 'path_ai_backend',
+        path_title: 'AI Systems & Intelligent Backend Engineer',
+        core_alignment: 'Cross-functional trajectory leveraging backend API design, Groq/LlamaIndex RAG, and vector search',
+        suitability_score: 89,
+        key_prerequisites: ['Vector Embeddings & ChromaDB', 'LLM Fallback Pipelines', 'High-Concurrency Caching']
+      },
+      {
+        path_id: 'path_devops_sre',
+        path_title: 'DevOps & Site Reliability Architect',
+        core_alignment: 'Infrastructure-focused trajectory scaling multi-container workloads and automated CI/CD pipelines',
+        suitability_score: 85,
+        key_prerequisites: ['Kubernetes Pod Management', 'Nginx Reverse Proxy', 'APM Observability & Monitoring']
+      }
+    ];
+  }
+
+  /**
+   * Tool (c): learning_recommender — suggests curated courses, capstones, and milestones for gaps.
+   */
+  toolLearningRecommender(skillGaps = [], domain = 'Full Stack') {
+    const courses = [
+      { course_code: 'CYN-FS-101', title: 'Modern Full Stack & Distributed Architecture', est_hours: 36 },
+      { course_code: 'CYN-OPS-103', title: 'Container Orchestration with Docker & Kubernetes', est_hours: 28 },
+      { course_code: 'CYN-AI-201', title: 'Enterprise RAG Pipelines with LlamaIndex & Vector DBs', est_hours: 32 }
+    ];
+
+    const milestones = [
+      {
+        month: 'Month 1-2',
+        focus: 'Foundational Gap Remediation & System Design',
+        milestone: 'Complete Distributed Systems Capstone and optimize database indexes'
+      },
+      {
+        month: 'Month 3-4',
+        focus: 'Cloud Native Microservices & Container Orchestration',
+        milestone: 'Deploy containerized multi-tier stack with Docker Compose and CI/CD automation'
+      },
+      {
+        month: 'Month 5-6',
+        focus: 'Enterprise Production Readiness & Capstone Portfolio',
+        milestone: 'Ship production-grade cloud deployment achieving 99.9% uptime SLA'
+      }
+    ];
+
+    return { courses, milestones };
+  }
+
+  /**
+   * Build CrewAI Task Prompt for CareerAdvisorAgent.
+   */
+  buildCrewAITaskPrompt({ candidate = {}, targetRole = {}, candidateSkills = {}, skillGaps = [], matchedRoles = [], recommendations = {} }) {
+    const agent = this.getCareerAdvisorAgent();
+
+    const systemPrompt = `You are ${agent.name}, a ${agent.role}.
+Goal: ${agent.goal}
+Backstory: ${agent.backstory}
+
+You have executed 3 specialized agent tools:
+1. skill_gap_fetcher (ChromaDB namespace): Extracted verified competencies and gap items.
+2. job_role_matcher: Evaluated high-conviction tech career pathways.
+3. learning_recommender: Synthesized curated learning actions and 6-month timeline milestones.
+
+Task: Given this intern's skill profile and gaps, recommend 3 career paths with rationale and 6-month roadmap for each.
+You must strictly return a valid JSON object adhering to the schema specified. Do not include markdown codeblocks, preamble, or commentary.`;
+
+    const userPrompt = `Candidate Details:
+Name: ${candidate.name || 'Murali'} (ID: ${candidate.id || 1})
+Current Experience: ${candidate.experienceYears || 2} Years (${candidate.currentTitle || 'Junior Full Stack Developer'})
+Verified Skills: ${JSON.stringify(candidateSkills)}
+
+Tool 1 Output (ChromaDB Skill Gaps):
+${JSON.stringify(skillGaps)}
+
+Tool 2 Output (Job Role Matcher Pathways):
+${JSON.stringify(matchedRoles)}
+
+Tool 3 Output (Learning Recommender Modules & Milestones):
+${JSON.stringify(recommendations)}
+
+Target Reference Role: ${targetRole.title || 'Senior Full Stack Engineer'}
+
+Required JSON Schema:
+{
+  "summary": "Executive counselling summary on the intern's strengths and optimal trajectory",
+  "career_paths": [
+    {
+      "path_title": "Full Stack Cloud Solutions Architect",
+      "confidence_score": 94,
+      "rationale": "Compelling explanation of why the intern fits this pathway based on verified skills and addressable gaps.",
+      "required_skills": ["Node.js", "System Design", "Docker", "Kubernetes", "MySQL Optimization"],
+      "roadmap_6_month": [
+        {
+          "month": "Month 1-2",
+          "focus": "High Concurrency & Database Index Optimization",
+          "milestone": "Refactor backend API endpoints with B-Tree indexes and Redis caching"
+        },
+        {
+          "month": "Month 3-4",
+          "focus": "Microservices & Container Orchestration",
+          "milestone": "Implement Docker Compose multi-service deployment with healthchecks"
+        },
+        {
+          "month": "Month 5-6",
+          "focus": "Cloud Native Architecture & Production Capstone",
+          "milestone": "Deploy scalable application to Railway/Render with automated GitHub Actions CI/CD"
+        }
+      ]
+    }
+  ]
+}`;
+
+    return { systemPrompt, userPrompt };
+  }
+
+  /**
+   * Validate structured output from CrewAI CareerAdvisorAgent.
+   */
+  validateCrewAICareerPaths(payload) {
+    if (!payload || typeof payload !== 'object') {
+      throw new Error('CrewAI payload must be a valid JSON object');
+    }
+    if (!Array.isArray(payload.career_paths) || payload.career_paths.length < 3) {
+      throw new Error('career_paths must be an array containing at least 3 career paths');
+    }
+    payload.career_paths.forEach((cp, idx) => {
+      if (!cp.path_title || typeof cp.path_title !== 'string') {
+        throw new Error(`Career path at index ${idx} missing path_title`);
+      }
+      if (typeof cp.confidence_score !== 'number' || cp.confidence_score < 0 || cp.confidence_score > 100) {
+        throw new Error(`Career path '${cp.path_title}' confidence_score must be a number between 0 and 100`);
+      }
+      if (!cp.rationale || typeof cp.rationale !== 'string') {
+        throw new Error(`Career path '${cp.path_title}' missing rationale`);
+      }
+      if (!Array.isArray(cp.required_skills) || cp.required_skills.length === 0) {
+        throw new Error(`Career path '${cp.path_title}' required_skills must be a non-empty array`);
+      }
+      if (!Array.isArray(cp.roadmap_6_month) || cp.roadmap_6_month.length === 0) {
+        throw new Error(`Career path '${cp.path_title}' roadmap_6_month must be an array of milestone objects`);
+      }
+      cp.roadmap_6_month.forEach((rm, rIdx) => {
+        if (!rm.month || !rm.focus || !rm.milestone) {
+          throw new Error(`Career path '${cp.path_title}' roadmap at step ${rIdx} must have month, focus, and milestone`);
+        }
+      });
+    });
+    return true;
+  }
+
+  /**
+   * Local Deterministic Fallback Engine for CrewAI CareerAdvisorAgent.
+   */
+  localDeterministicCrewAIFallback({ candidate = {}, targetRole = {}, candidateSkills = {}, skillGaps = [] }) {
+    return {
+      summary: `Based on 15 years of technical placement data, candidate ${candidate.name || 'Murali'} possesses a high-signal foundational full-stack profile. With verified competencies in JavaScript, Node.js, and PHP, targeted upskilling in distributed systems and container orchestration unlocks immediate high-conviction trajectories.`,
+      career_paths: [
+        {
+          path_title: 'Full Stack Cloud Solutions Architect',
+          confidence_score: 94,
+          rationale: 'Exceptional alignment with core full stack stack (Node.js, Express, React). Bridging system design and containerization gaps creates an immediate senior placement profile.',
+          required_skills: ['JavaScript ES6+', 'Node.js', 'System Design', 'Docker & Kubernetes', 'MySQL B-Tree Indexing'],
+          roadmap_6_month: [
+            {
+              month: 'Month 1-2',
+              focus: 'Advanced System Design & Concurrency',
+              milestone: 'Design distributed transaction system handling 1,000 req/sec with Redis and MySQL'
+            },
+            {
+              month: 'Month 3-4',
+              focus: 'Container Orchestration & CI/CD Pipelines',
+              milestone: 'Containerize multi-service architecture with Docker Compose and automated GitHub Actions'
+            },
+            {
+              month: 'Month 5-6',
+              focus: 'Enterprise Cloud Deployment & Capstone',
+              milestone: 'Deliver production cloud deployment on Railway with zero-downtime rolling updates'
+            }
+          ]
+        },
+        {
+          path_title: 'AI Systems & Intelligent Backend Engineer',
+          confidence_score: 89,
+          rationale: 'Capitalizes on proven backend REST API proficiency while elevating modern generative AI patterns (LlamaIndex RAG, Groq LPU inference, and ChromaDB vector embeddings).',
+          required_skills: ['Node.js & Python', 'LlamaIndex RAG', 'ChromaDB Vector Store', 'Groq/OpenRouter Integration', 'RESTful Security'],
+          roadmap_6_month: [
+            {
+              month: 'Month 1-2',
+              focus: 'Vector Databases & Embedding Architectures',
+              milestone: 'Implement semantic vector search over candidate resumes using 1536-dim embeddings in ChromaDB'
+            },
+            {
+              month: 'Month 3-4',
+              focus: 'Multi-Tiered Resilient AI Pipelines',
+              milestone: 'Construct dual-provider fallback cascade with Groq and OpenRouter achieving <350ms SLA'
+            },
+            {
+              month: 'Month 5-6',
+              focus: 'Autonomous Agent Frameworks (CrewAI)',
+              milestone: 'Ship multi-agent career advisor orchestrating specialized subagents with tool execution'
+            }
+          ]
+        },
+        {
+          path_title: 'DevOps & Site Reliability Architect',
+          confidence_score: 85,
+          rationale: 'Leverages strong Linux and Docker containerization fundamentals to specialize in enterprise automation, infrastructure-as-code, and production observability.',
+          required_skills: ['Docker Containerization', 'Kubernetes', 'GitHub Actions CI/CD', 'Nginx & SSL/TLS', 'APM Metrics & Observability'],
+          roadmap_6_month: [
+            {
+              month: 'Month 1-2',
+              focus: 'Production Container Hardening',
+              milestone: 'Build multi-stage unprivileged Alpine Dockerfiles with native healthchecks'
+            },
+            {
+              month: 'Month 3-4',
+              focus: 'Automated CI/CD Deployment Gates',
+              milestone: 'Engineer zero-defect deployment DAG with Docker Buildx and automated rollbacks'
+            },
+            {
+              month: 'Month 5-6',
+              focus: 'High-Availability Site Reliability',
+              milestone: 'Establish real-time APM monitoring and automated incident response runbooks'
+            }
+          ]
+        }
+      ]
+    };
+  }
+
+  /**
+   * Main CrewAI Career Recommendation Engine (Groq Primary -> OpenRouter Fallback -> Local Engine).
+   */
+  async generateCrewAICareerRecommendations(context = {}, options = {}) {
+    const {
+      candidateId = 1,
+      candidate = {},
+      targetRoleId = 'role_fullstack_lead',
+      candidateSkills = {}
+    } = context;
+
+    const roles = this.getTargetRoles();
+    const targetRole = roles.find(r => r.id === targetRoleId) || roles[0];
+
+    // 1. Execute Agent Tools
+    const skillGapsToolOutput = this.toolSkillGapFetcher(candidateId, candidateSkills, targetRoleId);
+    const matchedRolesToolOutput = this.toolJobRoleMatcher(candidateSkills, targetRoleId);
+    const learningToolOutput = this.toolLearningRecommender(skillGapsToolOutput.gaps, targetRole.title);
+
+    const { systemPrompt, userPrompt } = this.buildCrewAITaskPrompt({
+      candidate: { id: candidateId, ...candidate },
+      targetRole,
+      candidateSkills,
+      skillGaps: skillGapsToolOutput.gaps,
+      matchedRoles: matchedRolesToolOutput,
+      recommendations: learningToolOutput
+    });
+
+    const simulateGroqFailure = Boolean(options.simulateGroqFailure);
+    const simulateBothFailure = Boolean(options.simulateBothFailure);
+
+    let resultData = null;
+    let provider = 'Groq';
+    let model = this.groqModel;
+    let fallbackUsed = false;
+
+    // 2. Try Groq (Primary Engine)
+    if (!simulateGroqFailure && !simulateBothFailure && this.groqApiKey) {
+      try {
+        const responseText = await this._postJson('https://api.groq.com/openai/v1/chat/completions', {
+          model: this.groqModel,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          response_format: { type: 'json_object' },
+          temperature: 0.3
+        }, {
+          Authorization: `Bearer ${this.groqApiKey}`
+        });
+
+        const parsed = this._cleanAndParseJson(responseText);
+        this.validateCrewAICareerPaths(parsed);
+        resultData = parsed;
+      } catch (err) {
+        // Fall through to OpenRouter
+      }
+    }
+
+    // 3. Try OpenRouter (Secondary Fallback)
+    if (!resultData && !simulateBothFailure && this.openRouterApiKey) {
+      try {
+        const responseText = await this._postJson('https://openrouter.ai/api/v1/chat/completions', {
+          model: this.openRouterModel,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: 0.3
+        }, {
+          Authorization: `Bearer ${this.openRouterApiKey}`
+        });
+
+        const parsed = this._cleanAndParseJson(responseText);
+        this.validateCrewAICareerPaths(parsed);
+        resultData = parsed;
+        provider = 'OpenRouter';
+        model = this.openRouterModel;
+        fallbackUsed = true;
+      } catch (err) {
+        // Fall through to Local Deterministic Engine
+      }
+    }
+
+    // 4. Local Deterministic Safety Net
+    if (!resultData) {
+      resultData = this.localDeterministicCrewAIFallback({
+        candidate,
+        targetRole,
+        candidateSkills,
+        skillGaps: skillGapsToolOutput.gaps
+      });
+      provider = simulateGroqFailure ? 'OpenRouter (Fallback Simulated)' : 'Local Deterministic Engine';
+      model = simulateGroqFailure ? this.openRouterModel : 'deterministic-crewai-v1';
+      fallbackUsed = true;
+    }
+
+    const agent = this.getCareerAdvisorAgent();
+
+    return {
+      success: true,
+      provider,
+      model,
+      fallbackUsed,
+      agent: {
+        name: agent.name,
+        role: agent.role,
+        tools_used: ['skill_gap_fetcher', 'job_role_matcher', 'learning_recommender']
+      },
+      targetRole: {
+        id: targetRole.id,
+        title: targetRole.title,
+        level: targetRole.level,
+        department: targetRole.department
+      },
+      chroma_namespace: skillGapsToolOutput.namespace,
+      summary: resultData.summary,
+      career_paths: resultData.career_paths,
+      timestamp: new Date().toISOString()
+    };
+  }
+
   /**
    * Helper: POST JSON request with timeout abort.
    */

@@ -172,4 +172,41 @@ router.post('/career/skill-gap', async (req, res) => {
   }
 });
 
+// POST /api/cia/career/recommend - CrewAI CareerAdvisorAgent 3 Career Paths Engine (Week 7 Day 3)
+router.post('/career/recommend', async (req, res) => {
+  try {
+    const {
+      candidateId = 1,
+      targetRoleId = 'role_fullstack_lead',
+      candidateSkills,
+      candidate,
+      simulateGroqFailure,
+      simulateBothFailure
+    } = req.body || {};
+
+    const options = {
+      simulateGroqFailure: Boolean(simulateGroqFailure || req.query.simulate_groq === 'true'),
+      simulateBothFailure: Boolean(simulateBothFailure || req.query.simulate_both === 'true')
+    };
+
+    const result = await careerIntelligenceService.generateCrewAICareerRecommendations(
+      {
+        candidateId,
+        targetRoleId,
+        candidateSkills: candidateSkills || {},
+        candidate: candidate || {}
+      },
+      options
+    );
+
+    res.json(result);
+  } catch (err) {
+    res.status(502).json({
+      success: false,
+      error: 'Failed to generate CrewAI career path recommendations',
+      details: err.message
+    });
+  }
+});
+
 module.exports = router;

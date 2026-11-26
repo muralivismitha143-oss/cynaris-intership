@@ -35,6 +35,9 @@ Route::prefix('candidate/cia')->name('candidate.cia.')->group(function () {
     // LlamaIndex RAG + Groq Pipeline Skill Gap Endpoint (Week 7 Day 2)
     Route::post('/career/skill-gap', [CiaController::class, 'careerSkillGap'])->name('career.skill-gap');
 
+    // CrewAI CareerAdvisorAgent Recommendation Endpoint (Week 7 Day 3)
+    Route::post('/career/recommend', [CiaController::class, 'careerRecommend'])->name('career.recommend');
+
     // Health & Provider Diagnostics
     Route::get('/health', [CiaController::class, 'health'])->name('health');
 });
