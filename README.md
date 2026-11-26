@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-All%2031%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2032%20Suites%20Passing-success?style=for-the-badge)](tests/)
 [![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen?style=for-the-badge&logo=github-actions)](.github/workflows/ci-cd.yml)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
@@ -15,6 +15,7 @@
 - **System Architecture Blueprint:** [`ARCHITECTURE.md`](ARCHITECTURE.md)
 - **Week 4 Final Pull Request:** [`docs/WEEK4_FINAL_PR.md`](docs/WEEK4_FINAL_PR.md)
 - **Week 6 Final Pull Request:** [`docs/WEEK6_FINAL_PR.md`](docs/WEEK6_FINAL_PR.md)
+- **Week 7 Final Pull Request:** [`docs/WEEK7_FINAL_PR.md`](docs/WEEK7_FINAL_PR.md)
 - **Week 4 Demo Video Walkthrough (Unlisted):** [https://youtu.be/cynaris-recruitment-w4-fullstack-demo](https://youtu.be/cynaris-recruitment-w4-fullstack-demo)
 - **Week 6 Demo Video Walkthrough (Unlisted):** [https://youtu.be/cynaris-recruitment-w6-moodle-capstone-demo](https://youtu.be/cynaris-recruitment-w6-moodle-capstone-demo)
 - **GitHub Actions Automated Pipeline:** [https://github.com/muralivismitha143-oss/cynaris-intership/actions](https://github.com/muralivismitha143-oss/cynaris-intership/actions)
@@ -48,6 +49,8 @@
 - **Week 7 Day 3 Submission Report:** [`docs/WEEK7_DAY3_SUBMISSION.md`](docs/WEEK7_DAY3_SUBMISSION.md)
 - **ChromaDB Vector Search Internship Matching:** [`docs/CHROMADB_VECTOR_SEARCH_INTERNSHIP_MATCHING.md`](docs/CHROMADB_VECTOR_SEARCH_INTERNSHIP_MATCHING.md)
 - **Week 7 Day 4 Submission Report:** [`docs/WEEK7_DAY4_SUBMISSION.md`](docs/WEEK7_DAY4_SUBMISSION.md)
+- **LangGraph Learning Path Generator:** [`docs/LANGGRAPH_LEARNING_PATH_GENERATOR.md`](docs/LANGGRAPH_LEARNING_PATH_GENERATOR.md)
+- **Week 7 Day 5 Submission Report:** [`docs/WEEK7_DAY5_SUBMISSION.md`](docs/WEEK7_DAY5_SUBMISSION.md)
 - **Production Health Check:** `https://cynaris-recruitment-production.up.railway.app/api/health`
 
 ---
@@ -311,6 +314,25 @@
   - [`docs/CHROMADB_VECTOR_SEARCH_INTERNSHIP_MATCHING.md`](docs/CHROMADB_VECTOR_SEARCH_INTERNSHIP_MATCHING.md): Complete technical architecture specification and mathematical formulations.
   - [`docs/WEEK7_DAY4_SUBMISSION.md`](docs/WEEK7_DAY4_SUBMISSION.md): Submission report with self-review checklist, CIA log, and answers to all 3 Viva Voce questions.
 
+### Week 7 Day 5 — Module 4: Learning Path Generator — LangGraph Workflow
+- **LangGraph 5-Node State Machine Architecture:**
+  - Decomposed curriculum generation into 5 discrete, sequential nodes: `AssessCurrentState` $\to$ `IdentifyGaps` $\to$ `GeneratePlan` $\to$ `ValidatePlan` $\to$ `OutputPlan`.
+  - Built observable state container carrying `intern_profile`, `skill_gaps`, `target_role`, `generated_plan`, and `node_history`.
+- **Pedagogical 8-Week Curriculum Generation & Invariant Criticism:**
+  - Generates week-by-week curriculum with concrete technical topics, Moodle course resources (`CYN-FS-101`, `CYN-OPS-103`, `CYN-AI-201`), daily commitment hours, and measurable capstone deliverables.
+  - Rigorous critic node (`ValidatePlan`) enforcing: exactly 8 weeks, daily commitment $\le 3.5\text{ hrs/day}$, non-empty topics and resources, and alignment with identified gaps.
+- **Interactive Mermaid Timeline Synthesis:**
+  - Generates valid Mermaid `timeline` syntax with 4 thematic sections (`Foundations & Core Architecture`, `Data & Storage Engine`, `Containerization & Cloud CI/CD`, `AI Systems & Capstone`).
+- **Dual-Stack API Parity & Candidate UI Deck:**
+  - Implemented Express REST routes (`POST /api/cia/career/learning-path` & `/candidate/cia/career/learning-path`) in [`backend/routes/ciaRouter.js`](backend/routes/ciaRouter.js).
+  - Implemented Laravel web route and controller in [`app/Http/Controllers/Web/CiaController.php`](app/Http/Controllers/Web/CiaController.php) & [`routes/web.php`](routes/web.php).
+  - Enhanced [`resources/views/candidate/cia.blade.php`](resources/views/candidate/cia.blade.php) with `#langgraph-learning-path-section`, interactive trigger button `#btn-generate-learning-path`, dynamic Mermaid timeline container `#langgraph-mermaid-timeline-box`, and 8 weekly curriculum cards with W3C ARIA accessibility (`aria-live="polite"`).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_langgraph_learning_path.js`](tests/test_langgraph_learning_path.js): 14 unit assertions covering state machine initialization, 5-node sequencing, 8-week invariant, schema validation, daily commitment limits, Mermaid syntax, Groq primary, OpenRouter failover, local rule engine, Laravel parity, and REST routes.
+  - [`docs/LANGGRAPH_LEARNING_PATH_GENERATOR.md`](docs/LANGGRAPH_LEARNING_PATH_GENERATOR.md): Complete technical architecture specification and curriculum syllabus.
+  - [`docs/WEEK7_DAY5_SUBMISSION.md`](docs/WEEK7_DAY5_SUBMISSION.md): Submission report with self-review checklist, CIA log, and answers to all 3 Viva Voce questions.
+  - [`docs/WEEK7_FINAL_PR.md`](docs/WEEK7_FINAL_PR.md): End-of-week Capstone Pull Request template.
+
 ---
 
 ## ⏰ Week 4: Node.js Architecture, Microservices & Smart Automation
@@ -515,7 +537,9 @@ docker compose -f docker-compose.espocrm.yml up -d
 ### 6. Running All Automated Unit Tests
 ```powershell
 npm test
-# Runs all 31 unit test suites across ChromaDB Vector Search Internship Matching, CrewAI Career Recommendation Engine, LlamaIndex + Groq Skill Gap RAG Pipeline, Career Intelligence (CIA Mode) Architecture & Contracts, Moodle Deployment & Capstone Architecture, Moodle Database Performance Audit & Index Optimization, Moodle AI Learning Recommendations (Groq + OpenRouter + 5 Core Tables), Moodle AI Quiz Generation, Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+# Runs all 32 unit test suites across LangGraph Workflow Learning Path Generator, ChromaDB Vector Search Internship Matching, CrewAI Career Recommendation Engine, LlamaIndex + Groq Skill Gap RAG Pipeline, Career Intelligence (CIA Mode) Architecture & Contracts, Moodle Deployment & Capstone Architecture, Moodle Database Performance Audit & Index Optimization, Moodle AI Learning Recommendations (Groq + OpenRouter + 5 Core Tables), Moodle AI Quiz Generation, Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+npm run test:w7d5
+# Runs Week 7 Day 5 LangGraph Workflow Learning Path Generator test suite individually
 npm run test:w7d4
 # Runs Week 7 Day 4 ChromaDB Vector Search Internship Matching test suite individually
 npm run test:w7d3

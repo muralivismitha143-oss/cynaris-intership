@@ -1808,6 +1808,67 @@
 - Created automated test suite [`tests/test_chromadb_internship_matching.js`](../tests/test_chromadb_internship_matching.js) (10/10 passed).
 - Verified full test suite parity with all 31 suites passing (`npm test`).
 
+---
+
+# Week 7 Day 5: Module 4: Learning Path Generator — LangGraph Workflow
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w7d5-murali`  
+**Date:** November 26, 2026  
+**Lesson:** Week 7 Day 5 — Module 4: Learning Path Generator — LangGraph Workflow  
+
+---
+
+## Interaction 1: CIA → Full Stack Mentor Mode
+
+### Prompt / Query
+> *"I am designing the LangGraph Learning Path Generator for Week 7 Day 5. The workflow must coordinate 5 sequential nodes: AssessCurrentState → IdentifyGaps → GeneratePlan → ValidatePlan → OutputPlan. The state needs to carry intern_profile, skill_gaps, target_role, and generated_plan, outputting an 8-week curriculum with daily time commitments and a Mermaid timeline diagram. Could you review my architectural design, state immutability patterns, and node separation before I commit?"*
+
+### CIA Full Stack Mentor Mode Review & Guidance
+
+1. **State Machine Node Separation & Single Responsibility:**
+   - Decomposing curriculum generation into 5 sequential steps aligns with production agentic engineering:
+     - `AssessCurrentState`: Ingests candidate profile and verified skills to determine the baseline competency rating without confusing it with target requirements.
+     - `IdentifyGaps`: Computes normalized multi-attribute weighted gaps and tags critical missing skills (`CRITICAL_MISSING`, `HIGH_GAP`).
+     - `GeneratePlan`: Synthesizes an 8-week syllabus structured around the identified gaps, mapping topics to Moodle course codes (`CYN-FS-101`, `CYN-OPS-103`, `CYN-AI-201`).
+     - `ValidatePlan`: Acts as an explicit critic node enforcing invariants (exactly 8 weeks, valid daily commitments $\le 3.5\text{ hrs/day}$, and presence of topics and resources).
+     - `OutputPlan`: Computes total hours metrics and formats valid Mermaid timeline syntax (`timeline`, `title`, `section`).
+2. **State Container Immutability & Observable Trajectory:**
+   - Every node returns the updated state while appending its name to `node_history`. This creates an immutable audit trail (`AssessCurrentState` $\to$ `IdentifyGaps` $\to$ `GeneratePlan` $\to$ `ValidatePlan` $\to$ `OutputPlan`) allowing recruiters and candidate dashboards to inspect execution telemetry and node latencies.
+3. **Multi-Tier Resilience (Dual Provider + Local Deterministic Engine):**
+   - High-throughput primary inference on **Groq** (`llama-3.3-70b-versatile`, $< 350\text{ms}$).
+   - Automated secondary failover to **OpenRouter** (`meta-llama/llama-3.3-70b-instruct`) on rate limits or timeouts.
+   - Zero-downtime **Local Deterministic LangGraph Engine** guaranteeing 100% test reliability and offline availability.
+
+### Action Taken
+- Implemented the 5-node LangGraph State Machine in [`backend/modules/ai/CareerIntelligenceService.js`](../backend/modules/ai/CareerIntelligenceService.js).
+- Authored full architectural documentation in [`docs/LANGGRAPH_LEARNING_PATH_GENERATOR.md`](../docs/LANGGRAPH_LEARNING_PATH_GENERATOR.md).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review my LangGraph learning path implementation across `CareerIntelligenceService.js`, `ciaRouter.js`, `CiaController.php`, and `cia.blade.php`. What potential schema validation edge cases, Mermaid timeline lexing errors, and UI lifecycle glitches should I safeguard against?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Layer | Component Inspected | Identified Risk / Edge Case | Architectural Mitigation Applied |
+|---|---|---|---|
+| **Mermaid Timeline Syntax** | `CareerIntelligenceService.js` | Unescaped colons (`:`) or ampersands (`&`) in generated topics/milestones breaking Mermaid parser. | Sanitized tokens by replacing `:` and `&` with safe prose (`and`) and structured strictly as `Week N : Title : Topic : Milestone`. |
+| **Pedagogical Workload** | `CareerIntelligenceService.js` | Candidate or LLM setting unrealistic daily commitment ($> 3.5$ hrs/day) leading to burnout. | Added invariant check in `nodeValidatePlan` rejecting commitments $> 3.5$ hrs/day with descriptive error. |
+| **Mermaid Re-rendering** | `cia.blade.php` | Re-rendering Mermaid timeline dynamically after asynchronous fetch causing `data-processed` collisions. | Stripped `data-processed` attribute and executed `mermaid.run({ nodes: [element] })` inside a safe `try/catch` wrapper. |
+| **Missing Target Role** | `CareerIntelligenceService.js` | Request passing an unrecognized or null `targetRoleId`. | Added automatic fallback to the primary benchmark role (`role_fullstack_lead`). |
+| **Laravel / Express Parity** | `CiaController.php` & `ciaRouter.js` | Input parameter naming discrepancies (`dailyCommitmentHours` vs `daily_commitment_hours` vs `dailyCommitmentTarget`). | Normalized input extraction across all parameter casing conventions on both backends. |
+
+### Action Taken
+- Implemented Mermaid token sanitization and section grouping in `generateMermaidTimeline()`.
+- Added workload bounding guards ($\le 3.5\text{ hrs/day}$) and total hours calculation formulas.
+- Enhanced candidate view in [`resources/views/candidate/cia.blade.php`](../resources/views/candidate/cia.blade.php) with interactive timeline and week cards.
+- Created automated test suite [`tests/test_langgraph_learning_path.js`](../tests/test_langgraph_learning_path.js) (14/14 passed).
+- Verified full test suite parity with all 32 suites passing (`npm test`).
+
+
 
 
 
