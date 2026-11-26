@@ -1742,6 +1742,73 @@
 - Created automated test suite [`tests/test_crewai_career_recommendations.js`](../tests/test_crewai_career_recommendations.js) (11/11 passed).
 - Verified full test suite parity with all 30 suites passing (`npm test`).
 
+---
+
+# Week 7 Day 4: Module 3: Internship Matching — ChromaDB Vector Search
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w7d4-murali`  
+**Date:** November 26, 2026  
+**Lesson:** Week 7 Day 4 — Module 3: Internship Matching — ChromaDB Vector Search  
+
+---
+
+## Interaction 1: CIA → AI Engineer Mode
+
+### Prompt / Query
+> *"I am implementing Module 3: Internship Matching using ChromaDB Vector Search for Week 7 Day 4. The requirements are: (1) seed 20 technical internship roles in collection `cynaris_internship_roles`; (2) generate sentence-transformers 384-dimensional dense vector embeddings with L2 unit normalization; (3) compute exact cosine similarities; (4) ingest candidate skill profiles and rank the top 5 matching roles with match percentage; (5) identify matched skills and missing skills per role; and (6) render an interactive UI ranked card deck in `cia.blade.php`. What mathematical scoring formulations, embedding techniques, and skill discrimination algorithms should I use to ensure high precision without semantic distortion?"*
+
+### CIA AI Engineer Mode Review & Recommendations
+
+1. **Dense Vector Embeddings & L2 Normalization:**
+   - Map text tokens into a 384-dimensional dense vector space $\mathbb{R}^{384}$ matching `all-MiniLM-L6-v2`.
+   - Strictly normalize every embedding vector to unit length ($\lVert \mathbf{v} \rVert_2 = 1.0$) using L2 Euclidean norm:
+     $$\mathbf{\hat{v}} = \frac{\mathbf{v}}{\sqrt{\sum_{i=1}^{384} v_i^2}}$$
+   - This invariant ensures that cosine similarity simplifies to the Euclidean dot product:
+     $$\cos(\theta) = \mathbf{\hat{u}} \cdot \mathbf{\hat{v}} = \sum_{i=1}^{384} \hat{u}_i \hat{v}_i$$
+     eliminating expensive norm recalculations at query time.
+2. **Hybrid Match Scoring Formulation:**
+   - Pure cosine similarity captures broad semantic affinities but can blur the line between a candidate who knows 100% of the core required tools vs someone with an adjacent background.
+   - Formulate a hybrid score balancing semantic cosine similarity ($40\%$) and verified required skill overlap ($60\%$):
+     $$S_{\text{hybrid}} = \left(0.40 \cdot \frac{\cos(\theta) + 1.0}{2.0}\right) + \left(0.60 \cdot \frac{|S_{\text{matched}}|}{|S_{\text{required}}|}\right)$$
+   - Scale into a clean user-facing percentage bounded in $[50.0\%, 99.0\%]$.
+3. **Skill Discrimination (Matched vs Missing):**
+   - For each role's `required_skills`, match case-insensitively with candidate skills where proficiency level is verified ($> 0$).
+   - Partition into `matchedSkills` (highlighted in emerald green) and `missingSkills` (highlighted in amber/red).
+4. **Seeded Roles Taxonomy:**
+   - Seed exactly 20 distinct technical roles across 5 departments: Engineering, AI & Data Science, DevOps & Cloud, QA & Testing, and Product & Security.
+   - Include complete compensation, department, and location metadata.
+
+### Action Taken
+- Seeded 20 technical internship profiles in [`data/internship_roles.json`](../data/internship_roles.json).
+- Implemented `generateSentenceTransformerEmbedding`, `computeCosineSimilarity`, and `matchInternshipsWithChromaDB` in [`backend/modules/ai/CareerIntelligenceService.js`](../backend/modules/ai/CareerIntelligenceService.js).
+- Authored full technical documentation in [`docs/CHROMADB_VECTOR_SEARCH_INTERNSHIP_MATCHING.md`](../docs/CHROMADB_VECTOR_SEARCH_INTERNSHIP_MATCHING.md).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review my ChromaDB internship matching implementation across `CareerIntelligenceService.js`, `ciaRouter.js`, `CiaController.php`, and `cia.blade.php`. What potential path resolution edge cases, division-by-zero risks, and UI rendering inconsistencies should I safeguard against?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Layer | Component Inspected | Identified Risk / Edge Case | Architectural Mitigation Applied |
+|---|---|---|---|
+| **Path Resolution** | `CareerIntelligenceService.js` | Service located 3 levels deep (`backend/modules/ai/`) attempting relative path `../../data/` failing to locate `data/internship_roles.json`. | Implemented multi-candidate resolution: `path.resolve(__dirname, '../../../data/internship_roles.json')` and `path.resolve(process.cwd(), 'data/internship_roles.json')`. |
+| **Division by Zero** | `CareerIntelligenceService.js` | Zero required skills in an internship role causing `matched / required` division by zero. | Added guard check: `role.required_skills.length > 0 ? (matched.length / required.length) : 1.0`. |
+| **Cosine Invariant** | `CareerIntelligenceService.js` | Floating point imprecision causing $\cos(\theta)$ to drift slightly outside $[-1.0, 1.0]$ (e.g. $1.00000000002$). | Enforced math clamping: `Math.max(-1.0, Math.min(1.0, dot / denom))`. |
+| **Empty Candidate Profile** | `CareerIntelligenceService.js` | Candidate submitting empty skill object causing zero-magnitude vector. | Added unit fallback on index 0 `vec[0] = 1.0` and minimum match % clamp to $50.0\%$. |
+| **UI Card Consistency** | `cia.blade.php` | Asynchronous trigger overwriting inner HTML without clearing prior state. | Structured `#chromadb-internship-list-container` with dedicated card templates and clear badge color schemes. |
+
+### Action Taken
+- Resolved multi-level path resolution with memoized disk access.
+- Added strict numerical bounds and division-by-zero guards.
+- Enhanced candidate UI in [`resources/views/candidate/cia.blade.php`](../resources/views/candidate/cia.blade.php) with green and red skill badges.
+- Created automated test suite [`tests/test_chromadb_internship_matching.js`](../tests/test_chromadb_internship_matching.js) (10/10 passed).
+- Verified full test suite parity with all 31 suites passing (`npm test`).
+
+
 
 
 

@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-All%2030%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2031%20Suites%20Passing-success?style=for-the-badge)](tests/)
 [![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen?style=for-the-badge&logo=github-actions)](.github/workflows/ci-cd.yml)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
@@ -46,6 +46,8 @@
 - **Week 7 Day 2 Submission Report:** [`docs/WEEK7_DAY2_SUBMISSION.md`](docs/WEEK7_DAY2_SUBMISSION.md)
 - **CrewAI Career Recommendation Engine:** [`docs/CREWAI_CAREER_RECOMMENDATION_ENGINE.md`](docs/CREWAI_CAREER_RECOMMENDATION_ENGINE.md)
 - **Week 7 Day 3 Submission Report:** [`docs/WEEK7_DAY3_SUBMISSION.md`](docs/WEEK7_DAY3_SUBMISSION.md)
+- **ChromaDB Vector Search Internship Matching:** [`docs/CHROMADB_VECTOR_SEARCH_INTERNSHIP_MATCHING.md`](docs/CHROMADB_VECTOR_SEARCH_INTERNSHIP_MATCHING.md)
+- **Week 7 Day 4 Submission Report:** [`docs/WEEK7_DAY4_SUBMISSION.md`](docs/WEEK7_DAY4_SUBMISSION.md)
 - **Production Health Check:** `https://cynaris-recruitment-production.up.railway.app/api/health`
 
 ---
@@ -290,6 +292,25 @@
   - [`docs/CREWAI_CAREER_RECOMMENDATION_ENGINE.md`](docs/CREWAI_CAREER_RECOMMENDATION_ENGINE.md): Complete technical architecture specification.
   - [`docs/WEEK7_DAY3_SUBMISSION.md`](docs/WEEK7_DAY3_SUBMISSION.md): Submission report with self-review checklist, CIA log, and answers to all 3 Viva Voce questions.
 
+### Week 7 Day 4 — Module 3: Internship Matching — ChromaDB Vector Search
+- **Seeded 20 Technical Internship Roles in ChromaDB Collection (`cynaris_internship_roles`):**
+  - Seeded benchmark dataset [`data/internship_roles.json`](data/internship_roles.json) with 20 distinct technical internship profiles partitioned across 5 engineering departments (Engineering, AI & Data Science, DevOps & Cloud, QA & Testing, Product & Security).
+  - Rich metadata schema per role: `id`, `role`, `department`, `location` (Remote, Hybrid, On-site), `stipend`, `required_skills`, `nice_to_have`, and comprehensive `description`.
+- **Dense Vector Embedding & Cosine Similarity Engine:**
+  - Projects candidate verified skill profile and role corpora into 384-dimensional dense vectors matching `sentence-transformers/all-MiniLM-L6-v2`.
+  - Enforced mathematical **L2 unit vector normalization** ($\lVert \mathbf{v} \rVert = 1.0$) and exact **cosine similarity** calculations bounded strictly within $[-1.0, 1.0]$.
+  - Formulated hybrid matching metric balancing semantic cosine similarity ($40\%$) with discrete required skill match ratio ($60\%$), scaling into a reliable percentage ($50.0\% \le \text{Match} \le 99.0\%$).
+- **Prerequisite Skill Discrimination (Matched vs Missing):**
+  - Isolates verified skills that meet role requirements (`matchedSkills`, displayed as green badges) versus unmet technical gaps (`missingSkills`, displayed as amber/red badges with actionable upskilling prompts).
+- **Dual-Stack API Parity & Candidate UI Deck:**
+  - Implemented Express REST routes (`POST /api/cia/career/match-internships` & `/candidate/cia/career/match-internships`) in [`backend/routes/ciaRouter.js`](backend/routes/ciaRouter.js).
+  - Implemented Laravel web route and controller in [`app/Http/Controllers/Web/CiaController.php`](app/Http/Controllers/Web/CiaController.php) & [`routes/web.php`](routes/web.php).
+  - Enhanced [`resources/views/candidate/cia.blade.php`](resources/views/candidate/cia.blade.php) with an accessible `#chromadb-internship-matching-section`, interactive trigger button `#btn-trigger-internship-matching`, and top 5 ranked card deck `#chromadb-internship-list-container`.
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_chromadb_internship_matching.js`](tests/test_chromadb_internship_matching.js): 10 unit assertions covering 20 seeded roles, 384-dim dense embeddings, L2 unit norm invariant, cosine similarity bounds, collection loading, top 5 descending rank, matched/missing skill discrimination, score bounds, Laravel parity, and REST routes.
+  - [`docs/CHROMADB_VECTOR_SEARCH_INTERNSHIP_MATCHING.md`](docs/CHROMADB_VECTOR_SEARCH_INTERNSHIP_MATCHING.md): Complete technical architecture specification and mathematical formulations.
+  - [`docs/WEEK7_DAY4_SUBMISSION.md`](docs/WEEK7_DAY4_SUBMISSION.md): Submission report with self-review checklist, CIA log, and answers to all 3 Viva Voce questions.
+
 ---
 
 ## ⏰ Week 4: Node.js Architecture, Microservices & Smart Automation
@@ -494,7 +515,9 @@ docker compose -f docker-compose.espocrm.yml up -d
 ### 6. Running All Automated Unit Tests
 ```powershell
 npm test
-# Runs all 30 unit test suites across CrewAI Career Recommendation Engine, LlamaIndex + Groq Skill Gap RAG Pipeline, Career Intelligence (CIA Mode) Architecture & Contracts, Moodle Deployment & Capstone Architecture, Moodle Database Performance Audit & Index Optimization, Moodle AI Learning Recommendations (Groq + OpenRouter + 5 Core Tables), Moodle AI Quiz Generation, Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+# Runs all 31 unit test suites across ChromaDB Vector Search Internship Matching, CrewAI Career Recommendation Engine, LlamaIndex + Groq Skill Gap RAG Pipeline, Career Intelligence (CIA Mode) Architecture & Contracts, Moodle Deployment & Capstone Architecture, Moodle Database Performance Audit & Index Optimization, Moodle AI Learning Recommendations (Groq + OpenRouter + 5 Core Tables), Moodle AI Quiz Generation, Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+npm run test:w7d4
+# Runs Week 7 Day 4 ChromaDB Vector Search Internship Matching test suite individually
 npm run test:w7d3
 # Runs Week 7 Day 3 CrewAI Career Recommendation Engine test suite individually
 npm run test:w7d2
