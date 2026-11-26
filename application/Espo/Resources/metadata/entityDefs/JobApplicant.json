@@ -30,6 +30,11 @@
     "aiResumeSummary": {
       "type": "text",
       "readOnly": false
+    },
+    "atsScore": {
+      "type": "float",
+      "default": 0.0,
+      "readOnly": true
     }
   },
   "links": {

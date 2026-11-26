@@ -93,6 +93,20 @@
       "fieldtype": "Datetime",
       "label": "AI Analyzed At",
       "read_only": 1
+    },
+    {
+      "fieldname": "ats_score",
+      "fieldtype": "Float",
+      "label": "ATS Compatibility Score",
+      "default": 0.0,
+      "read_only": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "docling_markdown",
+      "fieldtype": "Long Text",
+      "label": "Docling Parsed Resume",
+      "read_only": 1
     }
   ],
   "permissions": [

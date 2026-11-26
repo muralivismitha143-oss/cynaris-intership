@@ -1,0 +1,209 @@
+{
+  "version": "1.0.0",
+  "collection": "cynaris_internship_roles",
+  "description": "Enterprise repository of 20 technical internship role profiles with semantic embeddings for ChromaDB vector matching.",
+  "embeddingModel": "all-MiniLM-L6-v2 (sentence-transformers, 384-dim)",
+  "totalRoles": 20,
+  "roles": [
+    {
+      "id": "intern_fs_01",
+      "role": "Full Stack Development Intern (Node.js & React)",
+      "department": "Engineering",
+      "location": "Bengaluru, India (Hybrid)",
+      "stipend": "₹25,000 / month",
+      "required_skills": ["JavaScript", "Node.js", "React", "Docker & Containers", "MySQL"],
+      "nice_to_have": ["TypeScript", "GraphQL", "Redis Caching"],
+      "description": "Architect and deploy end-to-end recruitment modules using modern React hooks, Node.js asynchronous streams, and Dockerized microservices. Collaborate with senior architects on database normalization and responsive UI components."
+    },
+    {
+      "id": "intern_be_02",
+      "role": "Backend Systems Engineering Intern (Express & MySQL)",
+      "department": "Engineering",
+      "location": "Pune, India (Onsite)",
+      "stipend": "₹22,000 / month",
+      "required_skills": ["Node.js", "Express.js", "MySQL / Relational DB", "REST APIs", "Git Workflow"],
+      "nice_to_have": ["Redis", "Message Queues", "Microservices"],
+      "description": "Design high-concurrency RESTful APIs and middleware services. Profile database query execution plans using EXPLAIN and tune composite B-Tree indexes for sub-50ms latency."
+    },
+    {
+      "id": "intern_ai_03",
+      "role": "AI & RAG Pipeline Engineering Intern (LlamaIndex & Groq)",
+      "department": "AI & Data Systems",
+      "location": "Bengaluru, India (Hybrid)",
+      "stipend": "₹30,000 / month",
+      "required_skills": ["Python", "JavaScript", "Groq LPU", "LlamaIndex RAG", "Prompt Engineering"],
+      "nice_to_have": ["ChromaDB", "Vector Embeddings", "OpenRouter Fallback"],
+      "description": "Engineer multi-tier RAG retrieval pipelines using LlamaIndex and Groq LPU inference. Implement automated secondary failover to OpenRouter and enforce strict JSON output schemas."
+    },
+    {
+      "id": "intern_devops_04",
+      "role": "DevOps & Cloud Infrastructure Intern (Docker & GitHub Actions)",
+      "department": "Cloud Infrastructure",
+      "location": "Hyderabad, India (Hybrid)",
+      "stipend": "₹26,000 / month",
+      "required_skills": ["Docker & Containers", "GitHub Actions CI/CD", "Linux Administration", "Nginx", "Git Workflow"],
+      "nice_to_have": ["Kubernetes", "Terraform", "Prometheus"],
+      "description": "Construct multi-stage Docker container build pipelines and zero-defect GitHub Actions deployment DAGs. Implement container healthchecks and configure Nginx reverse proxy routing."
+    },
+    {
+      "id": "intern_fe_05",
+      "role": "Frontend UX & Web Performance Intern (React & Chart.js)",
+      "department": "Engineering",
+      "location": "Remote (India)",
+      "stipend": "₹22,000 / month",
+      "required_skills": ["JavaScript", "React", "CSS3 / Flexbox / Grid", "Chart.js", "W3C ARIA Standards"],
+      "nice_to_have": ["Virtual DOM Optimization", "Zustand", "Webpack/Vite"],
+      "description": "Build high-performance interactive radar dashboards and candidate evaluation UI cards. Ensure strict W3C ARIA live region accessibility and optimize Core Web Vitals."
+    },
+    {
+      "id": "intern_php_06",
+      "role": "PHP & Moodle LMS Core Engineering Intern (Frankenstyle & DBAL)",
+      "department": "EdTech Systems",
+      "location": "Pune, India (Onsite)",
+      "stipend": "₹20,000 / month",
+      "required_skills": ["PHP 8", "MySQL", "Moodle LMS", "Frankenstyle Architecture", "Git Workflow"],
+      "nice_to_have": ["PHPUnit", "PostgreSQL", "Docker Compose"],
+      "description": "Develop pluggable Moodle block plugins and custom assessment quiz modules. Master Moodle universal database abstraction layer ($DB) and headless CLI upgrade automation."
+    },
+    {
+      "id": "intern_db_07",
+      "role": "Database Performance & SQL Optimization Intern (MySQL & Redis)",
+      "department": "Data & Analytics",
+      "location": "Bengaluru, India (Hybrid)",
+      "stipend": "₹25,000 / month",
+      "required_skills": ["MySQL / Relational DB", "EXPLAIN Query Optimization", "B-Tree Indexing", "SQL Reporting", "Node.js"],
+      "nice_to_have": ["Redis Caching", "Database Sharding", "ACID Transactions"],
+      "description": "Perform comprehensive database performance audits across high-volume recruitment tables. Eliminate full table scans using targeted composite indexes and implement in-memory caching."
+    },
+    {
+      "id": "intern_nlp_08",
+      "role": "Applied NLP & Vector Search Intern (ChromaDB & Embeddings)",
+      "department": "AI & Data Systems",
+      "location": "Bengaluru, India (Hybrid)",
+      "stipend": "₹28,000 / month",
+      "required_skills": ["Python", "ChromaDB", "Vector Embeddings", "Cosine Similarity", "JavaScript"],
+      "nice_to_have": ["Sentence-Transformers", "FastAPI", "Docker"],
+      "description": "Build semantic embedding search and candidate resume matching systems using ChromaDB and 384-dimensional dense vectors. Implement candidate namespace data isolation."
+    },
+    {
+      "id": "intern_sec_09",
+      "role": "Application Security & Identity Management Intern (JWT & RBAC)",
+      "department": "Platform Security",
+      "location": "Remote (India)",
+      "stipend": "₹24,000 / month",
+      "required_skills": ["Node.js", "Stateless JWT Auth", "Bcrypt Hashing", "Role-Based Access Control", "REST Security"],
+      "nice_to_have": ["OAuth2", "OWASP Hardening", "Rate Limiting"],
+      "description": "Implement enterprise stateless authentication pipelines with JWT tokens and bcrypt password hashing. Mitigate brute-force vectors and enforce strict role-based access control."
+    },
+    {
+      "id": "intern_sre_10",
+      "role": "Site Reliability & Observability Intern (APM & Linux)",
+      "department": "Cloud Infrastructure",
+      "location": "Hyderabad, India (Hybrid)",
+      "stipend": "₹25,000 / month",
+      "required_skills": ["Linux Systems", "Docker", "APM Metrics", "Shell Scripting", "HTTP Profiling"],
+      "nice_to_have": ["Grafana", "ELK Stack", "Alertmanager"],
+      "description": "Implement structured request profiling middleware and automated system healthchecks. Establish SLA tracking dashboards and participate in automated disaster recovery testing."
+    },
+    {
+      "id": "intern_agent_11",
+      "role": "Autonomous Agent & CrewAI Systems Intern (Python & Multi-Agent)",
+      "department": "AI & Data Systems",
+      "location": "Bengaluru, India (Hybrid)",
+      "stipend": "₹32,000 / month",
+      "required_skills": ["Python", "CrewAI Framework", "Multi-Agent Coordination", "LLM APIs", "JSON Schemas"],
+      "nice_to_have": ["LangGraph", "ChromaDB", "FastAPI"],
+      "description": "Design and coordinate autonomous agent swarms (CareerAdvisorAgent) using CrewAI. Implement tool execution pipelines and structured multi-agent trajectory reasoning."
+    },
+    {
+      "id": "intern_micro_12",
+      "role": "Microservices & Event-Driven Architecture Intern (Node.js & Queue)",
+      "department": "Engineering",
+      "location": "Pune, India (Onsite)",
+      "stipend": "₹24,000 / month",
+      "required_skills": ["Node.js", "Express.js", "Docker Compose", "Distributed Architecture", "Git Workflow"],
+      "nice_to_have": ["RabbitMQ", "Kafka", "Redis Pub/Sub"],
+      "description": "Decompose monolithic workflows into decoupled microservices. Coordinate multi-container services with Docker Compose v2 healthcheck dependencies."
+    },
+    {
+      "id": "intern_data_13",
+      "role": "Data Engineering & Pipeline Optimization Intern (ETL & Analytical SQL)",
+      "department": "Data & Analytics",
+      "location": "Bengaluru, India (Hybrid)",
+      "stipend": "₹25,000 / month",
+      "required_skills": ["MySQL", "Analytical SQL", "Data Modeling", "Node.js", "Performance Profiling"],
+      "nice_to_have": ["Apache Spark", "Pandas", "PostgreSQL"],
+      "description": "Build scalable data aggregation jobs for candidate analytics and training telemetry. Optimize multi-table JOINs, subqueries, and window functions."
+    },
+    {
+      "id": "intern_qa_14",
+      "role": "Full Stack Automated Testing & QA Engineering Intern (Jest & CI/CD)",
+      "department": "Engineering",
+      "location": "Remote (India)",
+      "stipend": "₹20,000 / month",
+      "required_skills": ["JavaScript", "Node.js", "Unit Testing", "API Testing", "GitHub Actions"],
+      "nice_to_have": ["Playwright", "Cypress", "Mocking Libraries"],
+      "description": "Develop deterministic test suites for Express APIs, Laravel controllers, and AI fallback engines. Maintain our zero-toleration test policy across 30+ suites in GitHub Actions."
+    },
+    {
+      "id": "intern_mobile_15",
+      "role": "Cross-Platform Mobile & Progressive Web Apps Intern (React Native & PWA)",
+      "department": "Engineering",
+      "location": "Bengaluru, India (Hybrid)",
+      "stipend": "₹24,000 / month",
+      "required_skills": ["JavaScript", "React", "Responsive Design", "PWA Caching", "REST APIs"],
+      "nice_to_have": ["React Native", "Service Workers", "Tailwind CSS"],
+      "description": "Build mobile-optimized candidate portal experiences with responsive layouts and offline-first service worker caching. Ensure touch target accessibility and sub-second load times."
+    },
+    {
+      "id": "intern_crm_16",
+      "role": "Enterprise CRM & Workflow Automation Intern (EspoCRM & PHP)",
+      "department": "EdTech Systems",
+      "location": "Pune, India (Onsite)",
+      "stipend": "₹22,000 / month",
+      "required_skills": ["PHP", "MySQL", "EspoCRM", "Workflow Automation", "Git Workflow"],
+      "nice_to_have": ["Docker Compose", "phpMyAdmin", "REST APIs"],
+      "description": "Configure business process workflows and entity relationship definitions in EspoCRM. Model candidate pipeline transitions from Lead to Opportunity and Closed Won."
+    },
+    {
+      "id": "intern_cloud_17",
+      "role": "Cloud Native & Kubernetes Orchestration Intern (K8s & Linux)",
+      "department": "Cloud Infrastructure",
+      "location": "Hyderabad, India (Hybrid)",
+      "stipend": "₹28,000 / month",
+      "required_skills": ["Docker", "Linux Administration", "Kubernetes Pods", "Networking", "Git Workflow"],
+      "nice_to_have": ["Helm Charts", "AWS EKS", "Cloudflare"],
+      "description": "Manage Kubernetes pod specifications, deployments, and cluster networking. Automate container image releases to Docker Hub with commit SHA tags."
+    },
+    {
+      "id": "intern_api_18",
+      "role": "API Gateway & RESTful Architecture Intern (OpenAPI & Node.js)",
+      "department": "Engineering",
+      "location": "Remote (India)",
+      "stipend": "₹23,000 / month",
+      "required_skills": ["Node.js", "Express.js", "RESTful Architecture", "OpenAPI 3.0", "HTTP Protocols"],
+      "nice_to_have": ["API Rate Limiting", "Swagger", "Postman Testing"],
+      "description": "Author strict OpenAPI 3.0 specifications and implement standardized REST API endpoints with robust parameter sanitization, status codes, and error payloads."
+    },
+    {
+      "id": "intern_mlops_19",
+      "role": "MLOps & Model Serving Intern (Groq LPU & Docker Pipelines)",
+      "department": "AI & Data Systems",
+      "location": "Bengaluru, India (Hybrid)",
+      "stipend": "₹30,000 / month",
+      "required_skills": ["Python", "Docker", "Groq LPU", "LLM Inference", "CI/CD Automation"],
+      "nice_to_have": ["Triton Server", "Quantization", "Model Monitoring"],
+      "description": "Deploy low-latency LLM serving pipelines on Groq LPUs. Measure token throughput, p99 latency SLAs, and automate model evaluation benchmarks."
+    },
+    {
+      "id": "intern_fullstack_ai_20",
+      "role": "Full Stack AI Integration Specialist Intern (React, Node & LLM Agents)",
+      "department": "Engineering",
+      "location": "Bengaluru, India (Hybrid)",
+      "stipend": "₹28,000 / month",
+      "required_skills": ["JavaScript", "React", "Node.js", "Groq LPU", "Vector Search"],
+      "nice_to_have": ["ChromaDB", "Chart.js", "Docker"],
+      "description": "Integrate generative AI capabilities across our full-stack web portal. Build real-time streaming interfaces, vector similarity search widgets, and adaptive career recommendations."
+    }
+  ]
+}

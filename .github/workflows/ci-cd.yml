@@ -43,18 +43,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18.x
-          cache: 'npm'
 
       - name: 🐍 Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          cache: 'pip'
 
       - name: 📦 Install Root & Backend Dependencies
         run: |
-          npm ci --prefer-offline || npm install
-          cd backend && npm ci --prefer-offline || npm install
+          npm install --prefer-offline
+          cd backend && npm install --prefer-offline
           cd ..
 
       - name: 🚀 Run All Test Suites (Zero Toleration Policy)
