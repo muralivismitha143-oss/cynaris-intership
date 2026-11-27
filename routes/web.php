@@ -53,6 +53,12 @@ Route::prefix('candidate/cia')->name('candidate.cia.')->group(function () {
     Route::get('/career/readiness/student/{id?}', [CiaController::class, 'studentReadiness'])->name('career.readiness.student');
     Route::get('/career/readiness/export-csv', [CiaController::class, 'exportReadinessCsv'])->name('career.readiness.export-csv');
 
+    // Week 8 Day 3: Career Intelligence Report (Archetype Map + Employability Score + DomPDF)
+    Route::get('/career/archetypes', [CiaController::class, 'archetypeMap'])->name('career.archetypes');
+    Route::post('/career/report/generate', [CiaController::class, 'generateCareerReport'])->name('career.report.generate');
+    Route::get('/career/reports/{candidateId?}', [CiaController::class, 'getCandidateReports'])->name('career.reports');
+    Route::get('/career/report/pdf/{id?}', [CiaController::class, 'exportCareerReportPdf'])->name('career.report.pdf');
+
     // Health & Provider Diagnostics
     Route::get('/health', [CiaController::class, 'health'])->name('health');
 });

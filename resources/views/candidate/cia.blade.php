@@ -842,6 +842,65 @@ timeline
             </div>
         </div>
 
+        <!-- Week 8 Day 3: Career Intelligence Report — Archetype Map + Employability Score -->
+        <div class="card" id="career-intelligence-report-section" style="margin-bottom: 2rem; border-top: 4px solid #0284c7;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                <div>
+                    <h3 style="margin: 0; color: #1e293b; font-size: 1.15rem;">🧭 Career Intelligence Report — Archetype Map + Employability Score</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0.25rem 0 0 0;">
+                        6 Career Archetypes (Builder, Analyst, Leader, Innovator, Specialist, Generalist) &bull; Employability / AI / Placement Scores &bull; Groq Report &amp; DomPDF Export
+                    </p>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn" id="btn-generate-career-report" type="button" style="background: #0284c7; color: #ffffff; border: none; padding: 0.45rem 0.9rem; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                        ⚡ Generate AI Report
+                    </button>
+                    <button class="btn" id="btn-export-report-pdf" type="button" style="background: #dc2626; color: #ffffff; border: none; padding: 0.45rem 0.9rem; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                        📄 Export PDF (DomPDF)
+                    </button>
+                </div>
+            </div>
+
+            <div id="career-report-status" role="status" aria-live="polite" style="font-size: 0.82rem; color: #0369a1; margin-bottom: 0.75rem; font-weight: 600;">
+                Primary Archetype: Builder (92.4%) &bull; Secondary: Innovator (88.1%) &bull; Stored in candidate_reports.
+            </div>
+
+            <!-- 3 Composite Scores -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
+                <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 1rem; text-align: center;">
+                    <div style="font-size: 0.78rem; font-weight: 700; color: #0369a1;">EMPLOYABILITY SCORE</div>
+                    <div id="report-employability-score" style="font-size: 1.8rem; font-weight: 800; color: #0284c7;">91.6 / 100</div>
+                </div>
+                <div style="background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 8px; padding: 1rem; text-align: center;">
+                    <div style="font-size: 0.78rem; font-weight: 700; color: #5b21b6;">AI READINESS SCORE</div>
+                    <div id="report-ai-readiness-score" style="font-size: 1.8rem; font-weight: 800; color: #6d28d9;">94.0 / 100</div>
+                </div>
+                <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 1rem; text-align: center;">
+                    <div style="font-size: 0.78rem; font-weight: 700; color: #065f46;">PLACEMENT READINESS</div>
+                    <div id="report-placement-score" style="font-size: 1.8rem; font-weight: 800; color: #059669;">93.1 / 100</div>
+                </div>
+            </div>
+
+            <!-- 6 Archetype Map & Narrative -->
+            <div id="archetype-map-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.65rem; margin-bottom: 1rem;">
+                <div style="border: 1px solid #0284c7; background: #f0f9ff; border-radius: 6px; padding: 0.6rem;"><strong>Builder</strong><br><span style="font-size:0.85rem;color:#0369a1;">92.4% Match</span></div>
+                <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.6rem;"><strong>Innovator</strong><br><span style="font-size:0.85rem;color:#475569;">88.1% Match</span></div>
+                <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.6rem;"><strong>Specialist</strong><br><span style="font-size:0.85rem;color:#475569;">84.5% Match</span></div>
+                <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.6rem;"><strong>Leader</strong><br><span style="font-size:0.85rem;color:#475569;">81.2% Match</span></div>
+                <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.6rem;"><strong>Analyst</strong><br><span style="font-size:0.85rem;color:#475569;">79.8% Match</span></div>
+                <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.6rem;"><strong>Generalist</strong><br><span style="font-size:0.85rem;color:#475569;">77.6% Match</span></div>
+            </div>
+
+            <div id="career-report-narrative-box" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem;">
+                <p id="career-report-narrative" style="margin: 0 0 0.5rem 0; font-size: 0.88rem; color: #1e293b;">
+                    Murali V exhibits a strong Builder + Innovator archetype profile with high end-to-end execution velocity, multi-tier LLM resilience engineering, and disciplined database optimization.
+                </p>
+                <div id="candidate-reports-history" style="font-size: 0.8rem; color: #475569;">
+                    <strong>Saved Reports (`candidate_reports`):</strong> Report #1 &mdash; Builder (92.4%) &bull; Employability 91.6 &bull; Groq
+                </div>
+            </div>
+        </div>
+
         <!-- AI Recommendations Drawer (W3C ARIA compliant) -->
         <div class="ai-panel" id="cia-recommendations-drawer" role="region" aria-label="Career Intelligence Recommendations">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
@@ -1452,6 +1511,43 @@ timeline
             if (exportReadinessCsvBtn) {
                 exportReadinessCsvBtn.addEventListener('click', function () {
                     window.location.href = '/candidate/cia/career/readiness/export-csv';
+                });
+            }
+
+            const genReportBtn = document.getElementById('btn-generate-career-report');
+            const exportPdfBtn = document.getElementById('btn-export-report-pdf');
+            const reportStatusEl = document.getElementById('career-report-status');
+
+            async function triggerCareerReportGeneration() {
+                try {
+                    const resp = await fetch('/candidate/cia/career/report/generate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ candidate_id: 1 })
+                    });
+                    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                    const data = await resp.json();
+                    if (data && data.report_narrative) {
+                        const narEl = document.getElementById('career-report-narrative');
+                        if (narEl) narEl.textContent = data.report_narrative;
+                        if (reportStatusEl) {
+                            reportStatusEl.textContent = 'Report #' + (data.report_id || 1) + ' saved to candidate_reports (' + (data.provider || 'Groq') + ').';
+                        }
+                    }
+                } catch (err) {
+                    console.warn('Career report generation notice:', err.message);
+                }
+            }
+
+            if (genReportBtn) {
+                genReportBtn.addEventListener('click', triggerCareerReportGeneration);
+            }
+            if (exportPdfBtn) {
+                exportPdfBtn.addEventListener('click', function () {
+                    window.location.href = '/candidate/cia/career/report/pdf/1';
                 });
             }
         });

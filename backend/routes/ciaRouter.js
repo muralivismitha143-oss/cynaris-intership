@@ -407,4 +407,91 @@ async function handleExportReadinessCsv(req, res) {
 router.get('/readiness/export-csv', handleExportReadinessCsv);
 router.get('/career/readiness/export-csv', handleExportReadinessCsv);
 
+// =============================================================================
+// WEEK 8 DAY 3: CAREER INTELLIGENCE REPORT — ARCHETYPE MAP + EMPLOYABILITY SCORE
+// =============================================================================
+
+router.get('/career/archetypes', (req, res) => {
+  const archetypes = careerIntelligenceService.getCareerArchetypes();
+  res.status(200).json({
+    success: true,
+    total: archetypes.length,
+    archetypes
+  });
+});
+
+router.post('/career/report/generate', async (req, res) => {
+  try {
+    const body = req.body || {};
+    const options = {
+      simulateGroqFailure: Boolean(body.simulateGroqFailure || body.simulate_groq_failure || req.query.simulate_groq === 'true'),
+      simulateBothFailure: Boolean(body.simulateBothFailure || body.simulate_both_failure || req.query.simulate_both === 'true')
+    };
+
+    const result = await careerIntelligenceService.generateCareerIntelligenceReport(body, options);
+    if (!result.success) {
+      return res.status(502).json(result);
+    }
+    res.status(200).json(result);
+  } catch (err) {
+    const status = err.message && (err.message.includes('Invalid') || err.message.includes('must be')) ? 400 : 500;
+    res.status(status).json({
+      success: false,
+      error: err.message
+    });
+  }
+});
+
+router.get('/career/reports', async (req, res) => {
+  try {
+    const reports = await careerIntelligenceService.getCandidateReports(null);
+    res.status(200).json({
+      success: true,
+      total: reports.length,
+      reports
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.get('/career/reports/:candidateId', async (req, res) => {
+  try {
+    const candidateId = Number(req.params.candidateId);
+    if (!Number.isInteger(candidateId) || candidateId < 1) {
+      return res.status(400).json({ success: false, error: 'Invalid candidateId' });
+    }
+    const reports = await careerIntelligenceService.getCandidateReports(candidateId);
+    res.status(200).json({
+      success: true,
+      candidate_id: candidateId,
+      total: reports.length,
+      reports
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+async function handleExportCareerReportPdf(req, res) {
+  try {
+    const reportId = Number(req.params.reportId ?? req.query.report_id ?? 1);
+    if (!Number.isInteger(reportId) || reportId < 1) {
+      return res.status(400).json({ success: false, error: 'Invalid reportId' });
+    }
+    const exported = await careerIntelligenceService.exportCareerReportPdf(reportId);
+    if (!exported) {
+      return res.status(404).json({ success: false, error: `Career report #${reportId} not found` });
+    }
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="career-intelligence-report-${reportId}.pdf"`);
+    res.status(200).send(exported.pdfBuffer);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+}
+
+router.get('/career/report/pdf', handleExportCareerReportPdf);
+router.get('/career/report/:reportId/pdf', handleExportCareerReportPdf);
+
 module.exports = router;
