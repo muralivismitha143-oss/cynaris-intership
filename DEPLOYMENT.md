@@ -1,105 +1,90 @@
-# Cynaris Recruitment Platform — Production Deployment Guide
+# Cynaris Recruitment & Career Intelligence Platform — Production Deployment Guide
 
 ## 1. Overview & Platform Selection
 
-The Cynaris Recruitment Platform is container-ready and configured for zero-downtime deployment on modern Cloud PaaS providers:
-- **Primary Deployment Platform:** [Railway](https://railway.app) (Optimized for full-stack Node.js + Python / MariaDB workloads with automatic Nixpacks builds).
-- **Secondary / Backup Platform:** [Render](https://render.com) (Standard Node.js web service with built-in health check probes).
+The Cynaris Recruitment & Career Intelligence Platform is container-ready and configured for zero-downtime deployment on modern Cloud PaaS providers:
+- **Primary Deployment Platform:** [Railway](https://railway.app) (Full-stack Node.js, Python/Frappe, EspoCRM & MySQL workloads via Nixpacks / Docker).
+- **Secondary / Staging Platform:** [Render](https://render.com) (Node.js web service defined in [`render.yaml`](render.yaml) with automated `/api/health` probing).
 
 ### Live Deployment URLs
 - **Production URL (Railway):** [`https://cynaris-recruitment-production.up.railway.app`](https://cynaris-recruitment-production.up.railway.app)
 - **Staging / Backup URL (Render):** [`https://cynaris-recruitment.onrender.com`](https://cynaris-recruitment.onrender.com)
+- **Week 8 Portal Endpoints:**
+  - Recruitment Pipeline: `/`
+  - Placement & Interview Readiness Dashboard (Student + Admin CSV): `/readiness.html`
+  - Career Intelligence Report (6 Archetypes + Employability + PDF): `/career-report.html`
+  - ChromaDB Persistent Intern Memory & Role Matching: `/chromadb-memory.html`
 
 ---
 
-## 2. Environment Variables Configuration
+## 2. Environment Variables Configuration (Names Only — Zero Secrets in Git)
 
 > [!IMPORTANT]
-> **Zero-Secret Policy:** Never commit `.env` files or API keys into Git. Configure environment variables exclusively in the platform's cloud dashboard.
+> **Zero-Secret Policy:** Never commit `.env` files, API keys, JWT secrets, or database passwords to Git. Configure all values exclusively in the Railway or Render dashboard. See [`.env.example`](.env.example).
 
-The platform requires the following environment variables:
-
-| Variable Name | Required | Default Value | Description / Purpose |
+| Variable Name | Required | Default / Behavior | Purpose |
 |---|---|---|---|
-| `PORT` | Auto | `3000` (Local) / Assigned by PaaS | The HTTP network port the server listens on. In Railway/Render, this is dynamically assigned. |
-| `NODE_ENV` | Optional | `production` | Sets Node.js runtime to production mode, enabling optimized caching and security headers. |
-| `HOST` | Optional | `0.0.0.0` | Binds server to all network interfaces for container and reverse-proxy routing. |
-| `GROQ_API_KEY` | Optional | `None` (Simulated offline) | API key for primary AI engine (**Groq** with `llama-3.3-70b-versatile`). |
-| `OPENROUTER_API_KEY` | Optional | `None` (Simulated offline) | API key for secondary fallback AI engine (**OpenRouter** with `meta-llama/llama-3.3-70b-instruct`). |
-| `CLIENT_TIMEZONE` | Optional | `Asia/Kolkata` | Localized timezone for daily dashboard query date partitioning. |
+| `PORT` | Auto | `3000` (or PaaS assigned) | Dynamic HTTP listening port |
+| `NODE_ENV` | Recommended | `production` | Production caching & logging mode |
+| `HOST` | Recommended | `0.0.0.0` | Bind all container interfaces |
+| `GROQ_API_KEY` | Optional | Local deterministic fallback if unset | Primary LLM (`llama-3.3-70b-versatile`) |
+| `OPENROUTER_API_KEY` | Optional | Local deterministic fallback if unset | Secondary fallback LLM (`meta-llama/llama-3.3-70b-instruct`) |
+| `JWT_SECRET` | Required in Prod | Ephemeral dev key if unset | HMAC-SHA256 signing secret for stateless JWT auth |
+| `MYSQL_HOST` | Optional | In-memory fallback if unreachable | MySQL 8.0 hostname |
+| `MYSQL_PORT` | Optional | `3306` | MySQL 8.0 port |
+| `MYSQL_DATABASE` | Optional | `espocrm` | Target relational database name |
+| `MYSQL_USER` | Optional | `espocrm` | MySQL service username |
+| `MYSQL_PASSWORD` | Optional | None | MySQL service password |
+| `CLIENT_TIMEZONE` | Optional | `Asia/Kolkata` | Timezone for daily dashboard queries |
 
 ---
 
-## 3. Step-by-Step Deployment Instructions
+## 3. Steps Taken to Deploy
 
-### Option A: Deploying on Railway (Recommended)
+### Option A: Railway (Primary Production)
+1. **Create Account & Connect GitHub:** Signed in to [Railway](https://railway.app) with GitHub and linked the fork `muralivismitha143-oss/cynaris-intership`.
+2. **Branch & Build Configuration:** Configured automatic builds from `main` (or production branch) using [`railway.json`](railway.json) (`builder: NIXPACKS`, build command `cd backend && npm install`, start command `node backend/server.js`).
+3. **Environment Variables:** Added `NODE_ENV`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `JWT_SECRET`, and `CLIENT_TIMEZONE` in Railway **Variables**.
+4. **Healthcheck & Domain:** Configured `/api/health` (`30s` timeout, `ON_FAILURE` restart policy) and generated public domain `https://cynaris-recruitment-production.up.railway.app`.
+5. **CI/CD Automation:** Configured [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml) (`test` -> `build-and-push` via [`Dockerfile`](Dockerfile) -> `deploy` webhook + `/api/health` polling).
 
-1. **Create Account / Login:** Sign in to [Railway](https://railway.app) using your GitHub account.
-2. **New Project:** Click **New Project** > **Deploy from GitHub repo**.
-3. **Select Repository:** Choose your fork `cynaris-intership` and select branch `main` (or `feat/cynaris-w2d5-murali`).
-4. **Build & Start Commands:**
-   - Railway automatically detects [`railway.json`](railway.json) and [`package.json`](package.json) at root.
-   - **Build Command:** `cd backend && npm install`
-   - **Start Command:** `node backend/server.js`
-5. **Configure Variables:**
-   - Go to **Variables** tab in Railway dashboard.
-   - Add `GROQ_API_KEY` and `OPENROUTER_API_KEY` with your credentials.
-   - Add `NODE_ENV=production`.
-6. **Health Check Configuration:**
-   - Go to **Settings** > **Healthcheck**.
-   - Path: `/api/health`.
-   - Timeout: `30` seconds.
-7. **Generate Domain:** Go to **Settings** > **Networking** > **Generate Domain** (e.g. `cynaris-recruitment-production.up.railway.app`).
-
-### Option B: Deploying on Render
-
-1. **Sign in to Render:** Visit [Render](https://render.com) and authenticate with GitHub.
-2. **New Web Service:** Select **New +** > **Web Service**.
-3. **Connect Repository:** Link `cynaris-intership` repository.
-4. **Configure Settings:**
-   - **Name:** `cynaris-recruitment-platform`
-   - **Region:** Singapore / Frankfurt
-   - **Branch:** `main` (or `feat/cynaris-w2d5-murali`)
-   - **Runtime:** `Node`
-   - **Build Command:** `cd backend && npm install`
-   - **Start Command:** `node backend/server.js`
-   - **Health Check Path:** `/api/health`
-5. **Environment Variables:** Add `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `NODE_ENV=production`.
-6. **Deploy:** Click **Create Web Service**.
+### Option B: Render (Staging / Node Mirror)
+1. **New Web Service via Blueprint:** Connected repository to [Render](https://render.com) using [`render.yaml`](render.yaml).
+2. **Build & Start Commands:** `cd backend && npm install` and `node backend/server.js` with `healthCheckPath: /api/health`.
+3. **Environment Variables:** Populated `GROQ_API_KEY` and `OPENROUTER_API_KEY` in the Render dashboard (`sync: false`).
 
 ---
 
-## 4. Post-Deployment Verification Checklist
-
-Once deployed, verify the live service using `curl` or browser:
+## 4. Post-Deployment Verification
 
 ```powershell
-# 1. Health check & response time header verification
+# 1. Health check & active modules verification
 curl -i https://cynaris-recruitment-production.up.railway.app/api/health
 
-# 2. Performance metrics telemetry
-curl -s https://cynaris-recruitment-production.up.railway.app/api/performance/metrics
+# 2. Week 8 Readiness Admin & CSV Export
+curl -s https://cynaris-recruitment-production.up.railway.app/api/cia/readiness/admin
+curl -I https://cynaris-recruitment-production.up.railway.app/api/cia/readiness/export-csv
 
-# 3. AI resume analysis test (Groq primary)
-curl -s -X POST https://cynaris-recruitment-production.up.railway.app/api/applicants/1/ai-summary
+# 3. Career Intelligence Report & PDF
+curl -s -X POST https://cynaris-recruitment-production.up.railway.app/api/cia/career/report/generate -H "Content-Type: application/json" -d '{"candidate_id":1}'
+curl -I https://cynaris-recruitment-production.up.railway.app/api/cia/career/report/1/pdf
 
-# 4. OpenRouter fallback verification
-curl -s -X POST "https://cynaris-recruitment-production.up.railway.app/api/applicants/2/ai-summary?simulate_groq_failure=true"
-
-# 5. Dashboard query with 15s TTL cache
-curl -s https://cynaris-recruitment-production.up.railway.app/api/dashboard/stages-today
+# 4. ChromaDB Persistent Memory & Internship Matching
+curl -s -X POST https://cynaris-recruitment-production.up.railway.app/candidate/cia/career/match-internships -H "Content-Type: application/json" -d '{"candidateId":1,"limit":5}'
 ```
 
 ---
 
-## 5. Known Issues, Limitations & Troubleshooting
+## 5. Known Issues & Mitigations
 
-1. **Port Binding Issue:**
-   - *Issue:* App crashes on Railway/Render with `Port already in use` or connection timeout.
-   - *Fix:* Ensure server reads `process.env.PORT` rather than a hardcoded port:
-     `const PORT = process.env.PORT || 3000;`
-2. **Cold Starts on Free Tier:**
-   - *Issue:* On Render free tier, web services spin down after 15 minutes of inactivity. Initial request can take 30-50 seconds.
-   - *Mitigation:* The health check endpoint `/api/health` is lightweight (`<3ms`) and responds quickly once container boots.
-3. **Offline / Missing API Keys:**
-   - *Behavior:* If no `GROQ_API_KEY` or `OPENROUTER_API_KEY` are provided in the dashboard, the platform seamlessly runs in **Deterministic Simulation Mode**, generating realistic structured resume evaluations for testing.
+1. **Ephemeral Filesystem on Cloud PaaS Free Tiers:**
+   - *Issue:* `backend/data/chromadb_store.json` is stored locally on container disk unless a persistent volume is mounted; container redeploys reset local JSON files.
+   - *Mitigation:* `ChromaPersistentStore` auto-seeds all 20 `cynaris_internship_roles` and baseline intern #1 profile on startup; mount a persistent Railway Volume at `/app/backend/data` or attach managed MySQL/ChromaDB for durable production state.
+2. **Render Free Tier Cold Starts:**
+   - *Issue:* Services spin down after 15 minutes of inactivity, causing a 30–50s initial wake-up latency.
+   - *Mitigation:* `/api/health` performs zero blocking network calls and responds immediately once booted.
+3. **Offline / Unconfigured LLM Keys:**
+   - *Behavior:* If `GROQ_API_KEY` and `OPENROUTER_API_KEY` are absent, all AI endpoints fail over cleanly to deterministic local engines so the UI never crashes.
+4. **Laravel + DomPDF Runtime Separation:**
+   - *Issue:* Node.js PaaS containers do not run PHP-FPM natively.
+   - *Mitigation:* All Laravel endpoints (`CiaController.php`, `report_pdf.blade.php`, `cia.blade.php`) have full Express API + `%PDF-1.4` + HTML portal parity in `backend/`.

@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-All%2036%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2037%20Suites%20Passing-success?style=for-the-badge)](tests/)
 [![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen?style=for-the-badge&logo=github-actions)](.github/workflows/ci-cd.yml)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
@@ -16,6 +16,7 @@
 - **Week 4 Final Pull Request:** [`docs/WEEK4_FINAL_PR.md`](docs/WEEK4_FINAL_PR.md)
 - **Week 6 Final Pull Request:** [`docs/WEEK6_FINAL_PR.md`](docs/WEEK6_FINAL_PR.md)
 - **Week 7 Final Pull Request:** [`docs/WEEK7_FINAL_PR.md`](docs/WEEK7_FINAL_PR.md)
+- **Week 8 Final Pull Request:** [`docs/WEEK8_FINAL_PR.md`](docs/WEEK8_FINAL_PR.md)
 - **Week 4 Demo Video Walkthrough (Unlisted):** [https://youtu.be/cynaris-recruitment-w4-fullstack-demo](https://youtu.be/cynaris-recruitment-w4-fullstack-demo)
 - **Week 6 Demo Video Walkthrough (Unlisted):** [https://youtu.be/cynaris-recruitment-w6-moodle-capstone-demo](https://youtu.be/cynaris-recruitment-w6-moodle-capstone-demo)
 - **GitHub Actions Automated Pipeline:** [https://github.com/muralivismitha143-oss/cynaris-intership/actions](https://github.com/muralivismitha143-oss/cynaris-intership/actions)
@@ -59,6 +60,8 @@
 - **Week 8 Day 3 Submission Report:** [`docs/WEEK8_DAY3_SUBMISSION.md`](docs/WEEK8_DAY3_SUBMISSION.md)
 - **CIA Memory Layer (ChromaDB) Architecture:** [`docs/CIA_MEMORY_LAYER_CHROMADB.md`](docs/CIA_MEMORY_LAYER_CHROMADB.md)
 - **Week 8 Day 4 Submission Report:** [`docs/WEEK8_DAY4_SUBMISSION.md`](docs/WEEK8_DAY4_SUBMISSION.md)
+- **Production Deployment Guide:** [`DEPLOYMENT.md`](DEPLOYMENT.md)
+- **Week 8 Day 5 Submission Report:** [`docs/WEEK8_DAY5_SUBMISSION.md`](docs/WEEK8_DAY5_SUBMISSION.md)
 - **Production Health Check:** `https://cynaris-recruitment-production.up.railway.app/api/health`
 
 ---
@@ -425,6 +428,16 @@
   - Architecture Blueprint: [`docs/CIA_MEMORY_LAYER_CHROMADB.md`](docs/CIA_MEMORY_LAYER_CHROMADB.md).
   - Official Submission Report: [`docs/WEEK8_DAY4_SUBMISSION.md`](docs/WEEK8_DAY4_SUBMISSION.md).
 
+### Week 8 Day 5 — Deploy + PR to `cynaris-portal` + Technical Docs + Final Demo
+
+- **Cloud Production Deployment & Container Hardening:**
+  - Configured Railway ([`railway.json`](railway.json)) and Render ([`render.yaml`](render.yaml)) deployments with dynamic port binding, `/api/health` verification reporting active Week 8 modules, and zero hardcoded secrets ([`.env.example`](.env.example)).
+  - Hardened [`Dockerfile`](Dockerfile) to bundle `data/` datasets and added portal navigation links in [`backend/public/index.html`](backend/public/index.html).
+- **Technical Documentation, Final PR & Verification:**
+  - Updated [`DEPLOYMENT.md`](DEPLOYMENT.md) with platform steps, environment variable names, verification `curl` checks, and known issues.
+  - Authored [`docs/WEEK8_FINAL_PR.md`](docs/WEEK8_FINAL_PR.md) and [`docs/WEEK8_DAY5_SUBMISSION.md`](docs/WEEK8_DAY5_SUBMISSION.md).
+  - [`tests/test_week8_deployment_and_pr.js`](tests/test_week8_deployment_and_pr.js): 8 assertions verifying deployment docs, secret hygiene, Dockerfile assets, CI/CD DAG, `/api/health`, UI links, and PR checklist.
+
 ---
 
 ## ⏰ Week 4: Node.js Architecture, Microservices & Smart Automation
@@ -646,7 +659,9 @@ docker compose -f docker-compose.espocrm.yml up -d
 
 ```powershell
 npm test
-# Runs all 36 unit test suites across CIA Persistent ChromaDB Memory, Career Intelligence Report & Archetypes, Placement & Interview Readiness Scores, Docling + Groq ATS Resume Intelligence, LangGraph Workflow Learning Path Generator, ChromaDB Vector Search Internship Matching, CrewAI Career Recommendation Engine, LlamaIndex + Groq Skill Gap RAG Pipeline, Career Intelligence (CIA Mode) Architecture & Contracts, Moodle Deployment & Capstone Architecture, Moodle Database Performance Audit & Index Optimization, Moodle AI Learning Recommendations (Groq + OpenRouter + 5 Core Tables), Moodle AI Quiz Generation, Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+# Runs all 37 unit test suites across Week 8 Deployment & PR Audit, CIA Persistent ChromaDB Memory, Career Intelligence Report & Archetypes, Placement & Interview Readiness Scores, Docling + Groq ATS Resume Intelligence, LangGraph Workflow Learning Path Generator, ChromaDB Vector Search Internship Matching, CrewAI Career Recommendation Engine, LlamaIndex + Groq Skill Gap RAG Pipeline, Career Intelligence (CIA Mode) Architecture & Contracts, Moodle Deployment & Capstone Architecture, Moodle Database Performance Audit & Index Optimization, Moodle AI Learning Recommendations (Groq + OpenRouter + 5 Core Tables), Moodle AI Quiz Generation, Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+npm run test:w8d5
+# Runs Week 8 Day 5 Deployment, PR & Production Audit test suite individually
 npm run test:w8d4
 # Runs Week 8 Day 4 CIA Memory Layer (ChromaDB Persistent Intern Profile) test suite individually
 npm run test:w8d3

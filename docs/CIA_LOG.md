@@ -2080,6 +2080,55 @@
 - Verified with [`tests/test_cia_memory_layer.js`](../tests/test_cia_memory_layer.js) (6/6 passing) and `npm test` (36/36 suites passing).
 
 
+---
+
+# Week 8 Day 5: Deploy + PR to `cynaris-portal` + Technical Docs + Final Demo
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w8d5-murali`  
+**Date:** November 27, 2026  
+**Lesson:** Week 8 Day 5 — Deploy + PR to cynaris-portal + Technical Docs + Final Demo  
+
+---
+
+## Interaction 1: CIA → Full Stack Mentor Mode
+
+### Prompt / Query
+> *"I am finalizing Week 8 Day 5: deploying the full-stack Cynaris Recruitment & Career Intelligence platform to Railway/Render, completing `DEPLOYMENT.md`, preparing the Week 8 PR (`docs/WEEK8_FINAL_PR.md`), and running final demo verification across all portals. Could you review our container build (`Dockerfile`), healthcheck endpoint (`/api/health`), and environment variable hygiene before I commit?"*
+
+### CIA Mentor Review & Feedback
+1. **Container Asset Completeness (`Dockerfile`):**
+   - Audit every filesystem path read at runtime! Week 7–8 Career Intelligence modules read `data/skills_taxonomy.json` and `data/internship_roles.json`. Copying `data ./data` in the production `runner` stage is critical so container deployments never lose seeded role/skill datasets.
+2. **Lightweight Healthcheck Telemetry:**
+   - Keep `GET /api/health` synchronous and dependency-light (avoid live LLM or blocking DB queries), returning `modules_ready` and `mysqlClient.getMetrics()` so Railway/Render health probes pass in `<5ms`.
+3. **Zero-Secret Environment Hygiene:**
+   - Ensure `.env.example` and `DEPLOYMENT.md` list every required key (`PORT`, `NODE_ENV`, `HOST`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `JWT_SECRET`, `MYSQL_*`, `CLIENT_TIMEZONE`) with placeholder names only and zero secret values.
+
+### Action Taken
+- Added `COPY --chown=cynarisuser:cynarisgroup data ./data` to [`Dockerfile`](../Dockerfile).
+- Enhanced `/api/health` in [`backend/server.js`](../backend/server.js) and updated [`.env.example`](../.env.example) + [`DEPLOYMENT.md`](../DEPLOYMENT.md).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review our deployment configuration (`railway.json`, `render.yaml`, `ci-cd.yml`, `DEPLOYMENT.md`, `index.html`) for production edge cases before pushing our final Week 8 branch."*
+
+### CIA Code Mode Audit & Recommendations
+
+| Area | Component Inspected | Identified Edge Case | Mitigation Applied |
+|---|---|---|---|
+| **Missing Data Assets in Docker** | `Dockerfile` | `data/internship_roles.json` and `data/skills_taxonomy.json` omitted from Stage 2 runner copy. | Added `COPY --chown=cynarisuser:cynarisgroup data ./data` to `Dockerfile`. |
+| **Portal Discoverability** | `backend/public/index.html` | Users visiting root `/` had no direct links to the new Week 8 Readiness, Report, and Memory portals. | Added navigation links to `/readiness.html`, `/career-report.html`, and `/chromadb-memory.html`. |
+| **Ephemeral PaaS Disk State** | `DEPLOYMENT.md` | Local `chromadb_store.json` resets on container redeploy without volume mount. | Documented Railway Volume mount `/app/backend/data` and auto-seeding behavior in Known Issues. |
+| **Secret Leak Guard** | `tests/test_week8_deployment_and_pr.js` | Accidental commit of `gsk_` or `sk-or-` keys in `.env.example`. | Added automated test assertions verifying zero real API keys in `.env.example`. |
+
+### Action Taken
+- Hardened `Dockerfile`, `index.html`, `DEPLOYMENT.md`, and added automated verification in [`tests/test_week8_deployment_and_pr.js`](../tests/test_week8_deployment_and_pr.js) (8/8 passing) with all 37 suites passing (`npm test`).
+
+
+
 
 
 
