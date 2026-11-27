@@ -1979,6 +1979,56 @@
 - Built [`tests/test_readiness_scores.js`](../tests/test_readiness_scores.js) (16/16 assertions passing) and verified full regression suite via `npm test` (34/34 suites passing).
 
 
+---
+
+# Week 8 Day 3: Career Intelligence Report — Archetype Map + Employability Score
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w8d3-murali`  
+**Date:** November 27, 2026  
+**Lesson:** Week 8 Day 3 — Career Intelligence Report — Archetype Map + Employability Score  
+
+---
+
+## Interaction 1: CIA → Full Stack Mentor Mode
+
+### Prompt / Query
+> *"I am building the Career Intelligence Report (Archetype Map + Employability Score) for Week 8 Day 3. It defines 6 archetypes (Builder, Analyst, Leader, Innovator, Specialist, Generalist) with 10 trait attributes (0–10), maps intern skills + learning style + project performance to match scores, computes Employability / AI Readiness / Placement Readiness scores, generates a Groq narrative (with OpenRouter fallback), stores the result in `candidate_reports`, and exports PDF via Laravel dompdf. Could you review this architecture before I commit?"*
+
+### CIA Mentor Review & Feedback
+1. **Archetype Vector Similarity Design:**
+   - Combining cosine similarity (direction/shape of the 10-trait vector) with Euclidean proximity (overall trait magnitude) avoids the pitfall where an intern scoring 4/10 uniformly matches an 8/10 archetype at 100%.
+2. **Reuse Module 6 Helpers:**
+   - Reuse `parseClampedMetric`, `assignReadinessGrade`, and `calculatePlacementReadiness` from `ReadinessScoringEngine.js` inside `CareerReportEngine.js` so Placement Readiness math is never duplicated.
+3. **Database & PDF Parity:**
+   - Store structured JSON columns (`archetype_scores`, `trait_profile`, `recommendations`) alongside indexed numeric scores in `candidate_reports`. Provide `Barryvdh\DomPDF\Facade\Pdf` + `report_pdf.blade.php` in Laravel and a zero-dependency `%PDF-1.4` binary renderer in Express.
+
+### Action Taken
+- Created [`backend/modules/ai/CareerReportEngine.js`](../backend/modules/ai/CareerReportEngine.js) and [`backend/database/candidateReportRepository.js`](../backend/database/candidateReportRepository.js).
+- Added `candidate_reports` DDL to [`backend/database/schema.sql`](../backend/database/schema.sql) and wired DomPDF export in [`app/Http/Controllers/Web/CiaController.php`](../app/Http/Controllers/Web/CiaController.php).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review my archetype trait mapping, composite score formulas, PDF generator, and `candidate_reports` persistence. What edge cases should I guard against?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Layer | Component Inspected | Identified Edge Case | Mitigation Applied |
+|---|---|---|---|
+| **Trait Vector Clamping** | `CareerReportEngine.js` | Learning style boosts pushing traits above `10.0` or non-numeric skill values causing `NaN`. | Clamped every trait strictly to `[0.0, 10.0]` via `clampTrait()` and defaulted invalid inputs safely. |
+| **Skill Scale Variance** | `CareerReportEngine.js` | Callers passing skills on `0–5` scale vs `0–100` scale. | Auto-normalized values `<= 5` (`* 2`) and `> 5` (`/ 10`) onto the `0–10` trait scale. |
+| **PDF Character Escaping** | `CareerReportEngine.js` | Parentheses `(`, `)`, backslashes `\`, or non-ASCII glyphs breaking PDF Type1 text streams. | Added `escapePdfText()` escaping `\\`, `\(`, `\)` and normalizing non-ASCII characters before building `%PDF-1.4` streams. |
+| **Dual Provider Outage** | `CiaController.php` & `CareerIntelligenceService.js` | Unhandled exceptions when both Groq and OpenRouter fail or timeout. | Caught provider errors cleanly and returned HTTP `502` with diagnostic `errors_bypassed` payload. |
+
+### Action Taken
+- Hardened `clampTrait()`, scale normalization, `escapePdfText()`, and dual-failure error boundaries.
+- Verified with [`tests/test_career_intelligence_report.js`](../tests/test_career_intelligence_report.js) (8/8 passing) and full `npm test` (35/35 suites passing).
+
+
+
 
 
 

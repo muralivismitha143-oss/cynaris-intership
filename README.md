@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-All%2034%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2035%20Suites%20Passing-success?style=for-the-badge)](tests/)
 [![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen?style=for-the-badge&logo=github-actions)](.github/workflows/ci-cd.yml)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
@@ -55,6 +55,8 @@
 - **Week 8 Day 1 Submission Report:** [`docs/WEEK8_DAY1_SUBMISSION.md`](docs/WEEK8_DAY1_SUBMISSION.md)
 - **Placement & Interview Readiness Architecture:** [`docs/PLACEMENT_AND_INTERVIEW_READINESS.md`](docs/PLACEMENT_AND_INTERVIEW_READINESS.md)
 - **Week 8 Day 2 Submission Report:** [`docs/WEEK8_DAY2_SUBMISSION.md`](docs/WEEK8_DAY2_SUBMISSION.md)
+- **Career Intelligence Report Architecture:** [`docs/CAREER_INTELLIGENCE_REPORT_ARCHITECTURE.md`](docs/CAREER_INTELLIGENCE_REPORT_ARCHITECTURE.md)
+- **Week 8 Day 3 Submission Report:** [`docs/WEEK8_DAY3_SUBMISSION.md`](docs/WEEK8_DAY3_SUBMISSION.md)
 - **Production Health Check:** `https://cynaris-recruitment-production.up.railway.app/api/health`
 
 ---
@@ -392,6 +394,21 @@
   - Architecture Blueprint: [`docs/PLACEMENT_AND_INTERVIEW_READINESS.md`](docs/PLACEMENT_AND_INTERVIEW_READINESS.md).
   - Official Submission Report: [`docs/WEEK8_DAY2_SUBMISSION.md`](docs/WEEK8_DAY2_SUBMISSION.md).
 
+### Week 8 Day 3 — Career Intelligence Report: Archetype Map + Employability Score
+
+- **6 Career Archetypes & 10-Trait Scoring Engine:**
+  - Defined `Builder`, `Analyst`, `Leader`, `Innovator`, `Specialist`, and `Generalist` with 10-attribute trait profiles (`0–10`) in [`backend/modules/ai/CareerReportEngine.js`](backend/modules/ai/CareerReportEngine.js).
+  - Maps skill scores, learning style, and project performance to ranked archetype match percentages (`primary_archetype`, `secondary_archetype`).
+- **Composite Readiness & Employability Metrics:**
+  - Calculates **Employability Score** (`40%` skill completeness, `35%` project quality, `25%` assessments), **AI Readiness Score** (`60%` AI tasks, `40%` AI tools), and **Placement Readiness Score** (`0–100`).
+- **Groq Report Generation, `candidate_reports` Persistence & DomPDF Export:**
+  - Persists structured AI narratives and recommendations in `candidate_reports` via [`backend/database/candidateReportRepository.js`](backend/database/candidateReportRepository.js) with Groq primary + OpenRouter fallback.
+  - Exportable as PDF via `barryvdh/laravel-dompdf` ([`resources/views/candidate/report_pdf.blade.php`](resources/views/candidate/report_pdf.blade.php), [`composer.json`](composer.json)) and Express `%PDF-1.4` endpoint (`/api/cia/career/report/:reportId/pdf`), displayed in [`backend/public/career-report.html`](backend/public/career-report.html) and [`resources/views/candidate/cia.blade.php`](resources/views/candidate/cia.blade.php).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_career_intelligence_report.js`](tests/test_career_intelligence_report.js): 8 unit & integration tests covering all 6 archetypes, composite scores, `candidate_reports` DB persistence, AI fallback, PDF generation, and Laravel/DomPDF parity.
+  - Architecture Blueprint: [`docs/CAREER_INTELLIGENCE_REPORT_ARCHITECTURE.md`](docs/CAREER_INTELLIGENCE_REPORT_ARCHITECTURE.md).
+  - Official Submission Report: [`docs/WEEK8_DAY3_SUBMISSION.md`](docs/WEEK8_DAY3_SUBMISSION.md).
+
 ---
 
 ## ⏰ Week 4: Node.js Architecture, Microservices & Smart Automation
@@ -613,7 +630,9 @@ docker compose -f docker-compose.espocrm.yml up -d
 
 ```powershell
 npm test
-# Runs all 34 unit test suites across Placement & Interview Readiness Scores, Docling + Groq ATS Resume Intelligence, LangGraph Workflow Learning Path Generator, ChromaDB Vector Search Internship Matching, CrewAI Career Recommendation Engine, LlamaIndex + Groq Skill Gap RAG Pipeline, Career Intelligence (CIA Mode) Architecture & Contracts, Moodle Deployment & Capstone Architecture, Moodle Database Performance Audit & Index Optimization, Moodle AI Learning Recommendations (Groq + OpenRouter + 5 Core Tables), Moodle AI Quiz Generation, Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+# Runs all 35 unit test suites across Career Intelligence Report & Archetypes, Placement & Interview Readiness Scores, Docling + Groq ATS Resume Intelligence, LangGraph Workflow Learning Path Generator, ChromaDB Vector Search Internship Matching, CrewAI Career Recommendation Engine, LlamaIndex + Groq Skill Gap RAG Pipeline, Career Intelligence (CIA Mode) Architecture & Contracts, Moodle Deployment & Capstone Architecture, Moodle Database Performance Audit & Index Optimization, Moodle AI Learning Recommendations (Groq + OpenRouter + 5 Core Tables), Moodle AI Quiz Generation, Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+npm run test:w8d3
+# Runs Week 8 Day 3 Career Intelligence Report & Archetype Map test suite individually
 npm run test:w8d2
 # Runs Week 8 Day 2 Module 6 & 7 Placement & Interview Readiness Score test suite individually
 npm run test:w8d1
