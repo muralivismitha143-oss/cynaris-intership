@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-All%2021%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2035%20Suites%20Passing-success?style=for-the-badge)](tests/)
 [![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen?style=for-the-badge&logo=github-actions)](.github/workflows/ci-cd.yml)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
@@ -14,7 +14,10 @@
 - **Backup / Staging URL (Render):** [https://cynaris-recruitment.onrender.com](https://cynaris-recruitment.onrender.com)
 - **System Architecture Blueprint:** [`ARCHITECTURE.md`](ARCHITECTURE.md)
 - **Week 4 Final Pull Request:** [`docs/WEEK4_FINAL_PR.md`](docs/WEEK4_FINAL_PR.md)
-- **Demo Video Walkthrough (Unlisted):** [https://youtu.be/cynaris-recruitment-w4-fullstack-demo](https://youtu.be/cynaris-recruitment-w4-fullstack-demo)
+- **Week 6 Final Pull Request:** [`docs/WEEK6_FINAL_PR.md`](docs/WEEK6_FINAL_PR.md)
+- **Week 7 Final Pull Request:** [`docs/WEEK7_FINAL_PR.md`](docs/WEEK7_FINAL_PR.md)
+- **Week 4 Demo Video Walkthrough (Unlisted):** [https://youtu.be/cynaris-recruitment-w4-fullstack-demo](https://youtu.be/cynaris-recruitment-w4-fullstack-demo)
+- **Week 6 Demo Video Walkthrough (Unlisted):** [https://youtu.be/cynaris-recruitment-w6-moodle-capstone-demo](https://youtu.be/cynaris-recruitment-w6-moodle-capstone-demo)
 - **GitHub Actions Automated Pipeline:** [https://github.com/muralivismitha143-oss/cynaris-intership/actions](https://github.com/muralivismitha143-oss/cynaris-intership/actions)
 - **Docker Hub Container Registry:** [https://hub.docker.com/r/muralivismitha143/cynaris-recruitment-platform](https://hub.docker.com/r/muralivismitha143/cynaris-recruitment-platform)
 - **Week 4 Day 6 Submission Report:** [`docs/WEEK4_DAY6_SUBMISSION.md`](docs/WEEK4_DAY6_SUBMISSION.md)
@@ -26,6 +29,34 @@
 - **Week 5 Day 3 Submission Report:** [`docs/WEEK5_DAY3_SUBMISSION.md`](docs/WEEK5_DAY3_SUBMISSION.md)
 - **Moodle Chart.js Progress Dashboard:** [`docs/MOODLE_CHARTJS_PROGRESS_DASHBOARD.md`](docs/MOODLE_CHARTJS_PROGRESS_DASHBOARD.md)
 - **Week 5 Day 4 Submission Report:** [`docs/WEEK5_DAY4_SUBMISSION.md`](docs/WEEK5_DAY4_SUBMISSION.md)
+- **Moodle Assessment UI Bug Report:** [`docs/MOODLE_ASSESSMENT_UI_BUG_REPORT.md`](docs/MOODLE_ASSESSMENT_UI_BUG_REPORT.md)
+- **Week 5 Day 5 Submission Report:** [`docs/WEEK5_DAY5_SUBMISSION.md`](docs/WEEK5_DAY5_SUBMISSION.md)
+- **Moodle AI Tutor Architecture Blueprint:** [`docs/MOODLE_AI_TUTOR_INTEGRATION.md`](docs/MOODLE_AI_TUTOR_INTEGRATION.md)
+- **Week 6 Day 1 Submission Report:** [`docs/WEEK6_DAY1_SUBMISSION.md`](docs/WEEK6_DAY1_SUBMISSION.md)
+- **Moodle AI Quiz Generation Architecture:** [`docs/MOODLE_AI_QUIZ_GENERATION.md`](docs/MOODLE_AI_QUIZ_GENERATION.md)
+- **Week 6 Day 2 Submission Report:** [`docs/WEEK6_DAY2_SUBMISSION.md`](docs/WEEK6_DAY2_SUBMISSION.md)
+- **Moodle AI Learning Recommendations Architecture:** [`docs/MOODLE_AI_RECOMMENDATIONS.md`](docs/MOODLE_AI_RECOMMENDATIONS.md)
+- **Week 6 Day 3 Submission Report:** [`docs/WEEK6_DAY3_SUBMISSION.md`](docs/WEEK6_DAY3_SUBMISSION.md)
+- **Moodle Performance Audit & EXPLAIN Query Optimization:** [`docs/MOODLE_PERF_AUDIT_EXPLAIN_INDEXING.md`](docs/MOODLE_PERF_AUDIT_EXPLAIN_INDEXING.md)
+- **Week 6 Day 4 Submission Report:** [`docs/WEEK6_DAY4_SUBMISSION.md`](docs/WEEK6_DAY4_SUBMISSION.md)
+- **Moodle LMS Deployment & Full Capstone Architecture:** [`docs/MOODLE_DEPLOYMENT_AND_CAPSTONE.md`](docs/MOODLE_DEPLOYMENT_AND_CAPSTONE.md)
+- **Week 6 Day 5 Submission Report:** [`docs/WEEK6_DAY5_SUBMISSION.md`](docs/WEEK6_DAY5_SUBMISSION.md)
+- **Career Intelligence CIA Mode Architecture:** [`docs/CAREER_INTELLIGENCE_CIA_ARCHITECTURE.md`](docs/CAREER_INTELLIGENCE_CIA_ARCHITECTURE.md)
+- **Week 7 Day 1 Submission Report:** [`docs/WEEK7_DAY1_SUBMISSION.md`](docs/WEEK7_DAY1_SUBMISSION.md)
+- **LlamaIndex + Groq Skill Gap RAG Architecture:** [`docs/LLAMINDEX_GROQ_SKILL_GAP_RAG.md`](docs/LLAMINDEX_GROQ_SKILL_GAP_RAG.md)
+- **Week 7 Day 2 Submission Report:** [`docs/WEEK7_DAY2_SUBMISSION.md`](docs/WEEK7_DAY2_SUBMISSION.md)
+- **CrewAI Career Recommendation Engine:** [`docs/CREWAI_CAREER_RECOMMENDATION_ENGINE.md`](docs/CREWAI_CAREER_RECOMMENDATION_ENGINE.md)
+- **Week 7 Day 3 Submission Report:** [`docs/WEEK7_DAY3_SUBMISSION.md`](docs/WEEK7_DAY3_SUBMISSION.md)
+- **ChromaDB Vector Search Internship Matching:** [`docs/CHROMADB_VECTOR_SEARCH_INTERNSHIP_MATCHING.md`](docs/CHROMADB_VECTOR_SEARCH_INTERNSHIP_MATCHING.md)
+- **Week 7 Day 4 Submission Report:** [`docs/WEEK7_DAY4_SUBMISSION.md`](docs/WEEK7_DAY4_SUBMISSION.md)
+- **LangGraph Learning Path Generator:** [`docs/LANGGRAPH_LEARNING_PATH_GENERATOR.md`](docs/LANGGRAPH_LEARNING_PATH_GENERATOR.md)
+- **Week 7 Day 5 Submission Report:** [`docs/WEEK7_DAY5_SUBMISSION.md`](docs/WEEK7_DAY5_SUBMISSION.md)
+- **Resume Intelligence (Docling + Groq ATS) Architecture:** [`docs/RESUME_INTELLIGENCE_DOCLING_GROQ_ATS.md`](docs/RESUME_INTELLIGENCE_DOCLING_GROQ_ATS.md)
+- **Week 8 Day 1 Submission Report:** [`docs/WEEK8_DAY1_SUBMISSION.md`](docs/WEEK8_DAY1_SUBMISSION.md)
+- **Placement & Interview Readiness Architecture:** [`docs/PLACEMENT_AND_INTERVIEW_READINESS.md`](docs/PLACEMENT_AND_INTERVIEW_READINESS.md)
+- **Week 8 Day 2 Submission Report:** [`docs/WEEK8_DAY2_SUBMISSION.md`](docs/WEEK8_DAY2_SUBMISSION.md)
+- **Career Intelligence Report Architecture:** [`docs/CAREER_INTELLIGENCE_REPORT_ARCHITECTURE.md`](docs/CAREER_INTELLIGENCE_REPORT_ARCHITECTURE.md)
+- **Week 8 Day 3 Submission Report:** [`docs/WEEK8_DAY3_SUBMISSION.md`](docs/WEEK8_DAY3_SUBMISSION.md)
 - **Production Health Check:** `https://cynaris-recruitment-production.up.railway.app/api/health`
 
 ---
@@ -33,6 +64,7 @@
 ## 🎓 Week 5: Project 3 — Moodle LMS Integration & Enterprise Training Architecture
 
 ### Week 5 Day 1 — Fork moodle/moodle, moodle-docker Setup & First Run
+
 - **Moodle Docker Multi-Container Environment:**
   - Configured [`docker-compose.moodle.yml`](docker-compose.moodle.yml) running Moodle v4.3+ on Apache/PHP 8.1 (Port `8000`), PostgreSQL 14 (Port `5432`), and MailHog SMTP Catcher (Port `8025`).
   - Generated environment template [`.env.moodle.example`](.env.moodle.example) and instantiated active configuration [`moodle/config.php`](moodle/config.php) from [`moodle/config.docker-template.php`](moodle/config.docker-template.php).
@@ -51,6 +83,7 @@
   - [`docs/WEEK5_DAY1_SUBMISSION.md`](docs/WEEK5_DAY1_SUBMISSION.md): Submission report with simulated screenshots and 3 Viva Voce answers.
 
 ### Week 5 Day 2 — Moodle Architecture Workshop — 5 Core Tables Only (ER + Queries)
+
 - **5 Core Tables Introspection & Architecture (`DESCRIBE`):**
   - Profiled column schemas, primary keys (`bigint(10) auto_increment`), nullability, and foreign key indexes across only the 5 fundamental tables: `mdl_course`, `mdl_grade_grades`, `mdl_course_completions`, `mdl_user`, and `mdl_log`.
 - **Relational Entity-Relationship (ER) Diagram:**
@@ -69,6 +102,7 @@
   - [`docs/WEEK5_DAY2_SUBMISSION.md`](docs/WEEK5_DAY2_SUBMISSION.md): Official submission report with simulated outputs and answers to all 3 Viva Voce questions.
 
 ### Week 5 Day 3 — Plugin Scaffold — Build block_cynaris_stats Block Plugin
+
 - **Moodle Block Plugin Architecture (`blocks/cynaris_stats/`):**
   - Scaffolded native Moodle block plugin following Frankenstyle conventions: controller [`blocks/cynaris_stats/block_cynaris_stats.php`](blocks/cynaris_stats/block_cynaris_stats.php) subclassing `block_base`.
   - Implemented core lifecycle contracts: `init()` (title localization via `get_string()`), `get_content()` (memoized content caching returning styled candidate stats), `applicable_formats()`, and `instance_allow_multiple()`.
@@ -87,6 +121,7 @@
   - [`docs/WEEK5_DAY3_SUBMISSION.md`](docs/WEEK5_DAY3_SUBMISSION.md): Official submission report with checklist and answers to all 3 Viva Voce questions.
 
 ### Week 5 Day 4 — Progress Dashboard — Chart.js Visualisation from Grade Data
+
 - **Relational Aggregations Across 5 Approved Tables:**
   - `mdl_course` + `mdl_course_completions`: Calculated completion % per course (CYN-FS-101: 60%, CYN-CRM-102: 50%, CYN-OPS-103: 50%).
   - `mdl_user` + `mdl_grade_grades`: Evaluated average grade per candidate across 5 enrolled candidates, seamlessly handling **both candidates with grades and candidates without submitted grades**.
@@ -104,11 +139,282 @@
   - [`docs/MOODLE_CHARTJS_PROGRESS_DASHBOARD.md`](docs/MOODLE_CHARTJS_PROGRESS_DASHBOARD.md): Architectural guide with queries, JSON specs, and visual mockups.
   - [`docs/WEEK5_DAY4_SUBMISSION.md`](docs/WEEK5_DAY4_SUBMISSION.md): Official submission report with checklist, visual layout, and answers to all 3 Viva Voce questions.
 
+### Week 5 Day 5 — Assessment Engine Study + UI Bug Fix + PR
+
+- **Systematic UI/UX Bug Investigation & Root Cause Isolation:**
+  - Audited Moodle Assessment Engine (`mod_quiz`) and Telemetry Dashboard (`block_cynaris_stats`), identifying 3 concrete issues affecting responsiveness, parameter safety, layout collision, and asynchronous concurrency.
+- **Three Concrete Bug Fixes Committed Independently:**
+  - **Issue #101 (`031fed4`):** Fixed `moodle/mod/quiz/view.php` by adding `<meta name="viewport" content="width=device-width, initial-scale=1.0">`, sanitizing query inputs with `filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT)`, and dynamically rendering previous attempt scores and accessible CTA buttons ("Retake Assessment" vs "Start Timed Attempt").
+  - **Issue #102 (`2f272e0`):** Fixed `block_cynaris_stats.php` Chart.js canvas overflow on narrow viewports by configuring `autoSkip: true`, `maxRotation: 40`, and `font: { size: 10 }`. Added `#cynaris-chart-skeleton` shimmer loader, and enforced `table-layout: fixed;` with text-overflow ellipsis on student grade rows.
+  - **Issue #103 (`42dbaa7`):** Eliminated asynchronous race conditions in `block_cynaris_stats.php` by implementing a boolean mutex lock (`isRefreshing`), visually disabling the refresh button during fetch with guaranteed reset in `finally`, and adding W3C ARIA live region attributes (`role="status"`, `aria-live="polite"`, `aria-atomic="true"`).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_moodle_ui_bug_fixes.js`](tests/test_moodle_ui_bug_fixes.js): 11 automated assertions covering parameter validation, viewport tags, Chart.js autoSkip, skeleton shimmer, mutex locks, and ARIA attributes.
+  - [`docs/MOODLE_ASSESSMENT_UI_BUG_REPORT.md`](docs/MOODLE_ASSESSMENT_UI_BUG_REPORT.md): Formal bug report with reproduction steps, root causes, before/after diffs, and verification logs.
+  - [`docs/WEEK5_DAY5_SUBMISSION.md`](docs/WEEK5_DAY5_SUBMISSION.md): Official submission report with CIA comparisons, checklist, and answers to all 3 Viva Voce questions.
+
+---
+
+## 🤖 Week 6: AI-Powered Learning Assistant & Advanced Moodle Workflows
+
+### Week 6 Day 1 — AI Tutor Integration: Groq Primary, OpenRouter Fallback
+
+- **Multi-Tiered Resilient AI Tutor Architecture:**
+  - Primary inference via **Groq** (`llama-3.3-70b-versatile`) delivering sub-350ms Socratic pedagogical explanations.
+  - Automated fallback to **OpenRouter** (`meta-llama/llama-3.3-70b-instruct`) on Groq rate limits, HTTP 5xx errors, or 6000ms timeouts.
+  - Zero-downtime **Local Curriculum Rule Engine** (`deterministic-curriculum-v1`) for air-gapped test environments and offline reliability.
+- **Context-Aware Socratic Prompt Engineering:**
+  - Enforces JSON output with `conceptExplanation`, `stepByStepBreakdown` (3 execution phases), `codeExample`, `quizHint`, and `recommendedAction`.
+  - Context injection anchors learning in candidate performance and Cynaris course curricula (`CYN-FS-101`, `CYN-CRM-102`, `CYN-OPS-103`).
+- **Moodle UI & REST API Gateway:**
+  - Embedded interactive AI preparation assistant in [`moodle/mod/quiz/view.php`](moodle/mod/quiz/view.php) and quick drawer in [`blocks/cynaris_stats/block_cynaris_stats.php`](blocks/cynaris_stats/block_cynaris_stats.php).
+  - Mounted `POST /api/moodle/ai-tutor/ask`, `GET /api/moodle/ai-tutor/health`, and `GET /api/moodle/ai-tutor/topics` in [`backend/routes/moodleRouter.js`](backend/routes/moodleRouter.js).
+  - Implemented PHP service parity in [`moodle/local/cynaris_ai_tutor/AiTutor.php`](moodle/local/cynaris_ai_tutor/AiTutor.php).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_moodle_ai_tutor.js`](tests/test_moodle_ai_tutor.js): 15 automated assertions validating prompt construction, primary Groq execution, OpenRouter failover, local rule fallback, and REST endpoints.
+  - [`docs/MOODLE_AI_TUTOR_INTEGRATION.md`](docs/MOODLE_AI_TUTOR_INTEGRATION.md): Architecture specification and failover sequence diagrams.
+  - [`docs/WEEK6_DAY1_SUBMISSION.md`](docs/WEEK6_DAY1_SUBMISSION.md): Submission report with checklist, visual layouts, and 3 Viva Voce answers.
+
+### Week 6 Day 2 — AI Quiz Generation: MCQs from Course Content to Question Bank
+
+- **Multi-Tiered Resilient MCQ Generator Architecture:**
+  - High-throughput primary inference via **Groq** (`llama-3.3-70b-versatile`, $< 350\text{ms}$) generating pedagogical MCQs.
+  - Automated secondary cloud failover to **OpenRouter** (`meta-llama/llama-3.3-70b-instruct`) on Groq rate-limiting or timeouts.
+  - Zero-downtime **Local Deterministic Fallback Engine** generating verified syllabus questions during offline or air-gapped test runs.
+- **Strict Invariant JSON Schema & Validation:**
+  - Enforces 7-field schema per question: `question`, `option_a`, `option_b`, `option_c`, `option_d`, `correct_answer` (strictly $\in \{'A', 'B', 'C', 'D'\}$), and authoritative `explanation`.
+  - Distractor engineering targeting realistic junior developer misconceptions to maximize psychometric evaluation quality.
+- **Moodle Question Bank API & Programmatic Quiz Assembly:**
+  - Decoupled question persistence in `mdl_question` and `mdl_question_answers` with fractional grading weights ($1.0$ for correct, $0.0$ for distractors).
+  - Programmatic quiz factory instantiating `mdl_quiz` and mapping question slots sequentially in `mdl_quiz_slots`.
+  - PHP library parity implemented in [`moodle/mod/quiz/locallib.php`](moodle/mod/quiz/locallib.php).
+- **Moodle UI Deck & Express REST Gateway:**
+  - Embedded AI question generator deck in [`moodle/mod/quiz/view.php`](moodle/mod/quiz/view.php) with question count selector, live preview cards, and W3C ARIA live region indicators (`aria-live="polite"`).
+  - Mounted `POST /api/moodle/quiz/generate`, `POST /api/moodle/quiz/import-to-bank`, `POST /api/moodle/quiz/create`, `GET /api/moodle/courses/:id/question-bank`, and `GET /api/moodle/courses/:id/quizzes` in [`backend/routes/moodleRouter.js`](backend/routes/moodleRouter.js).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_moodle_ai_quiz_generation.js`](tests/test_moodle_ai_quiz_generation.js): 15 comprehensive unit tests covering prompts, Groq inference, OpenRouter failover, local deterministic fallback, validation rules, Question Bank import, quiz creation, PHP locallib parity, and REST routes.
+  - [`docs/MOODLE_AI_QUIZ_GENERATION.md`](docs/MOODLE_AI_QUIZ_GENERATION.md): Complete architecture specification, Question Bank schema, and failover lifecycle.
+  - [`docs/WEEK6_DAY2_SUBMISSION.md`](docs/WEEK6_DAY2_SUBMISSION.md): Submission report with checklist, CIA log, and answers to all 3 Viva Voce questions.
+
+### Week 6 Day 3 — AI Learning Recommendations from Grade + Completion Data
+
+- **Multi-Tiered Resilient Recommendation Engine:**
+  - Primary inference via **Groq** (`llama-3.3-70b-versatile`, $< 350\text{ms}$) synthesizing candidate trajectory from grades and completions.
+  - Automated secondary failover to **OpenRouter** (`meta-llama/llama-3.3-70b-instruct`) on Groq rate limits, HTTP 5xx errors, or timeouts.
+  - Zero-downtime **Local Deterministic Fallback Engine** calculating mathematical averages, completion percentages, and milestone targets during offline or air-gapped test runs.
+- **5 Core Moodle Tables Data Ingestion:**
+  - Harvests candidate identity (`mdl_user`), course catalog (`mdl_course`), assessment grades (`mdl_grade_grades`), track completions (`mdl_course_completions`), and login activity (`mdl_log`).
+  - Classifies candidate into performance tiers: `Advanced` ($\ge 90\%$ avg, $\ge 50\%$ completion), `Proficient` ($\ge 80\%$), or `Needs Support`.
+- **Strict JSON Contract & Prioritized Action Plan:**
+  - Enforces structured JSON output with `studentSummary`, `strengths`, `growthAreas`, `recommendedActions` (with priority, target course, estimated hours), `nextMilestone`, and tailored `pedagogicalEncouragement`.
+- **Moodle Block Plugin UI & REST Gateway:**
+  - Embedded interactive AI recommendation deck in [`blocks/cynaris_stats/block_cynaris_stats.php`](blocks/cynaris_stats/block_cynaris_stats.php) and [`moodle/blocks/cynaris_stats/block_cynaris_stats.php`](moodle/blocks/cynaris_stats/block_cynaris_stats.php) with candidate selector, trigger button, and W3C ARIA live region indicators (`aria-live="polite"`).
+  - Mounted `GET /api/moodle/recommendations/health`, `POST /api/moodle/recommendations/generate`, and `GET /api/moodle/users/:id/recommendations` in [`backend/routes/moodleRouter.js`](backend/routes/moodleRouter.js).
+  - Implemented Frankenstyle PHP parity in [`moodle/local/cynaris_recommendations/RecommendationService.php`](moodle/local/cynaris_recommendations/RecommendationService.php).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_moodle_ai_recommendations.js`](tests/test_moodle_ai_recommendations.js): 14 unit assertions covering prompts, Groq inference, OpenRouter failover, local rule fallback, schema validation, tier differentiation, PHP parity, and REST routes.
+  - [`docs/MOODLE_AI_RECOMMENDATIONS.md`](docs/MOODLE_AI_RECOMMENDATIONS.md): Architecture guide, schema contracts, tier matrix, and failover sequence.
+  - [`docs/WEEK6_DAY3_SUBMISSION.md`](docs/WEEK6_DAY3_SUBMISSION.md): Submission report with self-review checklist, CIA log, and answers to all 3 Viva Voce questions.
+
+### Week 6 Day 4 — Performance Audit: EXPLAIN Queries + Index Optimisation
+
+- **Multi-Tiered Database Performance Auditor & Index Advisor:**
+  - Primary inference via **Groq** (`llama-3.3-70b-versatile`, $< 350\text{ms}$) analyzing MySQL JSON `EXPLAIN` execution plans and identifying non-sargable predicates.
+  - Automated secondary failover to **OpenRouter** (`meta-llama/llama-3.3-70b-instruct`) on rate limits, HTTP 5xx errors, or network timeouts.
+  - Zero-downtime **Local Deterministic Fallback Engine** detecting unindexed table scans (`type: ALL`), filesorts, temporary tables, and missing composite keys via deterministic heuristics during offline or air-gapped test runs.
+- **MySQL EXPLAIN Deep-Dive & Sargable Query Optimization:**
+  - Audited 3 critical queries on Moodle core tables (`mdl_log`, `mdl_grade_grades`, and `mdl_course_completions`).
+  - Corrected non-sargable query wrapping `DATE(FROM_UNIXTIME(l.time))` into a bare timestamp range comparison `l.time >= UNIX_TIMESTAMP(...)`, cutting execution time from $445\text{ms}$ to $2.3\text{ms}$ ($193\times$ speedup).
+  - Formulated composite B-Tree indexes in [`moodle/database/schema_optimizations.sql`](moodle/database/schema_optimizations.sql): `idx_mdl_log_user_action_time`, `idx_mdl_grade_item_user_final` (covering index for aggregate grades), and `idx_mdl_completions_user_course_status`.
+- **Moodle Block Plugin UI & Express REST Gateway:**
+  - Embedded interactive Performance Audit & Index Advisor panel in [`blocks/cynaris_stats/block_cynaris_stats.php`](blocks/cynaris_stats/block_cynaris_stats.php) and [`moodle/blocks/cynaris_stats/block_cynaris_stats.php`](moodle/blocks/cynaris_stats/block_cynaris_stats.php) with benchmark query dropdown, trigger button, and W3C ARIA live region indicators (`aria-live="polite"`).
+  - Mounted `GET /api/moodle/perf/health`, `GET /api/moodle/perf/benchmarks`, `POST /api/moodle/perf/explain`, and `POST /api/moodle/perf/audit` in [`backend/routes/moodleRouter.js`](backend/routes/moodleRouter.js).
+  - Implemented Frankenstyle PHP parity in [`moodle/local/cynaris_perf/QueryAuditService.php`](moodle/local/cynaris_perf/QueryAuditService.php).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_moodle_perf_audit.js`](tests/test_moodle_perf_audit.js): 16 unit assertions covering prompt construction, Groq inference, OpenRouter failover, local rule fallback, plan generation, composite indexing, PHP parity, and REST routes.
+  - [`docs/MOODLE_PERF_AUDIT_EXPLAIN_INDEXING.md`](docs/MOODLE_PERF_AUDIT_EXPLAIN_INDEXING.md): Comprehensive query execution plans, before-vs-after metrics, and InnoDB B-Tree indexing architecture.
+  - [`docs/WEEK6_DAY4_SUBMISSION.md`](docs/WEEK6_DAY4_SUBMISSION.md): Submission report with self-review checklist, CIA log, and answers to all 3 Viva Voce questions.
+
+### Week 6 Day 5 — Deploy Moodle Fork + Full Documentation + Demo Video
+
+- **Moodle Multi-Container Docker Topology & Production Verification:**
+  - Production development topology in [`docker-compose.moodle.yml`](docker-compose.moodle.yml) coordinating **Apache / PHP 8.1 (Port 8000)**, **PostgreSQL 14 (Port 5432)**, and **MailHog SMTP Catcher (Port 8025)** with isolated named volume storage (`moodle-data` mounted at `/var/www/moodledata`).
+  - Dynamic environment configuration loader in [`moodle/config.php`](moodle/config.php) resolving DB credentials and secure dataroot isolation without hardcoded secrets.
+- **Upgraded Moodle Frontpage & Capstone Dashboard:**
+  - Frontpage in [`moodle/index.php`](moodle/index.php) displaying 100% operational system status, multi-tiered AI architecture overview, 5 core table schemas, and the 3 foundational architectural decisions.
+  - Quick action navigation linking to Cynaris Stats, Quiz Assessment, Question Bank generator, Node.js API Bridge, and MailHog.
+- **Moodle CLI Deployment Verification & Express REST Gateway:**
+  - Built CLI verification tools in [`moodle/admin/cli/deploy_verify.php`](moodle/admin/cli/deploy_verify.php) and Node.js parity runner [`backend/modules/moodle/cliDeployVerify.js`](backend/modules/moodle/cliDeployVerify.js) (`npm run moodle:verify`).
+  - Mounted Capstone REST overview endpoint `GET /api/moodle/capstone/overview` in [`backend/routes/moodleRouter.js`](backend/routes/moodleRouter.js) returning complete deployment telemetry, database engine details, active AI models, and architectural decisions.
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_moodle_deployment_and_capstone.js`](tests/test_moodle_deployment_and_capstone.js): 13 unit assertions covering Docker topology, secrets isolation, directory hierarchy, 5 core tables, Frankenstyle plugin parity, multi-tier AI pipeline, frontpage accessibility, and REST routes.
+  - [`docs/MOODLE_DEPLOYMENT_AND_CAPSTONE.md`](docs/MOODLE_DEPLOYMENT_AND_CAPSTONE.md): Complete architecture specification, Docker multi-container design, 3 architectural decisions, and full Demo Video Walkthrough script.
+  - [`docs/WEEK6_FINAL_PR.md`](docs/WEEK6_FINAL_PR.md): End-of-week Capstone Pull Request template.
+  - [`docs/WEEK6_DAY5_SUBMISSION.md`](docs/WEEK6_DAY5_SUBMISSION.md): Submission report with self-review checklist, CIA log, simulated screenshots, and answers to all 3 Viva Voce questions.
+
+---
+
+## 🚀 Week 7: Project 4 — Career Intelligence (CIA Mode), Vector Embeddings & Agent Systems
+
+### Week 7 Day 1 — Architecture Design: Career Intelligence CIA Mode + API Contracts
+
+- **Multi-Tiered AI Career Intelligence & Socratic Trajectory Advisor:**
+  - High-throughput primary inference via **Groq** (`llama-3.3-70b-versatile`, $< 350\text{ms}$) synthesizing candidate trajectory, readiness tier, and prioritized upskilling actions.
+  - Automated secondary failover to **OpenRouter** (`meta-llama/llama-3.3-70b-instruct`) on rate limits, HTTP 5xx errors, or network timeouts.
+  - Zero-downtime **Local Deterministic Fallback Engine** calculating mathematical averages and competency deltas during offline or air-gapped CI test runs.
+- **Quantitative Skill Gap Analysis & Weighted Mathematical Model:**
+  - Formulated normalized multi-attribute utility model calculating weighted skill gaps:
+    $$\text{Gap Score} = 100 \times \left(1 - \frac{\sum w_s \cdot \min(1, \frac{L_{\text{candidate}}}{L_{\text{target}}})}{\sum w_t}\right)$$
+  - Evaluates individual skill deltas, importance weights ($w \in [1, 3]$), and itemizes gaps into severity tiers (`MATCHED`, `MINOR_GAP`, `HIGH_GAP`, `CRITICAL_MISSING`) with realistic remediation hours.
+- **ChromaDB Vector Store Semantic Matching:**
+  - Integrated vector similarity search calculating cosine similarity ($\cos \theta \ge 0.85$) against target role job descriptions in ChromaDB collection `cynaris_job_profiles`.
+- **Laravel / Blade Parity & Express REST Gateway:**
+  - Full-stack parity across Laravel controller [`app/Http/Controllers/Web/CiaController.php`](app/Http/Controllers/Web/CiaController.php), Blade UI [`resources/views/candidate/cia.blade.php`](resources/views/candidate/cia.blade.php) with W3C ARIA live region (`aria-live="polite"`), and web routes [`routes/web.php`](routes/web.php).
+  - Mounted REST API router [`backend/routes/ciaRouter.js`](backend/routes/ciaRouter.js) on `/api/cia` (`/health`, `/roles`, `/analyze-gap`, `/recommendations`, `/vector-search`).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_career_intelligence_cia.js`](tests/test_career_intelligence_cia.js): 19 unit assertions covering prompt construction, Groq inference, OpenRouter failover, local rule fallback, skill gap math, ChromaDB vector matching, Laravel controller parity, Blade accessibility, and REST routes.
+  - [`docs/CAREER_INTELLIGENCE_CIA_ARCHITECTURE.md`](docs/CAREER_INTELLIGENCE_CIA_ARCHITECTURE.md): Complete architecture specification, ChromaDB vector store design, mathematical model, and OpenAPI 3.0 API contracts.
+  - [`docs/WEEK7_DAY1_SUBMISSION.md`](docs/WEEK7_DAY1_SUBMISSION.md): Submission report with self-review checklist, CIA log, and answers to all 3 Viva Voce questions.
+
+### Week 7 Day 2 — Module 1: Skill Gap Analysis — LlamaIndex + Groq Pipeline
+
+- **LlamaIndex RAG Retrieval over 50-Skill Taxonomy:**
+  - Curated canonical skills taxonomy in [`data/skills_taxonomy.json`](data/skills_taxonomy.json) defining 50 technical competencies partitioned across 5 engineering domains (Frontend, Backend, Database, Cloud & DevOps, AI & ML).
+  - LlamaIndex keyword relevance retrieval dynamically extracts grounded benchmark context based on candidate profile and target job role, eliminating hallucinations.
+- **Three-Tier Multi-Provider Fallback Cascade:**
+  - High-throughput primary inference via **Groq** (`llama-3.3-70b-versatile`, $< 350\text{ms}$) with strict JSON schema enforcement.
+  - Automated secondary failover to **OpenRouter** (`meta-llama/llama-3.3-70b-instruct`) on rate limiting (HTTP 429), cloud 5xx errors, or network timeouts.
+  - Zero-downtime **Local Deterministic RAG Fallback Engine** calculating weighted skill gaps and domain scores during offline or air-gapped test runs.
+- **ChromaDB Namespace Isolation:**
+  - Enforced per-candidate namespace isolation (`candidate_${candidateId}_skill_gaps`) in ChromaDB preventing cross-candidate data leakage and enabling fast $O(1)$ rehydration.
+- **Chart.js 5-Domain Radar Visualization & Laravel / Express Parity:**
+  - Enhanced candidate view in [`resources/views/candidate/cia.blade.php`](resources/views/candidate/cia.blade.php) with an interactive Chart.js radar chart (`#cia-skill-radar-chart`) comparing candidate proficiency against target benchmarks across all 5 domains, live role switching, and W3C ARIA polite region announcements (`aria-live="polite"`).
+  - Implemented dual-stack parity in Express (`POST /api/cia/career/skill-gap` and `/candidate/cia/career/skill-gap`) and Laravel ([`app/Http/Controllers/Web/CiaController.php`](app/Http/Controllers/Web/CiaController.php), [`routes/web.php`](routes/web.php)).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_llamaindex_skill_gap.js`](tests/test_llamaindex_skill_gap.js): 10 unit assertions covering 50-skill taxonomy, RAG retriever, grounded prompt construction, Groq primary, OpenRouter failover, local rule fallback, ChromaDB namespace persistence, JSON schema validation, Laravel/Blade parity, and REST routes.
+  - [`docs/LLAMINDEX_GROQ_SKILL_GAP_RAG.md`](docs/LLAMINDEX_GROQ_SKILL_GAP_RAG.md): Comprehensive technical architecture guide.
+  - [`docs/WEEK7_DAY2_SUBMISSION.md`](docs/WEEK7_DAY2_SUBMISSION.md): Submission report with self-review checklist, CIA log, and answers to all 3 Viva Voce questions.
+
+### Week 7 Day 3 — Module 2: Career Recommendation Engine — CrewAI Agent
+
+- **CrewAI CareerAdvisorAgent Autonomous Persona:**
+  - Configured `CareerAdvisorAgent` with role `"Senior Career Counsellor with 15 years experience in tech placement"`, goal, and backstory tailored to tech recruitment benchmarks across top Indian startups and IT enterprises.
+- **Three Specialized Agent Tools:**
+  - Tool (a) `skill_gap_fetcher`: Reads stored gap assessments directly from ChromaDB namespace `candidate_${candidateId}_skill_gaps` with dynamic mathematical fallback.
+  - Tool (b) `job_role_matcher`: Evaluates candidate competency profile across 3 strategic tech pathways (Full Stack Cloud Solutions Architect, AI Systems & Intelligent Backend Engineer, DevOps & Site Reliability Architect).
+  - Tool (c) `learning_recommender`: Maps gaps to sequenced Moodle courses (`CYN-FS-101`, `CYN-OPS-103`, `CYN-AI-201`) and outputs structured 6-month progression milestones.
+- **Three-Tier Multi-Provider Fallback Cascade:**
+  - High-throughput primary inference via **Groq** (`llama-3.3-70b-versatile`, $< 350\text{ms}$) with JSON schema mode.
+  - Automated secondary failover to **OpenRouter** (`meta-llama/llama-3.3-70b-instruct`) on rate limits, HTTP 5xx errors, or timeouts.
+  - Zero-downtime **Local Deterministic Fallback Engine** (`deterministic-crewai-v1`) guaranteeing 100% uptime for offline and CI test execution.
+- **Interactive UI Cards & Laravel / Express Parity:**
+  - Enhanced candidate portal [`resources/views/candidate/cia.blade.php`](resources/views/candidate/cia.blade.php) with an autonomous recommendation card deck (`#crewai-recommendations-section`, `#crewai-career-cards-container`) rendering 3 interactive career path cards, confidence badges, required skills tags, and 6-month milestone timelines.
+  - Implemented dual-stack API parity across Express (`POST /api/cia/career/recommend` & `/candidate/cia/career/recommend`) and Laravel ([`app/Http/Controllers/Web/CiaController.php`](app/Http/Controllers/Web/CiaController.php), [`routes/web.php`](routes/web.php)).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_crewai_career_recommendations.js`](tests/test_crewai_career_recommendations.js): 11 unit assertions covering agent specifications, tools execution, task prompt construction, Groq primary, OpenRouter failover, local rule engine, schema validation, Laravel/Blade parity, and REST routes.
+  - [`docs/CREWAI_CAREER_RECOMMENDATION_ENGINE.md`](docs/CREWAI_CAREER_RECOMMENDATION_ENGINE.md): Complete technical architecture specification.
+  - [`docs/WEEK7_DAY3_SUBMISSION.md`](docs/WEEK7_DAY3_SUBMISSION.md): Submission report with self-review checklist, CIA log, and answers to all 3 Viva Voce questions.
+
+### Week 7 Day 4 — Module 3: Internship Matching — ChromaDB Vector Search
+
+- **Seeded 20 Technical Internship Roles in ChromaDB Collection (`cynaris_internship_roles`):**
+  - Seeded benchmark dataset [`data/internship_roles.json`](data/internship_roles.json) with 20 distinct technical internship profiles partitioned across 5 engineering departments (Engineering, AI & Data Science, DevOps & Cloud, QA & Testing, Product & Security).
+  - Rich metadata schema per role: `id`, `role`, `department`, `location` (Remote, Hybrid, On-site), `stipend`, `required_skills`, `nice_to_have`, and comprehensive `description`.
+- **Dense Vector Embedding & Cosine Similarity Engine:**
+  - Projects candidate verified skill profile and role corpora into 384-dimensional dense vectors matching `sentence-transformers/all-MiniLM-L6-v2`.
+  - Enforced mathematical **L2 unit vector normalization** ($\lVert \mathbf{v} \rVert = 1.0$) and exact **cosine similarity** calculations bounded strictly within $[-1.0, 1.0]$.
+  - Formulated hybrid matching metric balancing semantic cosine similarity ($40\%$) with discrete required skill match ratio ($60\%$), scaling into a reliable percentage ($50.0\% \le \text{Match} \le 99.0\%$).
+- **Prerequisite Skill Discrimination (Matched vs Missing):**
+  - Isolates verified skills that meet role requirements (`matchedSkills`, displayed as green badges) versus unmet technical gaps (`missingSkills`, displayed as amber/red badges with actionable upskilling prompts).
+- **Dual-Stack API Parity & Candidate UI Deck:**
+  - Implemented Express REST routes (`POST /api/cia/career/match-internships` & `/candidate/cia/career/match-internships`) in [`backend/routes/ciaRouter.js`](backend/routes/ciaRouter.js).
+  - Implemented Laravel web route and controller in [`app/Http/Controllers/Web/CiaController.php`](app/Http/Controllers/Web/CiaController.php) & [`routes/web.php`](routes/web.php).
+  - Enhanced [`resources/views/candidate/cia.blade.php`](resources/views/candidate/cia.blade.php) with an accessible `#chromadb-internship-matching-section`, interactive trigger button `#btn-trigger-internship-matching`, and top 5 ranked card deck `#chromadb-internship-list-container`.
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_chromadb_internship_matching.js`](tests/test_chromadb_internship_matching.js): 10 unit assertions covering 20 seeded roles, 384-dim dense embeddings, L2 unit norm invariant, cosine similarity bounds, collection loading, top 5 descending rank, matched/missing skill discrimination, score bounds, Laravel parity, and REST routes.
+  - [`docs/CHROMADB_VECTOR_SEARCH_INTERNSHIP_MATCHING.md`](docs/CHROMADB_VECTOR_SEARCH_INTERNSHIP_MATCHING.md): Complete technical architecture specification and mathematical formulations.
+  - [`docs/WEEK7_DAY4_SUBMISSION.md`](docs/WEEK7_DAY4_SUBMISSION.md): Submission report with self-review checklist, CIA log, and answers to all 3 Viva Voce questions.
+
+### Week 7 Day 5 — Module 4: Learning Path Generator — LangGraph Workflow
+
+- **LangGraph 5-Node State Machine Architecture:**
+  - Decomposed curriculum generation into 5 discrete, sequential nodes: `AssessCurrentState` $\to$ `IdentifyGaps` $\to$ `GeneratePlan` $\to$ `ValidatePlan` $\to$ `OutputPlan`.
+  - Built observable state container carrying `intern_profile`, `skill_gaps`, `target_role`, `generated_plan`, and `node_history`.
+- **Pedagogical 8-Week Curriculum Generation & Invariant Criticism:**
+  - Generates week-by-week curriculum with concrete technical topics, Moodle course resources (`CYN-FS-101`, `CYN-OPS-103`, `CYN-AI-201`), daily commitment hours, and measurable capstone deliverables.
+  - Rigorous critic node (`ValidatePlan`) enforcing: exactly 8 weeks, daily commitment $\le 3.5\text{ hrs/day}$, non-empty topics and resources, and alignment with identified gaps.
+- **Interactive Mermaid Timeline Synthesis:**
+  - Generates valid Mermaid `timeline` syntax with 4 thematic sections (`Foundations & Core Architecture`, `Data & Storage Engine`, `Containerization & Cloud CI/CD`, `AI Systems & Capstone`).
+- **Dual-Stack API Parity & Candidate UI Deck:**
+  - Implemented Express REST routes (`POST /api/cia/career/learning-path` & `/candidate/cia/career/learning-path`) in [`backend/routes/ciaRouter.js`](backend/routes/ciaRouter.js).
+  - Implemented Laravel web route and controller in [`app/Http/Controllers/Web/CiaController.php`](app/Http/Controllers/Web/CiaController.php) & [`routes/web.php`](routes/web.php).
+  - Enhanced [`resources/views/candidate/cia.blade.php`](resources/views/candidate/cia.blade.php) with `#langgraph-learning-path-section`, interactive trigger button `#btn-generate-learning-path`, dynamic Mermaid timeline container `#langgraph-mermaid-timeline-box`, and 8 weekly curriculum cards with W3C ARIA accessibility (`aria-live="polite"`).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_langgraph_learning_path.js`](tests/test_langgraph_learning_path.js): 14 unit assertions covering state machine initialization, 5-node sequencing, 8-week invariant, schema validation, daily commitment limits, Mermaid syntax, Groq primary, OpenRouter failover, local rule engine, Laravel parity, and REST routes.
+  - [`docs/LANGGRAPH_LEARNING_PATH_GENERATOR.md`](docs/LANGGRAPH_LEARNING_PATH_GENERATOR.md): Complete technical architecture specification and curriculum syllabus.
+  - [`docs/WEEK7_DAY5_SUBMISSION.md`](docs/WEEK7_DAY5_SUBMISSION.md): Submission report with self-review checklist, CIA log, and answers to all 3 Viva Voce questions.
+  - [`docs/WEEK7_FINAL_PR.md`](docs/WEEK7_FINAL_PR.md): End-of-week Capstone Pull Request template.
+
+---
+
+## 🎯 Week 8: Project 5 — Advanced AI Systems, Document Intelligence & Production Hardening
+
+### Week 8 Day 1 — Module 5: Resume Intelligence — Docling + Groq ATS Scoring
+
+- **IBM Docling Document Parsing & Markdown Normalization:**
+  - Converts semi-structured resume documents (PDF, DOCX) into clean, semantic Markdown sections (`# Resume Document`, `## Core Technical Skills`, `## Professional Experience`, `## Education & Certifications`), preserving document spatial hierarchy and list structure without OCR artifact loss.
+- **Quantitative ATS Scoring Mathematical Formulation:**
+  - Deterministic evaluation formula: $\text{ATS Score} = (R_{\text{keywords}} \times 0.60) + (S_{\text{experience}} \times 0.20) + (S_{\text{structure}} \times 0.20)$, clamped between $52.0\%$ and $98.5\%$.
+  - Classifies candidates into standardized readiness tiers: `HIGH MATCH` ($\ge 80\%$), `MEDIUM MATCH` ($65-79.9\%$), and `LOW MATCH` ($< 65\%$).
+- **Multi-Tier Provider Resilience & Fallback:**
+  - High-throughput primary inference on **Groq** (`llama-3.3-70b-versatile`, $< 350\text{ms}$).
+  - Seamless secondary failover to **OpenRouter** (`meta-llama/llama-3.3-70b-instruct`) on rate limits or API outages.
+  - Zero-downtime **Local Deterministic Fallback Engine** ensuring 100% test reliability and offline availability.
+- **Candidate Portal Blade UI & Dual API Parity:**
+  - Embedded `#docling-resume-intelligence-section` in [`resources/views/candidate/cia.blade.php`](resources/views/candidate/cia.blade.php) with ATS score dial (`88.5%`), keyword coverage badges, Docling markdown representation, and trigger script.
+  - Dual REST API endpoints across Express (`POST /api/cia/career/resume-intelligence`, `/api/applicants/:applicant_id/generate-resume-summary`) and Laravel (`POST /career/resume-intelligence`).
+  - Frappe DocType and EspoCRM entity schema enhancements (`ai_resume_summary`, `ats_score`, `docling_markdown`).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_resume_intelligence_ats.js`](tests/test_resume_intelligence_ats.js): 15 unit assertions covering DocType schema, EspoCRM metadata, Docling document conversion, quantitative ATS scoring, prompt architecture, Groq primary, OpenRouter fallback, graceful error handling, Laravel parity, and Blade UI.
+  - Architecture Blueprint: [`docs/RESUME_INTELLIGENCE_DOCLING_GROQ_ATS.md`](docs/RESUME_INTELLIGENCE_DOCLING_GROQ_ATS.md).
+  - Official Submission Report: [`docs/WEEK8_DAY1_SUBMISSION.md`](docs/WEEK8_DAY1_SUBMISSION.md).
+
+### Week 8 Day 2 — Module 6 & 7: Placement Readiness Score + Interview Readiness Score
+
+- **Placement Readiness Score Engine (Module 6):**
+  - Weighted calculation bounded strictly to `[0, 100]` with letter grade (`A`/`B`/`C`/`D`) and improvement recommendations: Project Completion % (`40%`), Assessment Scores (`30%`), CIA Usage Hours normalized against 20h benchmark (`10%`), Documentation Quality (`20%`).
+  - Persisted atomically in MySQL table `intern_readiness_scores` via [`backend/database/readinessRepository.js`](backend/database/readinessRepository.js) using prepared statements and transaction audit logs.
+- **Interview Readiness Score Engine (Module 7):**
+  - Weighted calculation bounded strictly to `[0, 100]` with letter grade (`A`/`B`/`C`/`D`): Viva Scores (`40%`), Code Review Scores (`30%`), Communication Clarity in Demos (`20%`), Git Workflow Quality (`10%`).
+- **Vector-Grounded AI Top 3 Improvement Actions:**
+  - Combines ChromaDB vector benchmark lookup with multi-tier LLM reasoning (**Groq** `llama-3.3-70b-versatile` $\to$ **OpenRouter** `meta-llama/llama-3.3-70b-instruct` $\to$ **Local Deterministic Engine**) generating strictly 3 prioritized actions.
+- **Admin Cohort View + RFC 4180 CSV Export & Student Score Card UI:**
+  - Interactive Express portal [`backend/public/readiness.html`](backend/public/readiness.html) (`/readiness.html`) and Laravel Blade parity [`resources/views/candidate/cia.blade.php`](resources/views/candidate/cia.blade.php) with Admin cohort table, formula-injection-safe CSV download (`/api/cia/readiness/export-csv`), and Student personal score card.
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_readiness_scores.js`](tests/test_readiness_scores.js): 16 unit and integration assertions covering DB schema, repository upserts, weighted math, A/B/C/D grades, CSV injection safety, AI failover, Express routes, and Laravel parity.
+  - Architecture Blueprint: [`docs/PLACEMENT_AND_INTERVIEW_READINESS.md`](docs/PLACEMENT_AND_INTERVIEW_READINESS.md).
+  - Official Submission Report: [`docs/WEEK8_DAY2_SUBMISSION.md`](docs/WEEK8_DAY2_SUBMISSION.md).
+
+### Week 8 Day 3 — Career Intelligence Report: Archetype Map + Employability Score
+
+- **6 Career Archetypes & 10-Trait Scoring Engine:**
+  - Defined `Builder`, `Analyst`, `Leader`, `Innovator`, `Specialist`, and `Generalist` with 10-attribute trait profiles (`0–10`) in [`backend/modules/ai/CareerReportEngine.js`](backend/modules/ai/CareerReportEngine.js).
+  - Maps skill scores, learning style, and project performance to ranked archetype match percentages (`primary_archetype`, `secondary_archetype`).
+- **Composite Readiness & Employability Metrics:**
+  - Calculates **Employability Score** (`40%` skill completeness, `35%` project quality, `25%` assessments), **AI Readiness Score** (`60%` AI tasks, `40%` AI tools), and **Placement Readiness Score** (`0–100`).
+- **Groq Report Generation, `candidate_reports` Persistence & DomPDF Export:**
+  - Persists structured AI narratives and recommendations in `candidate_reports` via [`backend/database/candidateReportRepository.js`](backend/database/candidateReportRepository.js) with Groq primary + OpenRouter fallback.
+  - Exportable as PDF via `barryvdh/laravel-dompdf` ([`resources/views/candidate/report_pdf.blade.php`](resources/views/candidate/report_pdf.blade.php), [`composer.json`](composer.json)) and Express `%PDF-1.4` endpoint (`/api/cia/career/report/:reportId/pdf`), displayed in [`backend/public/career-report.html`](backend/public/career-report.html) and [`resources/views/candidate/cia.blade.php`](resources/views/candidate/cia.blade.php).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_career_intelligence_report.js`](tests/test_career_intelligence_report.js): 8 unit & integration tests covering all 6 archetypes, composite scores, `candidate_reports` DB persistence, AI fallback, PDF generation, and Laravel/DomPDF parity.
+  - Architecture Blueprint: [`docs/CAREER_INTELLIGENCE_REPORT_ARCHITECTURE.md`](docs/CAREER_INTELLIGENCE_REPORT_ARCHITECTURE.md).
+  - Official Submission Report: [`docs/WEEK8_DAY3_SUBMISSION.md`](docs/WEEK8_DAY3_SUBMISSION.md).
+
 ---
 
 ## ⏰ Week 4: Node.js Architecture, Microservices & Smart Automation
 
 ### Week 4 Day 6 — CI/CD with GitHub Actions & Docker Containerisation
+
 - **Multi-Stage Production Docker Architecture (`Dockerfile` & `Dockerfile.python`):**
   - Engineered 2-stage build pipeline: Stage 1 (`builder`) compiles dependencies (`npm install --omit=dev`) and clears cache; Stage 2 (`runner`) copies only runtime assets onto minimal `node:18-alpine` base image.
   - Security hardening: Enforced unprivileged non-root user (`cynarisuser`), `dumb-init` for kernel signal forwarding (`SIGTERM`/`SIGINT`), exposed ports `3000` & `3005`, and added container `HEALTHCHECK` probing `/api/health`.
@@ -125,6 +431,7 @@
   - [`docs/WEEK4_DAY6_SUBMISSION.md`](docs/WEEK4_DAY6_SUBMISSION.md): Submission report with Docker Hub details, Actions status, and answers to 3 Viva Voce questions.
 
 ### Week 4 Day 5 — Technical Documentation, Demo Video, PR Submission & Stateless Auth with JWT
+
 - **Stateless Authentication Architecture & Token Lifecycle:**
   - Implemented stateless authentication using **JSON Web Tokens (JWT)** signed via `HMAC-SHA256` (`jsonwebtoken`) with a 24-hour expiration window, eliminating server-side session persistence.
   - Engineered authentication middleware (`backend/middleware/authMiddleware.js`) strictly parsing `Authorization: Bearer <token>` headers according to RFC 6750.
@@ -144,6 +451,7 @@
   - [`docs/WEEK4_DAY5_SUBMISSION.md`](docs/WEEK4_DAY5_SUBMISSION.md): Submission report with simulated screenshots, demo script, and complete answers to 3 Viva Voce questions.
 
 ### Week 4 Day 4 — Deploy EspoCRM Fork to Production & Connect Node.js to MySQL
+
 - **EspoCRM Production Deployment Stack & Architecture Analysis:**
   - Full evaluation of EspoCRM's 4 architectural layers: `application/Espo/Core/` (kernel & DI container), `application/Espo/Modules/` (module loader), `application/Espo/Core/Api/` (REST controllers), and `application/Espo/ORM/` (`EntityManager` & `Repository`).
   - Multi-container production deployment using Docker Compose (`docker-compose.espocrm.yml`) orchestrating **MySQL 8.0** with healthchecks, **EspoCRM App (Port 8080)**, **EspoCRM Daemon** background cron worker, and **PHPMyAdmin (Port 8081)** with persistent named volumes (`espocrm-mysql-data`, `espocrm-data`).
@@ -160,6 +468,7 @@
   - [`docs/ESPOCRM_PRODUCTION_ARCHITECTURE.md`](docs/ESPOCRM_PRODUCTION_ARCHITECTURE.md): Architectural specification, folder structure breakdown, and MySQL integration guide.
 
 ### Week 4 Day 3 — Debug Sprint: Root Cause 2 Issues + Performance Investigation
+
 - **RESTful API Architecture & Strict Route Parameter Validation:**
   - Root Cause 1 Fix: Corrected route parameter type coercion in `GET /api/applicants/:applicant_id`. Non-integer or malformed parameters (e.g. `"abc"`, `"-5"`, `"1.5"`) previously produced `NaN` and triggered a misleading `404 Not Found`. Implemented `validateApplicantId` middleware returning RFC 9110 compliant `400 Bad Request` with parameter diagnostics.
   - Query String Filtering & Search: Enhanced `GET /api/applicants` with multi-attribute filtering (`?stage=...`), case-insensitive keyword searching (`?search=python`), minimum experience threshold (`?min_exp=3`), and a structured pagination envelope (`total`, `count`, `page`, `totalPages`, `hasNext`, `hasPrev`).
@@ -178,6 +487,7 @@
   - [`docs/REST_API_DEBUG_SPRINT.md`](docs/REST_API_DEBUG_SPRINT.md): Architectural specification and root cause investigation guide.
 
 ### Week 4 Day 2 — Smart Reminders: Frontend UI + User Preference Settings
+
 - **Express Server Architecture & Modular Routing:**
   - Dedicated Express router (`backend/routes/preferencesRouter.js`) mounted on `/api/preferences` for RESTful user preference lifecycles.
   - Custom schema validation middleware (`backend/middleware/preferenceValidator.js`) verifying 24-hour time formats (`HH:mm`), channel configurations, minimum urgency tiers, and enforcing active channel guardrails.
@@ -193,6 +503,7 @@
   - [`docs/SMART_REMINDERS_PREFERENCES_UI.md`](docs/SMART_REMINDERS_PREFERENCES_UI.md): Technical specification and Express routing details.
 
 ### Week 4 Day 1 — Smart Reminders: Automation Rules + AI-Suggested Timing
+
 - **Node.js Core Architecture & Built-in Modules:**
   - Standalone Pure Node.js HTTP Server (`backend/smartReminderServer.js`, Port 3005) built directly with `http.createServer`, handling stream chunking (`req.on('data')`, `req.on('end')`), payload guards, and Event Loop telemetry.
   - Asynchronous non-blocking persistence (`backend/modules/smartReminders/ReminderStore.js`) using `fs.promises` and atomic file write/rename patterns.
@@ -213,6 +524,7 @@
 ## 🚀 Week 3: Project 2 — EspoCRM Architecture, Business Processes & React
 
 ### Week 3 Day 5 — AI Conversation Summarizer: Groq Integration & React Router Client-Side Routing
+
 - **EspoCRM Custom Hook & Service:**
   - `ConversationSummarizerHook.php`: `afterSave` hook on Activity entity triggering when linked to an Account, fetching the 5 most recent interactions.
   - `ConversationSummarizer.php`: Core PHP service with prompt formatting, Groq primary call (`llama-3.3-70b-versatile`), OpenRouter failover (`meta-llama/llama-3.3-70b-instruct`), and deterministic local fallback.
@@ -228,6 +540,7 @@
   - [`docs/WEEK3_FINAL_PR.md`](docs/WEEK3_FINAL_PR.md): End-of-week Capstone Pull Request template.
 
 ### Week 3 Day 4 — Activity Dashboard: SQL Queries + Reporting Engine Extension & React `useEffect` Lifecycle
+
 - **Custom SQL Report & Sargability:** Authored optimized query for "Activities per Account (last 30 days), grouped by type (Call, Meeting, Email)" combining sargable date boundaries (`date_start >= DATE_SUB(NOW(), INTERVAL 30 DAY)`) with non-blocking `UNION ALL` across polymorphic activity tables (`call`, `meeting`, `email`).
 - **EspoCRM Dashlet & Report Metadata Registration:**
   - Dashlet: [`custom/Espo/Custom/Resources/metadata/dashlets/ActivitySummary.json`](custom/Espo/Custom/Resources/metadata/dashlets/ActivitySummary.json).
@@ -239,18 +552,21 @@
 - **Documentation & Viva Guide:** Comprehensive day walkthrough in [`docs/WEEK3_DAY4_SUBMISSION.md`](docs/WEEK3_DAY4_SUBMISSION.md) and SQL specifications in [`docs/ACTIVITY_DASHBOARD_SQL_REPORT.md`](docs/ACTIVITY_DASHBOARD_SQL_REPORT.md).
 
 ### Week 3 Day 3 — Enterprise CRM Architecture: Workflow, Automation & Reporting Engine
+
 - **Workflow Rule Engine (`application/Espo/Core/Workflow/WorkflowManager.php`):** Event interception (`afterCreate`, `afterSave`, `scheduled`), declarative condition evaluations (`equals`, `greaterThanOrEqual`, `in`, `contains`), and polymorphic action dispatchers (`sendEmail`, `createTask`, `updateEntity`, `triggerWebhook`).
 - **Analytical Reporting Engine (`application/Espo/Core/Reporting/ReportEngine.php`):** Multi-dimensional aggregation queries across dimensions with aggregate mathematical measures (`SUM`, `AVG`, `COUNT`, `MAX`, `MIN`).
 - **React Controlled Form Studio (`client/src/components/WorkflowReportingStudio/`):** Controlled form inputs (`value` + `onChange`), dynamic condition array manipulation with `useState`, and conditional rendering of action panels.
 - **Documentation & Viva Guide:** [`docs/WEEK3_DAY3_SUBMISSION.md`](docs/WEEK3_DAY3_SUBMISSION.md) and [`docs/ENTERPRISE_CRM_WORKFLOW_REPORTING.md`](docs/ENTERPRISE_CRM_WORKFLOW_REPORTING.md).
 
 ### Week 3 Day 2 — Business Process Mapping: Lead to Closure + API Inspection & Unidirectional Data Flow
+
 - **Lead-to-Closure Process Mapping:** Complete enterprise lifecycle specification in [`docs/BUSINESS_PROCESS_MAPPING.md`](docs/BUSINESS_PROCESS_MAPPING.md) tracing `Lead` &rarr; `Opportunity` &rarr; `Account` & `Contact` &rarr; `Activity` &rarr; `Closed Won`.
 - **Workflow & Automation Analysis:** Evaluated 3 Workflow rules, 2 BPM process flows with Mermaid BPMN flowchart, and 2 reporting engine configurations.
 - **React Functional Components & Unidirectional Data Flow:** Component hierarchy in [`client/src/components/LeadToClosure/`](client/src/components/LeadToClosure/).
 - **Documentation & Viva Guide:** [`docs/WEEK3_DAY2_SUBMISSION.md`](docs/WEEK3_DAY2_SUBMISSION.md).
 
 ### Week 3 Day 1 — Fork, Clone & Local Setup: EspoCRM & React Virtual DOM
+
 - **EspoCRM Multi-Container Stack:** Docker Compose environment ([`docker-compose.espocrm.yml`](docker-compose.espocrm.yml)) orchestrating **MySQL 8.0**, **EspoCRM App (Port 8080)**, **EspoCRM Daemon**, and **phpMyAdmin (Port 8081)**.
 - **React Virtual DOM Client:** Candidate Portal in [`client/src/components/CandidatePortal.jsx`](client/src/components/CandidatePortal.jsx) and Virtual DOM diffing engine in [`client/src/utils/virtualDomEngine.js`](client/src/utils/virtualDomEngine.js).
 - **Day 1 Submission Guide:** [`docs/WEEK3_DAY1_SUBMISSION.md`](docs/WEEK3_DAY1_SUBMISSION.md).
@@ -271,6 +587,7 @@ An enterprise recruitment tracking platform combining modern Vue 3 reactive comp
 ## 🛠️ How to Run Locally
 
 ### 1. Full Stack Application & Express Server (Week 4)
+
 ```powershell
 cd backend
 npm start
@@ -279,12 +596,14 @@ npm start
 ```
 
 ### 2. Smart Reminders Microservice (Standalone Pure Node.js HTTP)
+
 ```powershell
 node backend/smartReminderServer.js
 # Runs pure Node.js HTTP server on http://localhost:3005
 ```
 
 ### 3. Docker Compose Production Parity (App + MySQL 8.0 + Migrations)
+
 ```powershell
 docker compose up -d --build
 # Starts cynaris-mysql-db, runs cynaris-migration-runner, and starts cynaris-web-app
@@ -293,6 +612,7 @@ docker compose up -d --build
 ```
 
 ### 4. Moodle LMS Docker Environment (Week 5)
+
 ```powershell
 docker compose -f docker-compose.moodle.yml up -d
 # Moodle LMS Web UI: http://localhost:8000
@@ -300,15 +620,47 @@ docker compose -f docker-compose.moodle.yml up -d
 ```
 
 ### 5. EspoCRM Docker Environment (Week 3)
+
 ```powershell
 docker compose -f docker-compose.espocrm.yml up -d
 # EspoCRM UI: http://localhost:8080
 ```
 
 ### 6. Running All Automated Unit Tests
+
 ```powershell
 npm test
-# Runs all 21 unit test suites across Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+# Runs all 35 unit test suites across Career Intelligence Report & Archetypes, Placement & Interview Readiness Scores, Docling + Groq ATS Resume Intelligence, LangGraph Workflow Learning Path Generator, ChromaDB Vector Search Internship Matching, CrewAI Career Recommendation Engine, LlamaIndex + Groq Skill Gap RAG Pipeline, Career Intelligence (CIA Mode) Architecture & Contracts, Moodle Deployment & Capstone Architecture, Moodle Database Performance Audit & Index Optimization, Moodle AI Learning Recommendations (Groq + OpenRouter + 5 Core Tables), Moodle AI Quiz Generation, Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+npm run test:w8d3
+# Runs Week 8 Day 3 Career Intelligence Report & Archetype Map test suite individually
+npm run test:w8d2
+# Runs Week 8 Day 2 Module 6 & 7 Placement & Interview Readiness Score test suite individually
+npm run test:w8d1
+# Runs Week 8 Day 1 Module 5 Docling + Groq ATS Resume Intelligence test suite individually
+npm run test:w7d5
+# Runs Week 7 Day 5 LangGraph Workflow Learning Path Generator test suite individually
+npm run test:w7d4
+# Runs Week 7 Day 4 ChromaDB Vector Search Internship Matching test suite individually
+npm run test:w7d3
+# Runs Week 7 Day 3 CrewAI Career Recommendation Engine test suite individually
+npm run test:w7d2
+# Runs Week 7 Day 2 LlamaIndex + Groq Skill Gap RAG test suite individually
+npm run test:w7d1
+# Runs Week 7 Day 1 Career Intelligence CIA Mode test suite individually
+npm run test:w6d5
+# Runs Week 6 Day 5 Moodle Deployment & Capstone Architecture test suite individually
+npm run moodle:verify
+# Runs Moodle CLI deployment verification & health audit
+npm run test:w6d4
+# Runs Week 6 Day 4 Performance Audit & EXPLAIN Optimization test suite individually
+npm run test:w6d3
+# Runs Week 6 Day 3 AI Learning Recommendations test suite individually
+npm run test:w6d2
+# Runs Week 6 Day 2 AI Quiz Generation & Question Bank test suite individually
+npm run test:w6d1
+# Runs Week 6 Day 1 AI Tutor Integration test suite individually
+npm run test:w5d5
+# Runs Week 5 Day 5 Assessment Engine Study & UI Bug Fixes test suite individually
 npm run test:w5d4
 # Runs Week 5 Day 4 Chart.js Progress Dashboard test suite individually
 npm run test:w5d3

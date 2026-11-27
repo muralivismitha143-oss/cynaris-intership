@@ -1,0 +1,88 @@
+{
+  "version": "1.0.0",
+  "name": "Cynaris Enterprise Skills Taxonomy",
+  "description": "Curated benchmark skills taxonomy covering 50 technical competencies across 5 core engineering domains for Career Intelligence CIA Mode.",
+  "totalSkills": 50,
+  "domains": [
+    {
+      "id": "frontend",
+      "name": "Frontend Engineering",
+      "skills": [
+        { "id": "fe_html5", "name": "HTML5 Semantic Architecture", "level": 5, "domain": "Frontend", "importance": "Critical" },
+        { "id": "fe_css3", "name": "CSS3 Flexbox, Grid & Responsive Design", "level": 4, "domain": "Frontend", "importance": "Important" },
+        { "id": "fe_es6", "name": "Modern JavaScript ES6+ & Event Loop", "level": 5, "domain": "Frontend", "importance": "Critical" },
+        { "id": "fe_react_comp", "name": "React Functional Components & Hooks", "level": 5, "domain": "Frontend", "importance": "Critical" },
+        { "id": "fe_vdom", "name": "React Virtual DOM Diffing & Reconciliation", "level": 4, "domain": "Frontend", "importance": "Important" },
+        { "id": "fe_typescript", "name": "TypeScript Type Safety & Generics", "level": 4, "domain": "Frontend", "importance": "Important" },
+        { "id": "fe_state", "name": "Global State Management (Redux/Zustand)", "level": 4, "domain": "Frontend", "importance": "Important" },
+        { "id": "fe_web_perf", "name": "Web Performance & Core Web Vitals", "level": 4, "domain": "Frontend", "importance": "Important" },
+        { "id": "fe_aria", "name": "W3C ARIA Accessibility Standards", "level": 4, "domain": "Frontend", "importance": "Important" },
+        { "id": "fe_chartjs", "name": "Interactive Data Visualizations (Chart.js)", "level": 3, "domain": "Frontend", "importance": "Nice-to-have" }
+      ]
+    },
+    {
+      "id": "backend",
+      "name": "Backend Engineering",
+      "skills": [
+        { "id": "be_nodejs", "name": "Node.js Asynchronous Runtime & Streams", "level": 5, "domain": "Backend", "importance": "Critical" },
+        { "id": "be_express", "name": "Express.js Modular Routing & Middleware", "level": 5, "domain": "Backend", "importance": "Critical" },
+        { "id": "be_php", "name": "PHP 8 & Object-Oriented Patterns", "level": 4, "domain": "Backend", "importance": "Important" },
+        { "id": "be_frankenstyle", "name": "Moodle Frankenstyle Pluggable Subsystems", "level": 4, "domain": "Backend", "importance": "Important" },
+        { "id": "be_rest", "name": "RESTful API Design & HTTP RFC 9110", "level": 5, "domain": "Backend", "importance": "Critical" },
+        { "id": "be_jwt", "name": "Stateless JWT Authentication & Bcrypt", "level": 5, "domain": "Backend", "importance": "Critical" },
+        { "id": "be_rbac", "name": "Role-Based Access Control (RBAC)", "level": 4, "domain": "Backend", "importance": "Important" },
+        { "id": "be_sys_design", "name": "Distributed System Design & Microservices", "level": 4, "domain": "Backend", "importance": "Critical" },
+        { "id": "be_events", "name": "Event-Driven Architecture (EventEmitter)", "level": 4, "domain": "Backend", "importance": "Important" },
+        { "id": "be_caching", "name": "HTTP Conditional Caching & ETags", "level": 4, "domain": "Backend", "importance": "Important" }
+      ]
+    },
+    {
+      "id": "database",
+      "name": "Database & Storage",
+      "skills": [
+        { "id": "db_mysql", "name": "MySQL 8.0 Relational Schema Modeling", "level": 5, "domain": "Database", "importance": "Critical" },
+        { "id": "db_postgres", "name": "PostgreSQL 14 & Native DBAL Interface", "level": 4, "domain": "Database", "importance": "Important" },
+        { "id": "db_sargability", "name": "Query Sargability & Function Unwrapping", "level": 5, "domain": "Database", "importance": "Critical" },
+        { "id": "db_btree", "name": "Composite B-Tree Index Optimization", "level": 5, "domain": "Database", "importance": "Critical" },
+        { "id": "db_explain", "name": "MySQL EXPLAIN Execution Plan Analysis", "level": 5, "domain": "Database", "importance": "Critical" },
+        { "id": "db_covering", "name": "Covering Indexes (Extra: Using Index)", "level": 4, "domain": "Database", "importance": "Important" },
+        { "id": "db_pooling", "name": "Connection Pooling & Resource Limits", "level": 4, "domain": "Database", "importance": "Important" },
+        { "id": "db_transactions", "name": "ACID Multi-Statement Transactions", "level": 4, "domain": "Database", "importance": "Important" },
+        { "id": "db_redis", "name": "Redis In-Memory Key-Value Caching & TTL", "level": 4, "domain": "Database", "importance": "Important" },
+        { "id": "db_migrations", "name": "Automated Database DDL Migrations", "level": 4, "domain": "Database", "importance": "Important" }
+      ]
+    },
+    {
+      "id": "devops",
+      "name": "Cloud & DevOps",
+      "skills": [
+        { "id": "ops_docker", "name": "Docker Multi-Stage Containerization", "level": 5, "domain": "Cloud & DevOps", "importance": "Critical" },
+        { "id": "ops_compose", "name": "Docker Compose Multi-Container Topology", "level": 5, "domain": "Cloud & DevOps", "importance": "Critical" },
+        { "id": "ops_security", "name": "Container Security & Non-Root Users", "level": 4, "domain": "Cloud & DevOps", "importance": "Important" },
+        { "id": "ops_k8s", "name": "Kubernetes Pod Scheduling & Services", "level": 3, "domain": "Cloud & DevOps", "importance": "Nice-to-have" },
+        { "id": "ops_cicd", "name": "CI/CD Automation (GitHub Actions)", "level": 5, "domain": "Cloud & DevOps", "importance": "Critical" },
+        { "id": "ops_linux", "name": "Linux Shell Scripting & Posix Signals", "level": 4, "domain": "Cloud & DevOps", "importance": "Important" },
+        { "id": "ops_smtp", "name": "MailHog & SMTP Mail Catching Topologies", "level": 3, "domain": "Cloud & DevOps", "importance": "Nice-to-have" },
+        { "id": "ops_cloud", "name": "Cloud Deployment (Railway & Render)", "level": 4, "domain": "Cloud & DevOps", "importance": "Important" },
+        { "id": "ops_health", "name": "Container HEALTHCHECK & Probing", "level": 4, "domain": "Cloud & DevOps", "importance": "Important" },
+        { "id": "ops_logging", "name": "Structured Telemetry & Metric Logging", "level": 4, "domain": "Cloud & DevOps", "importance": "Important" }
+      ]
+    },
+    {
+      "id": "ai_ml",
+      "name": "AI & Machine Learning Engineering",
+      "skills": [
+        { "id": "ai_prompt", "name": "Structured Prompt Engineering & Personas", "level": 5, "domain": "AI & ML", "importance": "Critical" },
+        { "id": "ai_groq", "name": "Groq LPU Hardware Acceleration (<350ms)", "level": 5, "domain": "AI & ML", "importance": "Critical" },
+        { "id": "ai_openrouter", "name": "OpenRouter Cascading Failover Handling", "level": 5, "domain": "AI & ML", "importance": "Critical" },
+        { "id": "ai_llamaindex", "name": "LlamaIndex Document Ingestion & RAG", "level": 5, "domain": "AI & ML", "importance": "Critical" },
+        { "id": "ai_chromadb", "name": "ChromaDB Vector Store & Namespacing", "level": 4, "domain": "AI & ML", "importance": "Critical" },
+        { "id": "ai_cosine", "name": "Cosine Similarity Semantic Search", "level": 4, "domain": "AI & ML", "importance": "Important" },
+        { "id": "ai_json", "name": "Strict JSON Output Invariant Contracts", "level": 5, "domain": "AI & ML", "importance": "Critical" },
+        { "id": "ai_distractor", "name": "Psychometric Distractor Question Design", "level": 4, "domain": "AI & ML", "importance": "Important" },
+        { "id": "ai_socratic", "name": "Socratic AI Tutoring & Adaptive Guidance", "level": 4, "domain": "AI & ML", "importance": "Important" },
+        { "id": "ai_fallback", "name": "Deterministic Fallback for Air-Gapped CI", "level": 5, "domain": "AI & ML", "importance": "Critical" }
+      ]
+    }
+  ]
+}

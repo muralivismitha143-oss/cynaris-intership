@@ -1168,3 +1168,870 @@
 
 
 
+
+---
+
+# Week 5 Day 5 — Assessment Engine Study + UI Bug Fix + PR
+
+**Date:** November 7, 2026  
+**Lesson:** Week 5 Day 5 — Assessment Engine Study + UI Bug Fix + PR  
+**Branch:** `feat/cynaris-w5d5-murali`  
+
+---
+
+## Interaction 1: CIA → QA Engineer Mode
+
+### Prompt / Query
+> *"I am auditing the Moodle assessment workflow (`moodle/mod/quiz/view.php`) and the telemetry dashboard (`blocks/cynaris_stats/block_cynaris_stats.php`). We need to identify, reproduce, and root-cause 3 distinct UI/UX and architectural bugs: (1) an assessment quiz view issue regarding mobile viewport, parameter handling, and attempt history; (2) a dashboard layout/visual issue with Chart.js canvas overflow, label collisions, and skeleton loading; and (3) a dynamic telemetry concurrency race condition on the refresh button with accessibility gaps. What are the concrete failure modes, reproduction steps, and root cause hypotheses for these issues?"*
+
+### CIA QA Engineer Review & Bug Reproduction Analysis
+
+1. **Issue #101 Hypothesis (Assessment Quiz View - `mod/quiz/view.php`):**
+   - **Failure Mode A (Mobile Viewport Defect):** When rendering standalone activity PHP templates outside Moodle's full `$OUTPUT->header()` theme pipeline, omitting `<meta name="viewport" content="width=device-width, initial-scale=1.0">` causes mobile browsers (WebKit/Blink) to assume a desktop layout width of 980px. Touch targets shrink below WCAG minimums (48x48px), forcing pinch-and-zoom.
+   - **Failure Mode B (Parameter Injection & Type Safety):** Directly reading `$_GET['id']` without type coercion or filter validation opens the script to PHP notices, unhandled type mismatches, or SQL injection vectors if passed to raw queries.
+   - **Failure Mode C (Static Attempt Feedback):** If a student has already completed the assessment, displaying a static "Start Timed Attempt" button without showing past attempt grades (`candidateAttempt`) creates confusion on whether their submission was registered.
+
+2. **Issue #102 Hypothesis (Progress Dashboard Layout - `block_cynaris_stats.php`):**
+   - **Failure Mode A (Chart.js Axis Collision):** Chart.js default tick options on categorical x-axes attempt to draw all labels. In narrow sidebar blocks ($< 280\text{px}$), labels rotate to 50 degrees and collide with each other or truncate off the canvas edges unless `autoSkip: true`, `maxRotation: 40`, and smaller fonts (`size: 10`) are set.
+   - **Failure Mode B (Table Cell Overflow):** Standard tables with `table-layout: auto` expand horizontally to fit candidate names. Long names like "Ananya Deshmukh" cause horizontal layout breakage unless `table-layout: fixed` and `text-overflow: ellipsis` are enforced.
+   - **Failure Mode C (Cumulative Layout Shift):** Asynchronous fetching without an initial skeleton placeholder induces a jarring visual layout shift when the canvas injects into the DOM.
+
+3. **Issue #103 Hypothesis (Dynamic Telemetry Refresh Concurrency & A11y):**
+   - **Failure Mode A (Asynchronous Race Condition):** Rapid clicks on the "Refresh Telemetry" button invoke multiple concurrent `fetch()` promises. Since network latencies vary, responses resolve out-of-order, causing erratic canvas destruction and re-rendering.
+   - **Failure Mode B (Button Lock Defect):** Lack of a visual `disabled` state allows continuous user input while a network transaction is pending.
+   - **Failure Mode C (Screen Reader Accessibility):** Dynamic badge updates ("Live: Synced" to "Syncing...") without W3C ARIA live regions (`role="status"`, `aria-live="polite"`, `aria-atomic="true"`) remain invisible to assistive screen readers.
+
+### Action Taken
+- Documented the reproduction workflows in [`docs/MOODLE_ASSESSMENT_UI_BUG_REPORT.md`](../docs/MOODLE_ASSESSMENT_UI_BUG_REPORT.md).
+- Formulated concrete test specifications to verify each bug fix.
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review the code changes for fixing Issues #101, #102, and #103 across `moodle/mod/quiz/view.php`, `blocks/cynaris_stats/block_cynaris_stats.php`, and `backend/modules/moodle/MoodleService.js`. Specifically compare your proposed fix implementations against the actual production requirements, pointing out where your initial suggestions were accurate and where they needed refinement."*
+
+### CIA Code Mode Audit & CIA Suggestion vs. Actual Fix Comparison
+
+| Issue | Code Inspected | CIA Initial Suggestion | Actual Production Fix Implemented | Evaluation (Where CIA was Right vs Refinement Needed) |
+|---|---|---|---|---|
+| **#101** | `moodle/mod/quiz/view.php` | Add standard `<meta name="viewport">` and cast `(int)$_GET['id']`. | Used `filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT)` with fallback to default ID `1`, integrated dynamic attempt lookup via `$moodleService->getCandidateQuizAttempt()`, and rendered previous attempt score with contextual button text ("Retake Assessment" vs "Start Timed Attempt") and `aria-label`. | **Refinement:** CIA's `(int)` cast sanitized types, but `filter_input` is more secure and idiomatic in modern PHP. Furthermore, CIA initially overlooked rendering previous attempt feedback banners, which was essential for candidate UX. |
+| **#102** | `block_cynaris_stats.php` | Reduce canvas height and set `responsive: true`. | Added `scales.x.ticks` options (`autoSkip: true, maxRotation: 40, font: { size: 10 }`), wrapped candidate grade table in `table-layout: fixed; width: 100%;` with `text-overflow: ellipsis;` and column widths (`58%` and `42%`), and implemented `#cynaris-chart-skeleton` shimmer animation with `cynarisPulse`. | **Accurate & Expanded:** CIA accurately diagnosed Chart.js label collision. The actual fix expanded on this by adding the CSS skeleton shimmer and fixed table typography. |
+| **#103** | `block_cynaris_stats.php` | Add `setTimeout` debounce function on button click. | Implemented a boolean mutex lock `let isRefreshing = false;` with immediate return if locked (`if (isRefreshing) return;`), disabled the button (`refreshBtn.disabled = true; refreshBtn.style.opacity = '0.6'`), added W3C ARIA live region attributes (`role="status"`, `aria-live="polite"`, `aria-atomic="true"`), and guaranteed state unlocking inside a `finally {}` block. | **Refinement:** CIA suggested a timer debounce (`setTimeout`). However, in network I/O, timer debounce does not prevent race conditions if network latency exceeds the debounce delay. A boolean mutex lock combined with button disabling and guaranteed release in `finally` is architecturally superior and robust against network latency fluctuations. |
+
+### Action Taken
+- Applied refined fixes directly to `moodle/mod/quiz/view.php`, `blocks/cynaris_stats/block_cynaris_stats.php`, `moodle/blocks/cynaris_stats/block_cynaris_stats.php`, and `backend/modules/moodle/MoodleService.js`.
+- Created dedicated test suite [`tests/test_moodle_ui_bug_fixes.js`](../tests/test_moodle_ui_bug_fixes.js) with 11 automated assertions.
+- Verified 100% pass rate across all 22 test suites via `npm test`.
+
+
+---
+
+# Week 6 Day 1 — AI Tutor Integration: Groq Primary, OpenRouter Fallback
+
+**Date:** November 19, 2026  
+**Lesson:** Week 6 Day 1 — AI Tutor Integration — Groq Primary, OpenRouter Fallback  
+**Branch:** `feat/cynaris-w6d1-murali`  
+
+---
+
+## Interaction 1: CIA → AI Engineer Mode
+
+### Prompt / Query
+> *"I am integrating an AI Tutor into our Moodle LMS and Cynaris Training Platform. The requirements are: (1) primary LLM inference using Groq (`llama-3.3-70b-versatile`); (2) automated failover to OpenRouter (`meta-llama/llama-3.3-70b-instruct`) on rate limits (429), timeouts, or service downtime; (3) graceful local deterministic fallback for zero downtime; (4) candidate context injection (student name, course code, score, topic, quiz); and (5) Socratic pedagogical prompting that guides interns without trivially giving away exam answers. What is the optimal system and user prompt design to enforce structured JSON output and prevent hallucinations?"*
+
+### CIA AI Engineer Mode Review & Guidance
+
+1. **Persona & Pedagogical Role Definition:**
+   - Establish the AI's identity as a **Senior Staff Software Engineer and Master Technical Educator**.
+   - Explicitly instruct the model to use the **Socratic method**: emphasize foundational engineering principles, execution phases, and common developer pitfalls rather than merely outputting raw answers.
+
+2. **Grounded Context Injection:**
+   - Inject the student's operational context dynamically into the prompt:
+     - `Student Name`: Personalizes the response.
+     - `Course Code & Name`: Anchors the curriculum domain (e.g. `CYN-FS-101 Full Stack Engineering`).
+     - `Assessment Score`: Calibrates technical depth (e.g., beginner vs advanced).
+     - `Quiz Context`: Grounds the explanation in the specific assessment topic.
+   - Enforce anti-hallucination guardrails: *"Grounded strictly in the Cynaris training curriculum (Node.js ES6+, React Hooks, MySQL prepared statements, Moodle DBAL)."*
+
+3. **Strict JSON Schema Output Contract:**
+   - Mandate JSON with exact semantic keys:
+     - `conceptExplanation`: Crisp, authoritative definition in 2 to 3 sentences.
+     - `stepByStepBreakdown`: An array of exactly 3 numbered logical execution phases.
+     - `codeExample`: A clean, executable snippet demonstrating the concept.
+     - `quizHint`: A targeted Socratic hint facilitating independent problem-solving.
+     - `recommendedAction`: Concrete follow-up practice step.
+   - Set `response_format: { type: "json_object" }` on Groq and include markdown stripping logic for open-weights models on OpenRouter.
+
+### Action Taken
+- Implemented `buildPrompt()` in [`backend/modules/ai/AiTutorService.js`](../backend/modules/ai/AiTutorService.js) and [`moodle/local/cynaris_ai_tutor/AiTutor.php`](../moodle/local/cynaris_ai_tutor/AiTutor.php).
+- Documented prompt design, constraints, and JSON schema directly in code comments.
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review my AI Tutor implementation in `AiTutorService.js` and `moodleRouter.js`. What edge cases and error handling gaps could lead to service crashes or degraded candidate experience? How should timeouts, HTTP 429s, network disconnects, and fallback logging be structured?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Failure Scenario | Risk / Defect | Recommended Architectural Safeguard | Implemented in Cynaris |
+|---|---|---|---|
+| **Upstream Network Latency** | Groq or OpenRouter hanging indefinitely, locking the Node.js event loop or HTTP response. | Wrap external fetch in `AbortController` with explicit timeout (e.g., 6000ms). | Implemented `AbortController` with `setTimeout(() => controller.abort(), this.timeoutMs)` in both `callGroq` and `callOpenRouter`. |
+| **HTTP 429 / Rate Limit** | Groq quota exhausted during high-concurrency intern evaluations. | Catch non-200 responses, inspect status code, log telemetry, and immediately trigger secondary provider. | Evaluates `!response.ok`, extracts error message, logs `fallbackReason`, and executes `callOpenRouter()`. |
+| **Markdown Fences in JSON** | Open-source LLMs returning ```json ... ``` code blocks causing `JSON.parse` syntax errors. | Clean output using regex before parsing. | Implemented `cleanAndParseJson()` stripping backtick fences before JSON deserialization. |
+| **Air-Gapped / Dual Outage** | Both Groq and OpenRouter offline, returning 500 error to student. | Provide deterministic curriculum engine so the UI never crashes and always returns valid educational data. | Implemented `localDeterministicFallback()` matching keywords (event loop, Chart.js, SQL, Moodle). |
+| **Screen Reader Inaccessibility** | Dynamic AI responses appearing on screen without assistive notification. | Add W3C ARIA live regions to tutor status badges. | Added `role="status"` and `aria-live="polite"` on `#cynaris-tutor-status-badge`. |
+
+### Action Taken
+- Applied timeout aborts, status code assertions, markdown-stripping JSON parsing, and deterministic curriculum fallbacks.
+- Verified all fallback scenarios via [`tests/test_moodle_ai_tutor.js`](../tests/test_moodle_ai_tutor.js).
+- Confirmed 100% pass rate across all 23 test suites via `npm test`.
+
+---
+
+# Week 6 Day 2: AI Quiz Generation — MCQs from Course Content to Question Bank
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w6d2-murali`  
+**Date:** November 19, 2026  
+**Lesson:** Week 6 Day 2 — AI Quiz Generation — MCQs from Course Content to Question Bank  
+
+---
+
+## Interaction 1: CIA → AI Engineer Mode
+
+### Prompt / Query
+> *"I am designing an AI-powered Multiple Choice Question (MCQ) generation engine for our Moodle LMS. The engine needs to: (1) fetch course metadata (name, summary, syllabus); (2) generate {n} technical MCQs using Groq (`llama-3.3-70b-versatile`) as primary LLM and OpenRouter (`meta-llama/llama-3.3-70b-instruct`) as secondary fallback; (3) enforce a strict 7-key JSON structure per question; (4) create plausible, educationally valuable distractors rather than obvious wrong answers; and (5) import questions into Moodle's Question Bank with correct fraction weighting. What is the optimal prompt structure and validation strategy to prevent malformed responses and ensure high psychometric quality?"*
+
+### CIA AI Engineer Mode Review & Guidance
+
+1. **Psychometric Persona & Quality Benchmarks:**
+   - Define the system persona as a **Senior Lead Technical Educator and Psychometrics Assessment Specialist**.
+   - Direct the LLM away from simple memorization questions (e.g. *"What does SQL stand for?"*) toward **scenario analysis, bug spotting, and conceptual execution tracing** (e.g. event loop phases, React render cycles, or database index usage).
+
+2. **Distractor Engineering:**
+   - Explicitly instruct the model that distractors must represent **plausible, real-world misconceptions held by junior developers** (e.g., believing that `setState` synchronously mutates state, or that microtasks run after `setTimeout`). This significantly increases the diagnostic value of the quiz.
+
+3. **Schema Invariant Contract:**
+   - Prescribe an exact 7-field JSON object structure:
+     - `question`: Clear, self-contained technical problem statement.
+     - `option_a`, `option_b`, `option_c`, `option_d`: Exactly four mutually exclusive options.
+     - `correct_answer`: Exactly one uppercase letter (`'A'`, `'B'`, `'C'`, or `'D'`).
+     - `explanation`: Pedagogical explanation of why the designated answer is correct and why the distractors fail.
+   - Command the model to return **only raw JSON** with no markdown fences, headers, or conversational preamble.
+
+4. **Multi-Stage Sanitization & Validation:**
+   - Never pass raw LLM output directly into database insertion routines.
+   - Run a two-stage parsing pipeline:
+     1. Regex sanitizer: strip markdown codeblock wrappers (` ```json ... ``` `).
+     2. Strict validator: assert all 7 required keys exist, options are non-empty strings, and `correct_answer` is strictly in `['A', 'B', 'C', 'D']`.
+
+### Action Taken
+- Implemented `buildQuizPrompt()` and `validateQuestionStructure()` in [`backend/modules/ai/AiQuizGeneratorService.js`](../backend/modules/ai/AiQuizGeneratorService.js).
+- Created equivalent PHP validation routines in [`moodle/mod/quiz/locallib.php`](../moodle/mod/quiz/locallib.php).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"How should Moodle's Question Bank API be architected to decouple questions from quizzes? How do fractional weights in `mdl_question_answers` work, and how should programmatic quiz creation map question bank items to quiz slots? What edge cases could occur during multi-provider LLM failover?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Failure / Architecture Domain | Technical Risk | Recommended Implementation | Cynaris Platform Implementation |
+|---|---|---|---|
+| **Question-to-Quiz Coupling** | Directly inserting questions into a quiz makes them unusable in future assessments or adaptive tests. | Decouple persistence: save questions to `mdl_question` and Question Bank categories (`mdl_question_categories`). Map to quizzes via `mdl_quiz_slots`. | Implemented `importToQuestionBank()` returning question IDs, then using `createQuizFromQuestions()` to map slot numbers. |
+| **Fraction Grading Weights** | Incorrect fraction values in `mdl_question_answers` break Moodle's grading engine. | For single-choice MCQs, designate `fraction = 1.0` (100%) for `correct_answer` and `fraction = 0.0` (0%) for all distractors. | Implemented fractional mapping across options A, B, C, D in both Node.js service and `moodle/mod/quiz/locallib.php`. |
+| **LLM Provider Outage** | Groq experiencing service downtime or HTTP 429 quota exhaustion. | Seamlessly catch error, record telemetry, and dispatch request to OpenRouter. | Implemented automated failover in `generateQuizQuestions()` logging `fallbackUsed: true` and `fallbackReason`. |
+| **Dual Provider / Offline Mode** | Both Groq and OpenRouter offline (e.g. during offline grading or air-gapped CI). | Provide local deterministic curriculum fallback that returns valid pre-configured MCQs without throwing 500. | Implemented `localDeterministicFallback()` with course-specific questions for courses 101, 102, and 103. |
+| **Instructor Review Step** | Storing AI-generated questions directly without human verification could propagate errors. | Stage generated questions in an interactive preview deck in the UI before committing to the Question Bank. | Added `#cynaris-quizgen-preview` card deck in `moodle/mod/quiz/view.php` with one-click Question Bank import. |
+| **Screen Reader Accessibility** | Dynamic question generation updates not announced to visually impaired instructors. | Use W3C ARIA live region attributes on status indicators. | Added `role="status"` and `aria-live="polite"` to `#cynaris-quizgen-status`. |
+
+### Action Taken
+- Decoupled question import (`/api/moodle/quiz/import-to-bank`) from quiz creation (`/api/moodle/quiz/create`).
+- Added fractional weighting (`fraction: 1.0` vs `0.0`) in `mdl_question_answers`.
+- Implemented three-tier failover (Groq -> OpenRouter -> Local Deterministic Fallback).
+- Verified all edge cases via [`tests/test_moodle_ai_quiz_generation.js`](../tests/test_moodle_ai_quiz_generation.js).
+- Confirmed 100% pass rate across all 24 test suites via `npm test`.
+
+---
+
+# Week 6 Day 3: AI Learning Recommendations from Grade + Completion Data
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w6d3-murali`  
+**Date:** November 19, 2026  
+**Lesson:** Week 6 Day 3 — AI Learning Recommendations from Grade + Completion Data  
+
+---
+
+## Interaction 1: CIA → AI Engineer Mode
+
+### Prompt / Query
+> *"I am designing an AI Learning Recommendation capability for our Moodle LMS integration. The system aggregates student assessment scores (`mdl_grade_grades`), course completion records (`mdl_course_completions`), course metadata (`mdl_course`), and user details (`mdl_user`). I need to use Groq (`llama-3.3-70b-versatile`) as primary LLM and OpenRouter (`meta-llama/llama-3.3-70b-instruct`) as secondary failover. What is the optimal prompt structure and pedagogical rules to synthesize strengths, growth areas, prioritized next actions, and candidate performance tiers without hallucination?"*
+
+### CIA AI Engineer Mode Review & Guidance
+
+1. **Pedagogical Persona & Calibration:**
+   - Establish the persona as a **Lead AI Learning Path Architect and Senior Staff Mentor**.
+   - Embed clear, quantitative scoring rules:
+     - Grade $\ge 80\%$: Recognized as **technical mastery / key strength**.
+     - Grade $60-79\%$: **Proficient** but needs targeted refinement.
+     - Grade $< 60\%$ or incomplete module: **Critical growth area / knowledge gap**.
+
+2. **Actionable Remediation Structuring:**
+   - Instead of generic advice (e.g. *"study more"*), require the model to produce **prioritized actions** (`priority: 1, 2, 3`) with specific `targetCourse` and realistic `estimatedHours` (e.g., 2 to 4 hours).
+   - Require a concrete target milestone with an estimated completion timeframe in days.
+
+3. **Strict JSON Schema Contract:**
+   - Define a rigid schema:
+     - `studentSummary`: object with `tier` ('Advanced', 'Proficient', 'Needs Support'), `averageGrade`, `completionRate`, and `analysis`.
+     - `strengths`: array of `{ topic, evidence }`.
+     - `growthAreas`: array of `{ topic, evidence }`.
+     - `recommendedActions`: array of `{ priority, action, targetCourse, estimatedHours }`.
+     - `nextMilestone`: object with `goal`, `targetDateDays`, `readinessScore`.
+     - `pedagogicalEncouragement`: personalized motivational message.
+   - Set `response_format: { type: "json_object" }` for Groq, and apply regex sanitization to strip markdown codeblocks.
+
+### Action Taken
+- Implemented `buildRecommendationPrompt()` and `validateRecommendationStructure()` in [`backend/modules/ai/AiRecommendationService.js`](../backend/modules/ai/AiRecommendationService.js).
+- Added equivalent PHP validation methods in [`moodle/local/cynaris_recommendations/RecommendationService.php`](../moodle/local/cynaris_recommendations/RecommendationService.php).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review my AI Recommendation engine code in `AiRecommendationService.js`, `moodleRouter.js`, and `block_cynaris_stats.php`. What error handling gaps, latency bottlenecks, or failover vulnerabilities should be safeguarded against?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Failure Scenario | Risk / Failure Mode | Recommended Architectural Safeguard | Implemented in Cynaris |
+|---|---|---|---|
+| **Upstream Provider Timeout** | Groq or OpenRouter hanging under high global token generation load. | Enforce explicit `AbortController` timeout (e.g. 6000ms). | Implemented `timeout: this.timeoutMs` with request abort handler in `_postJson()`. |
+| **Quota Exhaustion (HTTP 429)** | High-concurrency internship cohort exhausting Groq TPM/RPM limits. | Automatically catch non-200 responses, log fallback reason, and route to OpenRouter. | Implemented automated failover in `generateRecommendations()`. |
+| **Dual Provider / Air-Gapped Failure** | Both Groq and OpenRouter unavailable during network disconnects or CI testing. | Implement rule-based deterministic fallback calculating real grade metrics in memory so the system never returns 500. | Implemented `localDeterministicFallback()` calculating exact averages and course completions. |
+| **Malformed LLM Output** | Open-source models wrapping JSON in markdown backticks or conversational text. | Sanitize input using regex extracting outer `{ ... }` bounds. | Implemented `cleanAndParseJson()` stripping backtick codeblocks. |
+| **Non-Existent Student Lookup** | Passing an invalid or non-existent student ID in REST routes. | Return clean HTTP 404 with descriptive error message rather than unhandled exception. | Added `if (!profile) return res.status(404).json(...)` in `/users/:id/recommendations`. |
+| **Screen Reader Accessibility** | Dynamic recommendation generation updating without alerting visually impaired users. | Add W3C ARIA live region attributes to recommendation result container. | Added `role="status"` and `aria-live="polite"` on `#cynaris-rec-result`. |
+
+### Action Taken
+- Added timeout aborts, multi-tier failover, deterministic rule-based calculation, and 404 guards.
+- Verified all scenarios via [`tests/test_moodle_ai_recommendations.js`](../tests/test_moodle_ai_recommendations.js).
+- Confirmed 100% pass rate across all 25 test suites via `npm test`.
+
+---
+
+# Week 6 Day 4: Performance Audit — EXPLAIN Queries + Index Optimisation
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w6d4-murali`  
+**Date:** November 20, 2026  
+**Lesson:** Week 6 Day 4 — Performance Audit — EXPLAIN Queries + Index Optimisation  
+
+---
+
+## Interaction 1: CIA → AI Engineer Mode
+
+### Prompt / Query
+> *"I am building an automated Database Performance Auditor and Index Optimization Advisor for our Moodle LMS integration. The audit analyzes core queries across `mdl_log`, `mdl_grade_grades`, and `mdl_course_completions`. I need to use Groq (`llama-3.3-70b-versatile`) as primary LLM and OpenRouter (`meta-llama/llama-3.3-70b-instruct`) as secondary failover. How should I structure the prompt to analyze MySQL `EXPLAIN` JSON execution plans, identify non-sargable predicates, recommend composite B-Tree indexes, and quantify performance improvements without hallucinating table schemas?"*
+
+### CIA AI Engineer Mode Review & Guidance
+
+1. **System Prompt & Role Grounding:**
+   - Establish the persona as a **Principal Database Reliability Engineer and High-Performance MySQL Architect**.
+   - Ground the model strictly in MySQL InnoDB storage engine behavior, B-Tree index lookup mechanics, and standard execution plan metrics (`type: ALL`, `type: ref`, `type: range`, `Extra: Using filesort`, `Extra: Using temporary`, `Extra: Using index`).
+
+2. **Explicit Performance Rules & Sargability Enforcement:**
+   - **Rule 1 (Function wrapping in WHERE):** Wrapping indexed columns in functions (e.g. `DATE(FROM_UNIXTIME(l.time)) >= ...`) destroys index sargability, forcing full table scans across millions of rows. Rewriting to bare column comparisons against evaluated constants (e.g. `l.time >= UNIX_TIMESTAMP(CURDATE() - INTERVAL 7 DAY)`) enables range/ref index scans.
+   - **Rule 2 (Covering Indexes):** When an aggregate query queries `itemid`, `userid`, and `finalgrade` on `mdl_grade_grades`, creating a composite B-Tree index `(itemid, userid, finalgrade)` satisfies the query entirely within the leaf pages (`Extra: Using index`), eliminating secondary lookups to clustered primary index pages.
+   - **Rule 3 (Column Cardinality & Ordering):** Place high-cardinality equality filter columns first in composite index definitions (e.g., `(userid, action, time)` on `mdl_log`).
+
+3. **Strict Structured JSON Schema Contract:**
+   - Define a rigid JSON schema:
+     - `analysis`: high-level summary of execution bottlenecks.
+     - `severity`: 'CRITICAL', 'HIGH', 'MEDIUM', or 'LOW'.
+     - `issuesIdentified`: array of strings detailing specific plan defects (e.g., full table scan, missing index, filesort).
+     - `optimizations`: array of `{ originalQuery, optimizedQuery, explanation, speedupEstimate }`.
+     - `recommendedIndexes`: array of `{ table, indexName, columns, indexType, ddl, reason }`.
+     - `estimatedLatencyReduction`: estimated percentage reduction in query latency.
+   - Set `response_format: { type: "json_object" }` for Groq, and apply codeblock stripping sanitizers for OpenRouter.
+
+### Action Taken
+- Implemented `buildAuditPrompt()` and `cleanAndParseJson()` in [`backend/modules/ai/AiQueryOptimizerService.js`](../backend/modules/ai/AiQueryOptimizerService.js).
+- Added equivalent PHP Frankenstyle implementation in [`moodle/local/cynaris_perf/QueryAuditService.php`](../moodle/local/cynaris_perf/QueryAuditService.php).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review my AI Query Optimizer implementation across `AiQueryOptimizerService.js`, `moodleRouter.js`, and `schema_optimizations.sql`. What edge cases, timeout conditions, covering index mechanics, and dual-provider failover diagnostics must be hardened for enterprise production reliability?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Failure Scenario | Risk / Failure Mode | Recommended Architectural Safeguard | Implemented in Cynaris |
+|---|---|---|---|
+| **Upstream Provider Outage / Rate Limit** | Groq API returning HTTP 429 or 503 during peak grading/analytics periods. | Automatic cascading fallback to OpenRouter, with detailed diagnostic logging. | Implemented cascading failover in `auditQuery()`: Groq -> OpenRouter -> Local Rule Engine. |
+| **Complete Network Isolation / Air-Gapped CI** | Both cloud LLM endpoints unreachable during offline CI test runs. | Local deterministic rule engine detecting non-sargable functions, missing indexes, and recommending pre-computed DDL. | Implemented `localDeterministicAudit()` with regex pattern matching for `mdl_log`, `mdl_grade_grades`, and `mdl_course_completions`. |
+| **Request Timeout** | AI API hanging or stalling, causing client requests to block indefinitely. | Strict `AbortController` timeout (e.g. 7000ms) with clean abort signal cleanup. | Implemented `timeout: this.timeoutMs` with abort handler in `_postJson()`. |
+| **Malformed JSON Payload** | Open-source LLMs appending conversational text or backtick fences (` ```json `). | Regex-based JSON sanitization extracting outer bracket pairs before calling `JSON.parse()`. | Added `cleanAndParseJson()` stripping backtick fences and isolating root JSON structures. |
+| **Non-Sargable WHERE Predicate** | Wrapping datetime/timestamp columns in MySQL functions (`DATE(...)`) preventing index utilization. | Recommend rewritten SQL with bare column timestamp range operators and composite indexes. | Created `schema_optimizations.sql` defining composite indexes and documented query rewrites. |
+| **Missing Parameter Validation** | Missing `query` in POST `/api/moodle/perf/explain` or `/api/moodle/perf/audit`. | Pre-flight validation returning HTTP 400 with descriptive error payload. | Added parameter validation checks in `backend/routes/moodleRouter.js`. |
+| **Screen Reader Accessibility** | Dynamic UI performance audit updates not broadcast to screen readers. | Add W3C ARIA live region attributes to audit results container. | Added `role="status"` and `aria-live="polite"` to `#cynaris-perf-result`. |
+
+### Action Taken
+- Implemented three-tier failover (Groq -> OpenRouter -> Local Deterministic Rule Engine).
+- Defined composite B-Tree indexes and EXPLAIN benchmark records in [`moodle/database/schema_optimizations.sql`](../moodle/database/schema_optimizations.sql).
+- Added pre-flight input validation, timeout aborts, and ARIA live regions in `moodleRouter.js` and `block_cynaris_stats.php`.
+- Verified all scenarios via [`tests/test_moodle_perf_audit.js`](../tests/test_moodle_perf_audit.js).
+- Confirmed 100% pass rate across all 26 test suites via `npm test`.
+
+---
+
+# Week 6 Day 5: Deploy Moodle Fork + Full Documentation + Demo Video
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w6d5-murali`  
+**Date:** November 20, 2026  
+**Lesson:** Week 6 Day 5 — Deploy Moodle Fork + Full Documentation + Demo Video  
+
+---
+
+## Interaction 1: CIA → Full Stack Mentor Mode
+
+### Prompt / Query
+> *"Explain the architecture of Moodle and how I should approach understanding it in one day. What are the key architectural decisions, top-level directory roles, and data flow patterns I must master for an enterprise LMS deployment?"*
+
+### CIA Full Stack Mentor Mode Review & Guidance
+
+1. **The 3 Foundational Pillars of Moodle Architecture:**
+   - **Pillar 1: Database Abstraction Layer (`$DB` / `moodle_database`):**
+     - Moodle completely divorces business logic from underlying RDBMS engines (PostgreSQL, MySQL, MariaDB, Oracle).
+     - Every data access must use parameterized methods (`$DB->get_record()`, `$DB->get_records_sql()`). This guarantees 100% immunity against SQL injection and allows seamless switching from MySQL to PostgreSQL in Docker without code changes.
+   - **Pillar 2: Frankenstyle Pluggable Subsystem Architecture:**
+     - Moodle organizes features into 40+ plugin subsystems (`blocks/`, `mod/`, `local/`, `auth/`, `enrol/`, `theme/`).
+     - Every plugin must follow the strict `[type]_[name]` naming convention (e.g. `block_cynaris_stats`).
+     - Each plugin is an autonomous component with its own database schema (`db/install.xml`), capabilities (`db/access.php`), language bundles (`lang/en/`), and autoloaded classes (`classes/`).
+   - **Pillar 3: Decoupled Security Dataroot Architecture (`$CFG->dataroot`):**
+     - User uploaded files, resumes, and session data are stored strictly outside the web document root (`/var/www/moodledata` vs `/var/www/html`).
+     - Files are never directly served via public HTTP URLs; they must pass through `pluginfile.php` token verification. This completely neutralizes Remote Code Execution (RCE) attacks from malicious file uploads.
+
+2. **One-Day Fast-Track Exploration Strategy:**
+   - **Morning (Infrastructure & Config):** Understand `config.php`, `docker-compose.moodle.yml`, and the 5 core tables (`mdl_course`, `mdl_grade_grades`, `mdl_course_completions`, `mdl_user`, `mdl_log`).
+   - **Afternoon (Plugins & UI):** Explore `mod/quiz/` for assessment flows and `blocks/cynaris_stats/` for reporting widgets and custom dashboard integrations.
+   - **Evening (Enterprise AI Bridge):** Review how external Node.js/Express microservices interface with Moodle via REST endpoints and dual LLM failover.
+
+### Action Taken
+- Configured multi-container Docker topology in [`docker-compose.moodle.yml`](../docker-compose.moodle.yml) and dynamic environment loading in [`moodle/config.php`](../moodle/config.php).
+- Documented 3 key architectural decisions in [`docs/MOODLE_DEPLOYMENT_AND_CAPSTONE.md`](../docs/MOODLE_DEPLOYMENT_AND_CAPSTONE.md).
+
+---
+
+## Interaction 2: CIA → Code Mode (with Monaco Editor)
+
+### Prompt / Query
+> *"What does `moodle/config.php` and `moodle/index.php` do, and what should I look for in terms of security hardening, credential isolation, and error-free frontpage rendering in a production-ready Moodle fork?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Layer | Component Inspected | Identified Risk / Best Practice | Architectural Mitigation Applied |
+|---|---|---|---|
+| **Credential Hardcoding** | `moodle/config.php` | Storing database passwords in plain text in git commits. | Used `getenv('MOODLE_DOCKER_DB_PASSWORD')` with safe environment fallback defaults. |
+| **Dataroot Web Access** | `moodle/config.php` | Locating `$CFG->dataroot` within or accessible to web document root. | Configured `$CFG->dataroot = '/var/www/moodledata'` on an independent Docker named volume. |
+| **Credential Leakage in UI** | `moodle/index.php` | Printing raw `$CFG` manifest including sensitive database password `dbpass`. | Added explicit sanitization `unset($displayConfig['dbpass'])` before rendering JSON manifest. |
+| **Error Handling & Display** | `moodle/config.php` | Leaving verbose debug output (`$CFG->debugdisplay = 1`) enabled in untrusted environments. | Controlled debug levels via configuration flags and ensured frontpage displays clean operational status. |
+| **Directory Permissions** | `moodle/config.php` | Inadequate directory permissions on Linux container storage causing upload failures. | Configured `$CFG->directorypermissions = 02777` ensuring Apache/PHP worker process read/write access. |
+| **Screen Reader Accessibility** | `moodle/index.php` | Dynamic operational status indicators lacking ARIA labels. | Added semantic HTML5 badges and clean status typography. |
+
+### Action Taken
+- Enforced credential masking in [`moodle/index.php`](../moodle/index.php).
+- Added Moodle CLI deployment verification tool in [`moodle/admin/cli/deploy_verify.php`](../moodle/admin/cli/deploy_verify.php) and Node.js parity runner in [`backend/modules/moodle/cliDeployVerify.js`](../backend/modules/moodle/cliDeployVerify.js).
+- Verified all scenarios via [`tests/test_moodle_deployment_and_capstone.js`](../tests/test_moodle_deployment_and_capstone.js).
+- Confirmed 100% pass rate across all 27 test suites via `npm test`.
+
+---
+
+# Week 7 Day 1: Architecture Design — Career Intelligence CIA Mode + API Contracts
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w7d1-murali`  
+**Date:** November 20, 2026  
+**Lesson:** Week 7 Day 1 — Architecture Design — Career Intelligence CIA Mode + API Contracts  
+
+---
+
+## Interaction 1: CIA → Full Stack Mentor Mode
+
+### Prompt / Query
+> *"I am designing the Career Intelligence Advisor (CIA Mode) architecture for our platform. The system needs to perform quantitative skill gap analysis against target role benchmarks, calculate an objective readiness score, perform semantic matching using a ChromaDB vector store, and generate adaptive career remediation recommendations using Groq (`llama-3.3-70b-versatile`) with OpenRouter (`meta-llama/llama-3.3-70b-instruct`) fallback. Could you review my proposed skill gap mathematical formula, dual-provider failover sequence, and API contracts before I commit?"*
+
+### CIA Full Stack Mentor Mode Review & Guidance
+
+1. **Quantitative Skill Gap Mathematical Modeling:**
+   - Instead of simplistic binary matching (e.g. *"has skill or does not have skill"*), implement a **weighted multi-attribute utility model** where each skill carries:
+     - Target level $L_{\text{target}}(s) \in [1, 5]$.
+     - Candidate verified level $L_{\text{candidate}}(s) \in [0, 5]$.
+     - Importance weight $w_s \in [1.0, 3.0]$ (Critical: 3.0, Important: 2.0, Nice-to-have: 1.0).
+   - Normalize the gap score between 0% and 100%:
+     $$\text{Gap Score} = 100 \times \left(1 - \frac{\sum w_s \cdot \min(1, \frac{L_{\text{cand}}}{L_{\text{target}}})}{\sum w_t}\right)$$
+   - This ensures missing a critical requirement (e.g. System Design) penalizes the candidate proportionately more than a minor supplementary tool.
+
+2. **ChromaDB Vector Store Selection & Cosine Alignment:**
+   - ChromaDB is an outstanding choice for rapid embedding retrieval without heavy distributed infrastructure.
+   - Use cosine similarity ($\cos \theta = \frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{u}\|_2 \|\mathbf{v}\|_2}$) to score semantic similarity against job description embeddings, flagging roles with $\cos \theta \ge 0.85$ as strong trajectory fits.
+
+3. **Three-Tiered LLM Fault Tolerance Strategy:**
+   - Primary: Groq `llama-3.3-70b-versatile` ($< 350\text{ms}$ latency).
+   - Secondary: OpenRouter `meta-llama/llama-3.3-70b-instruct` (catches 429 rate limits and 5xx errors).
+   - Local Safety Net: Deterministic local rule engine calculating averages, deltas, and course recommendations in memory so offline CI and air-gapped test runs never fail with 500 errors.
+
+### Action Taken
+- Implemented weighted skill gap scoring and ChromaDB vector search in [`backend/modules/ai/CareerIntelligenceService.js`](../backend/modules/ai/CareerIntelligenceService.js).
+- Authored full architecture specification in [`docs/CAREER_INTELLIGENCE_CIA_ARCHITECTURE.md`](../docs/CAREER_INTELLIGENCE_CIA_ARCHITECTURE.md).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review my Career Intelligence implementation across `CiaController.php`, `cia.blade.php`, `ciaRouter.js`, and `CareerIntelligenceService.js`. What subtle edge cases, mathematical division-by-zero risks, and accessibility issues should I safeguard against?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Layer | Component Inspected | Identified Risk / Edge Case | Architectural Mitigation Applied |
+|---|---|---|---|
+| **Zero Weight Division** | `CareerIntelligenceService.js` | Calculating gap score on a target role with 0 required skills causing division by zero (`NaN`). | Added defensive guard: `totalWeight > 0 ? (100.0 * (1.0 - (matchedWeight / totalWeight))) : 0.0`. |
+| **Missing Target Role ID** | `ciaRouter.js` | Client posting empty JSON payload to `/api/cia/analyze-gap`. | Added pre-flight validation check returning RFC-compliant `400 Bad Request` with descriptive message. |
+| **Missing Candidate Skills** | `CareerIntelligenceService.js` | Candidate submitting skills as bare numbers or nested objects (`{ level: 4 }`). | Added polymorphic level extractor handling both scalar numbers and `{ level: N }` structures. |
+| **Unbounded Delta Values** | `CareerIntelligenceService.js` | Candidate having a skill level higher than target (e.g. L5 vs L4), causing negative delta in remediation calculation. | Clamped delta using `Math.max(0.0, targetLevel - candidateLevel)`. |
+| **Screen Reader Accessibility** | `cia.blade.php` | Dynamic AI recommendations updating without notifying visually impaired candidates. | Embedded W3C ARIA live region attributes (`role="status"`, `aria-live="polite"`) on `#cia-recommendation-content`. |
+| **Request Timeout Stalling** | `CareerIntelligenceService.js` | Remote LLM endpoints hanging under global load. | Configured strict `timeoutMs: 8000` with native `req.destroy()` timeout abort handler in `_postJson()`. |
+
+### Action Taken
+- Applied division-by-zero guards, clamped non-negative deltas, and polymorphic input handling.
+- Integrated W3C ARIA live region attributes in [`resources/views/candidate/cia.blade.php`](../resources/views/candidate/cia.blade.php).
+- Verified all scenarios via [`tests/test_career_intelligence_cia.js`](../tests/test_career_intelligence_cia.js).
+- Confirmed 100% pass rate across all 28 test suites via `npm test`.
+
+---
+
+# Week 7 Day 2: Module 1: Skill Gap Analysis — LlamaIndex + Groq Pipeline
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w7d2-murali`  
+**Date:** November 20, 2026  
+**Lesson:** Week 7 Day 2 — Module 1: Skill Gap Analysis — LlamaIndex + Groq Pipeline  
+
+---
+
+## Interaction 1: CIA → AI Engineer Mode
+
+### Prompt / Query
+> *"I am building Module 1 of the Career Intelligence Advisor: Skill Gap Analysis using a LlamaIndex RAG pipeline with Groq as primary LLM and OpenRouter as fallback. How should I design the RAG retrieval mechanism over our 50-skill taxonomy document, construct the grounded prompt, enforce strict JSON schemas for the 5-domain radar chart, and ensure zero-downtime fallback?"*
+
+### CIA AI Engineer Mode Review & Recommendations
+
+1. **Taxonomy Document Curation & Domain Grounding:**
+   - Define a structured benchmark taxonomy (`data/skills_taxonomy.json`) covering 50 skills divided evenly across 5 core engineering domains: *Frontend Engineering*, *Backend Engineering*, *Database & Storage*, *Cloud & DevOps*, and *AI & ML Engineering* (10 skills each).
+   - Each skill should document its canonical title, difficulty level ($1-5$), importance tier (*Critical*, *Important*, *Nice-to-have*), and search keywords.
+2. **LlamaIndex RAG Retrieval Logic:**
+   - Ingest candidate verified skills, completed Moodle lesson history, and target role title/benchmarks.
+   - Run keyword relevance matching over the taxonomy in-memory index to extract the top-k grounded skills, preventing the LLM from inventing obscure or non-existent competencies.
+3. **Prompt Engineering & Schema Enforcement:**
+   - Anchor the system persona as a *"Principal AI Career Architect and LlamaIndex RAG Specialist for the Cynaris Recruitment Platform"*.
+   - In the user prompt, supply candidate profile stats, Moodle quiz scores (e.g. 96.5%), and the retrieved taxonomy slice.
+   - Demand an unambiguous JSON response schema including `score` ($0-100$), `skill_gaps` array, `priority_learning` array, and `radar_chart_data` with values for all 5 domains.
+4. **ChromaDB Namespace Isolation:**
+   - Store every analysis into a dedicated per-candidate namespace (`candidate_${candidateId}_skill_gaps`) in ChromaDB to guarantee strict data privacy and isolation across candidates.
+5. **Zero-Downtime Multi-Tier Fallback:**
+   - Primary: Groq `llama-3.3-70b-versatile` ($< 350\text{ms}$).
+   - Secondary: OpenRouter `meta-llama/llama-3.3-70b-instruct` (active on 429, 5xx, or timeouts).
+   - Local Safety Net: In-memory deterministic rule engine computing mathematical deltas and radar coordinates, ensuring offline CI tests and air-gapped environments remain 100% operational.
+
+### Action Taken
+- Created `data/skills_taxonomy.json` containing 50 skills across 5 domains.
+- Implemented `retrieveTaxonomyContext`, `buildSkillGapRAGPrompt`, `analyzeSkillGapRAG`, `saveToChromaNamespace`, and `validateRAGSkillGapStructure` in [`backend/modules/ai/CareerIntelligenceService.js`](../backend/modules/ai/CareerIntelligenceService.js).
+- Authored full technical documentation in [`docs/LLAMINDEX_GROQ_SKILL_GAP_RAG.md`](../docs/LLAMINDEX_GROQ_SKILL_GAP_RAG.md).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review my implementation across `CareerIntelligenceService.js`, `ciaRouter.js`, `CiaController.php`, and `cia.blade.php`. What potential schema validation flaws, API parameter mismatches, and Chart.js radar rendering errors should I prevent?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Layer | Component Inspected | Identified Risk / Edge Case | Architectural Mitigation Applied |
+|---|---|---|---|
+| **API Parameter Casing** | `CiaController.php` | Frontend sending `target_role_id` (snake_case) or `targetRoleId` (camelCase) causing 400 rejection in Laravel. | Accepted both formats: `$targetRoleId = $request->input('target_role_id') ?: $request->input('targetRoleId');`. |
+| **Numeric Score Overflow** | `CareerIntelligenceService.js` | Malformed LLM response returning scores `< 0` or `> 100` or non-numeric types. | Added assertion in `validateRAGSkillGapStructure`: `typeof score === 'number' && score >= 0 && score <= 100`. |
+| **Radar Chart Re-rendering** | `cia.blade.php` | Creating new `Chart` instances on every role change leaking canvas memory. | Retained single `radarChart` reference and updated datasets via `radarChart.data.datasets[0].data = ...; radarChart.update()`. |
+| **Express Body Parsing** | `ciaRouter.js` | Dispatching simulated requests without `Content-Length` header causing empty `req.body`. | Standardized in-memory dispatcher to set `content-length: Buffer.byteLength(payload)`. |
+| **ChromaDB Namespace Collision** | `CareerIntelligenceService.js` | Multiple candidate requests overwriting the same vector store space. | Formatted namespaces with candidate ID prefix: `candidate_${candidateId}_skill_gaps`. |
+
+### Action Taken
+- Enforced strict JSON schema validation and multi-casing input handling.
+- Enhanced Chart.js 5-domain radar component in [`resources/views/candidate/cia.blade.php`](../resources/views/candidate/cia.blade.php).
+- Created automated test suite [`tests/test_llamaindex_skill_gap.js`](../tests/test_llamaindex_skill_gap.js) (10/10 passed).
+- Verified full test suite parity with all 29 suites passing (`npm test`).
+
+---
+
+# Week 7 Day 3: Module 2: Career Recommendation Engine — CrewAI Agent
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w7d3-murali`  
+**Date:** November 26, 2026  
+**Lesson:** Week 7 Day 3 — Module 2: Career Recommendation Engine — CrewAI Agent  
+
+---
+
+## Interaction 1: CIA → AI Engineer Mode
+
+### Prompt / Query
+> *"I am designing the CrewAI Career Recommendation Engine for Week 7 Day 3. The system needs to instantiate a specialized agent (CareerAdvisorAgent) with role 'Senior Career Counsellor with 15 years experience in tech placement', coordinate 3 tools (skill_gap_fetcher reading from ChromaDB, job_role_matcher, and learning_recommender), and execute the task: 'Given this intern's skill profile and gaps, recommend 3 career paths with rationale and 6-month roadmap for each.' How should I structure the agent persona, tool synthesis, and grounded task prompt to ensure deterministic, actionable, and hallucination-free outputs across Groq and OpenRouter?"*
+
+### CIA AI Engineer Mode Review & Recommendations
+
+1. **Agent Role & Persona Calibration:**
+   - Anchor the agent with exact seniority: `"Senior Career Counsellor with 15 years experience in tech placement"`.
+   - Frame the backstory as an authoritative placement director who has placed engineers across top-tier startups and multinational tech enterprises (Infosys, TCS, Flipkart, Amazon). This sets an objective, practical counselling tone rather than generic cheerleading.
+2. **Three-Tool Execution Pipeline:**
+   - **Tool (a) `skill_gap_fetcher`:** Ingest candidate skill gaps persisted in ChromaDB namespace `candidate_${candidateId}_skill_gaps` (from Week 7 Day 2). If not yet evaluated, calculate mathematical deltas dynamically.
+   - **Tool (b) `job_role_matcher`:** Match candidate competencies to 3 strategic pathways (Cloud Solutions Architect, AI Systems Engineer, and DevOps/SRE) with suitability scores.
+   - **Tool (c) `learning_recommender`:** Suggest concrete Moodle courses (`CYN-FS-101`, `CYN-OPS-103`, `CYN-AI-201`) and map them into bi-monthly milestones (Month 1-2, 3-4, 5-6).
+3. **Task Prompt Construction & Schema Enforcement:**
+   - In the system prompt, declare the agent persona, goal, backstory, and registered tools.
+   - In the user prompt, supply candidate profile details along with the serial outputs of all 3 tools.
+   - Mandate an explicit JSON schema requiring `summary`, `career_paths` array containing at least 3 objects with `path_title`, `confidence_score` ($0-100$), `rationale`, `required_skills` array, and `roadmap_6_month` array.
+4. **Multi-Tier Fault Tolerance:**
+   - Primary: Groq `llama-3.3-70b-versatile` ($< 350\text{ms}$).
+   - Secondary: OpenRouter `meta-llama/llama-3.3-70b-instruct` (active on 429, 5xx, or network timeouts).
+   - Local Safety Net: In-memory deterministic rule engine (`deterministic-crewai-v1`) guaranteeing 100% test and offline availability.
+
+### Action Taken
+- Implemented `CareerAdvisorAgent`, the 3 tools, and `generateCrewAICareerRecommendations` in [`backend/modules/ai/CareerIntelligenceService.js`](../backend/modules/ai/CareerIntelligenceService.js).
+- Authored full technical documentation in [`docs/CREWAI_CAREER_RECOMMENDATION_ENGINE.md`](../docs/CREWAI_CAREER_RECOMMENDATION_ENGINE.md).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review my CrewAI Career Recommendation Engine implementation across `CareerIntelligenceService.js`, `ciaRouter.js`, `CiaController.php`, and `cia.blade.php`. What potential schema validation edge cases, null dereferencing risks, and async UI rendering glitches should I safeguard against?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Layer | Component Inspected | Identified Risk / Edge Case | Architectural Mitigation Applied |
+|---|---|---|---|
+| **ChromaDB Cache Miss** | `CareerIntelligenceService.js` | Invoking recommendation engine before candidate has visited skill gap tab causing empty namespace error. | Added dynamic calculation fallback in `toolSkillGapFetcher` computing weighted deltas on the fly. |
+| **Malformed Career Path Count** | `CareerIntelligenceService.js` | LLM returning fewer than 3 career paths or omitting required fields. | Implemented `validateCrewAICareerPaths()` checking `payload.career_paths.length >= 3` and validating each milestone. |
+| **Unbounded Confidence Scores** | `CareerIntelligenceService.js` | Model hallucinating confidence scores outside 0-100 range or non-numeric types. | Added assertion in validator ensuring `typeof score === 'number' && score >= 0 && score <= 100`. |
+| **Laravel / Express Parity** | `CiaController.php` & `ciaRouter.js` | Parameter name mismatches (`candidateId` vs `candidate_id`). | Handled both snake_case and camelCase parameters gracefully across both stacks. |
+| **Async Card Re-rendering** | `cia.blade.php` | Rapid role dropdown switching triggering racing fetch requests. | Preserved DOM isolation and rendered cards cleanly into `#crewai-career-cards-container` with dedicated border accents. |
+
+### Action Taken
+- Applied input normalization, ChromaDB fallback logic, and strict schema validation.
+- Enhanced interactive card rendering in [`resources/views/candidate/cia.blade.php`](../resources/views/candidate/cia.blade.php).
+- Created automated test suite [`tests/test_crewai_career_recommendations.js`](../tests/test_crewai_career_recommendations.js) (11/11 passed).
+- Verified full test suite parity with all 30 suites passing (`npm test`).
+
+---
+
+# Week 7 Day 4: Module 3: Internship Matching — ChromaDB Vector Search
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w7d4-murali`  
+**Date:** November 26, 2026  
+**Lesson:** Week 7 Day 4 — Module 3: Internship Matching — ChromaDB Vector Search  
+
+---
+
+## Interaction 1: CIA → AI Engineer Mode
+
+### Prompt / Query
+> *"I am implementing Module 3: Internship Matching using ChromaDB Vector Search for Week 7 Day 4. The requirements are: (1) seed 20 technical internship roles in collection `cynaris_internship_roles`; (2) generate sentence-transformers 384-dimensional dense vector embeddings with L2 unit normalization; (3) compute exact cosine similarities; (4) ingest candidate skill profiles and rank the top 5 matching roles with match percentage; (5) identify matched skills and missing skills per role; and (6) render an interactive UI ranked card deck in `cia.blade.php`. What mathematical scoring formulations, embedding techniques, and skill discrimination algorithms should I use to ensure high precision without semantic distortion?"*
+
+### CIA AI Engineer Mode Review & Recommendations
+
+1. **Dense Vector Embeddings & L2 Normalization:**
+   - Map text tokens into a 384-dimensional dense vector space $\mathbb{R}^{384}$ matching `all-MiniLM-L6-v2`.
+   - Strictly normalize every embedding vector to unit length ($\lVert \mathbf{v} \rVert_2 = 1.0$) using L2 Euclidean norm:
+     $$\mathbf{\hat{v}} = \frac{\mathbf{v}}{\sqrt{\sum_{i=1}^{384} v_i^2}}$$
+   - This invariant ensures that cosine similarity simplifies to the Euclidean dot product:
+     $$\cos(\theta) = \mathbf{\hat{u}} \cdot \mathbf{\hat{v}} = \sum_{i=1}^{384} \hat{u}_i \hat{v}_i$$
+     eliminating expensive norm recalculations at query time.
+2. **Hybrid Match Scoring Formulation:**
+   - Pure cosine similarity captures broad semantic affinities but can blur the line between a candidate who knows 100% of the core required tools vs someone with an adjacent background.
+   - Formulate a hybrid score balancing semantic cosine similarity ($40\%$) and verified required skill overlap ($60\%$):
+     $$S_{\text{hybrid}} = \left(0.40 \cdot \frac{\cos(\theta) + 1.0}{2.0}\right) + \left(0.60 \cdot \frac{|S_{\text{matched}}|}{|S_{\text{required}}|}\right)$$
+   - Scale into a clean user-facing percentage bounded in $[50.0\%, 99.0\%]$.
+3. **Skill Discrimination (Matched vs Missing):**
+   - For each role's `required_skills`, match case-insensitively with candidate skills where proficiency level is verified ($> 0$).
+   - Partition into `matchedSkills` (highlighted in emerald green) and `missingSkills` (highlighted in amber/red).
+4. **Seeded Roles Taxonomy:**
+   - Seed exactly 20 distinct technical roles across 5 departments: Engineering, AI & Data Science, DevOps & Cloud, QA & Testing, and Product & Security.
+   - Include complete compensation, department, and location metadata.
+
+### Action Taken
+- Seeded 20 technical internship profiles in [`data/internship_roles.json`](../data/internship_roles.json).
+- Implemented `generateSentenceTransformerEmbedding`, `computeCosineSimilarity`, and `matchInternshipsWithChromaDB` in [`backend/modules/ai/CareerIntelligenceService.js`](../backend/modules/ai/CareerIntelligenceService.js).
+- Authored full technical documentation in [`docs/CHROMADB_VECTOR_SEARCH_INTERNSHIP_MATCHING.md`](../docs/CHROMADB_VECTOR_SEARCH_INTERNSHIP_MATCHING.md).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review my ChromaDB internship matching implementation across `CareerIntelligenceService.js`, `ciaRouter.js`, `CiaController.php`, and `cia.blade.php`. What potential path resolution edge cases, division-by-zero risks, and UI rendering inconsistencies should I safeguard against?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Layer | Component Inspected | Identified Risk / Edge Case | Architectural Mitigation Applied |
+|---|---|---|---|
+| **Path Resolution** | `CareerIntelligenceService.js` | Service located 3 levels deep (`backend/modules/ai/`) attempting relative path `../../data/` failing to locate `data/internship_roles.json`. | Implemented multi-candidate resolution: `path.resolve(__dirname, '../../../data/internship_roles.json')` and `path.resolve(process.cwd(), 'data/internship_roles.json')`. |
+| **Division by Zero** | `CareerIntelligenceService.js` | Zero required skills in an internship role causing `matched / required` division by zero. | Added guard check: `role.required_skills.length > 0 ? (matched.length / required.length) : 1.0`. |
+| **Cosine Invariant** | `CareerIntelligenceService.js` | Floating point imprecision causing $\cos(\theta)$ to drift slightly outside $[-1.0, 1.0]$ (e.g. $1.00000000002$). | Enforced math clamping: `Math.max(-1.0, Math.min(1.0, dot / denom))`. |
+| **Empty Candidate Profile** | `CareerIntelligenceService.js` | Candidate submitting empty skill object causing zero-magnitude vector. | Added unit fallback on index 0 `vec[0] = 1.0` and minimum match % clamp to $50.0\%$. |
+| **UI Card Consistency** | `cia.blade.php` | Asynchronous trigger overwriting inner HTML without clearing prior state. | Structured `#chromadb-internship-list-container` with dedicated card templates and clear badge color schemes. |
+
+### Action Taken
+- Resolved multi-level path resolution with memoized disk access.
+- Added strict numerical bounds and division-by-zero guards.
+- Enhanced candidate UI in [`resources/views/candidate/cia.blade.php`](../resources/views/candidate/cia.blade.php) with green and red skill badges.
+- Created automated test suite [`tests/test_chromadb_internship_matching.js`](../tests/test_chromadb_internship_matching.js) (10/10 passed).
+- Verified full test suite parity with all 31 suites passing (`npm test`).
+
+---
+
+# Week 7 Day 5: Module 4: Learning Path Generator — LangGraph Workflow
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w7d5-murali`  
+**Date:** November 26, 2026  
+**Lesson:** Week 7 Day 5 — Module 4: Learning Path Generator — LangGraph Workflow  
+
+---
+
+## Interaction 1: CIA → Full Stack Mentor Mode
+
+### Prompt / Query
+> *"I am designing the LangGraph Learning Path Generator for Week 7 Day 5. The workflow must coordinate 5 sequential nodes: AssessCurrentState → IdentifyGaps → GeneratePlan → ValidatePlan → OutputPlan. The state needs to carry intern_profile, skill_gaps, target_role, and generated_plan, outputting an 8-week curriculum with daily time commitments and a Mermaid timeline diagram. Could you review my architectural design, state immutability patterns, and node separation before I commit?"*
+
+### CIA Full Stack Mentor Mode Review & Guidance
+
+1. **State Machine Node Separation & Single Responsibility:**
+   - Decomposing curriculum generation into 5 sequential steps aligns with production agentic engineering:
+     - `AssessCurrentState`: Ingests candidate profile and verified skills to determine the baseline competency rating without confusing it with target requirements.
+     - `IdentifyGaps`: Computes normalized multi-attribute weighted gaps and tags critical missing skills (`CRITICAL_MISSING`, `HIGH_GAP`).
+     - `GeneratePlan`: Synthesizes an 8-week syllabus structured around the identified gaps, mapping topics to Moodle course codes (`CYN-FS-101`, `CYN-OPS-103`, `CYN-AI-201`).
+     - `ValidatePlan`: Acts as an explicit critic node enforcing invariants (exactly 8 weeks, valid daily commitments $\le 3.5\text{ hrs/day}$, and presence of topics and resources).
+     - `OutputPlan`: Computes total hours metrics and formats valid Mermaid timeline syntax (`timeline`, `title`, `section`).
+2. **State Container Immutability & Observable Trajectory:**
+   - Every node returns the updated state while appending its name to `node_history`. This creates an immutable audit trail (`AssessCurrentState` $\to$ `IdentifyGaps` $\to$ `GeneratePlan` $\to$ `ValidatePlan` $\to$ `OutputPlan`) allowing recruiters and candidate dashboards to inspect execution telemetry and node latencies.
+3. **Multi-Tier Resilience (Dual Provider + Local Deterministic Engine):**
+   - High-throughput primary inference on **Groq** (`llama-3.3-70b-versatile`, $< 350\text{ms}$).
+   - Automated secondary failover to **OpenRouter** (`meta-llama/llama-3.3-70b-instruct`) on rate limits or timeouts.
+   - Zero-downtime **Local Deterministic LangGraph Engine** guaranteeing 100% test reliability and offline availability.
+
+### Action Taken
+- Implemented the 5-node LangGraph State Machine in [`backend/modules/ai/CareerIntelligenceService.js`](../backend/modules/ai/CareerIntelligenceService.js).
+- Authored full architectural documentation in [`docs/LANGGRAPH_LEARNING_PATH_GENERATOR.md`](../docs/LANGGRAPH_LEARNING_PATH_GENERATOR.md).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review my LangGraph learning path implementation across `CareerIntelligenceService.js`, `ciaRouter.js`, `CiaController.php`, and `cia.blade.php`. What potential schema validation edge cases, Mermaid timeline lexing errors, and UI lifecycle glitches should I safeguard against?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Layer | Component Inspected | Identified Risk / Edge Case | Architectural Mitigation Applied |
+|---|---|---|---|
+| **Mermaid Timeline Syntax** | `CareerIntelligenceService.js` | Unescaped colons (`:`) or ampersands (`&`) in generated topics/milestones breaking Mermaid parser. | Sanitized tokens by replacing `:` and `&` with safe prose (`and`) and structured strictly as `Week N : Title : Topic : Milestone`. |
+| **Pedagogical Workload** | `CareerIntelligenceService.js` | Candidate or LLM setting unrealistic daily commitment ($> 3.5$ hrs/day) leading to burnout. | Added invariant check in `nodeValidatePlan` rejecting commitments $> 3.5$ hrs/day with descriptive error. |
+| **Mermaid Re-rendering** | `cia.blade.php` | Re-rendering Mermaid timeline dynamically after asynchronous fetch causing `data-processed` collisions. | Stripped `data-processed` attribute and executed `mermaid.run({ nodes: [element] })` inside a safe `try/catch` wrapper. |
+| **Missing Target Role** | `CareerIntelligenceService.js` | Request passing an unrecognized or null `targetRoleId`. | Added automatic fallback to the primary benchmark role (`role_fullstack_lead`). |
+| **Laravel / Express Parity** | `CiaController.php` & `ciaRouter.js` | Input parameter naming discrepancies (`dailyCommitmentHours` vs `daily_commitment_hours` vs `dailyCommitmentTarget`). | Normalized input extraction across all parameter casing conventions on both backends. |
+
+### Action Taken
+- Implemented Mermaid token sanitization and section grouping in `generateMermaidTimeline()`.
+- Added workload bounding guards ($\le 3.5\text{ hrs/day}$) and total hours calculation formulas.
+- Enhanced candidate view in [`resources/views/candidate/cia.blade.php`](../resources/views/candidate/cia.blade.php) with interactive timeline and week cards.
+- Created automated test suite [`tests/test_langgraph_learning_path.js`](../tests/test_langgraph_learning_path.js) (14/14 passed).
+- Verified full test suite parity with all 32 suites passing (`npm test`).
+
+---
+
+# Week 8 Day 1: Module 5: Resume Intelligence — Docling + Groq ATS Scoring
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w8d1-murali`  
+**Date:** November 26, 2026  
+**Lesson:** Week 8 Day 1 — Module 5: Resume Intelligence — Docling + Groq ATS Scoring  
+
+---
+
+## Interaction 1: CIA → AI Engineer Mode
+
+### Prompt / Query
+> *"I am implementing Module 5: Resume Intelligence for Week 8 Day 1. The requirements call for integrating IBM Docling document conversion with Groq (llama-3.3-70b-versatile) as primary LLM and OpenRouter (meta-llama/llama-3.3-70b-instruct) as secondary fallback, plus calculating a quantitative ATS compatibility score (0-100%). How should I structure the prompt, document conversion schema, and scoring formula to avoid LLM hallucination and ensure strict candidate evaluation?"*
+
+### CIA AI Engineer Mode Recommendations
+
+1. **Decouple Document Conversion from Evaluation:**
+   - Use IBM Docling to convert semi-structured resumes (PDF/DOCX) into standardized markdown sections (`# Resume Document`, `## Core Technical Skills`, `## Professional Experience`, `## Education & Certifications`). This establishes clean spatial hierarchy and prevents optical character interleaving.
+2. **Deterministic Pre-Computed ATS Metrics:**
+   - Never prompt an LLM to guess an arbitrary percentage score. Compute the ATS score quantitatively before invoking the model using a multi-attribute formula:
+     $$\text{ATS Score} = (R_{\text{keywords}} \times 0.60) + (S_{\text{experience}} \times 0.20) + (S_{\text{structure}} \times 0.20)$$
+   - Pass the verified score and matched/missing keyword arrays directly into the user prompt. The LLM's task is solely to synthesize qualitative screening prose around the verified numbers.
+3. **Structured Anti-Hallucination Prompt Directives:**
+   - Assign the persona of *'Senior Technical Talent Partner and ATS Evaluator at Cynaris Solutions'*.
+   - Mandate strict section headings: `### 📊 ATS Compatibility Score`, `### 📋 Executive Summary`, `### 🌟 Key Technical Competencies`, `### 🎯 Keyword Match & Density Breakdown`, `### 🔍 Interview Probe Points & Potential Gaps`, `### ⚖️ Hiring Recommendation`.
+   - Set `temperature = 0.3` to minimize stochastic variance and set `max_tokens = 600` for crisp latency.
+
+### Action Taken
+- Implemented `parseResumeWithDocling()` and `calculateATSScore()` in `CareerIntelligenceService.js` and `cynaris_recruitment/doctype/job_applicant/job_applicant.py`.
+- Formulated the decoupled System and User prompts in `buildATSAnalysisPrompt()`.
+- Authored full technical architecture in [`docs/RESUME_INTELLIGENCE_DOCLING_GROQ_ATS.md`](../docs/RESUME_INTELLIGENCE_DOCLING_GROQ_ATS.md).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review my Docling + Groq ATS scoring implementation across Frappe DocType, EspoCRM entity metadata, Express routes, Laravel CiaController, and cia.blade.php. What edge cases, failure modes, and type constraints should I safeguard against?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Layer | Component Inspected | Identified Risk / Edge Case | Architectural Mitigation Applied |
+|---|---|---|---|
+| **Frappe DocType Schema** | `job_applicant.json` | Missing schema fields for AI summary and ATS metrics causing persistence drops. | Added `ai_resume_summary` (Long Text), `ats_score` (Float), and `docling_markdown` (Long Text) fields. |
+| **EspoCRM Metadata** | `JobApplicant.json` | CRM entity def lacking custom field mappings for synchronization. | Added `aiResumeSummary` (text) and `atsScore` (float) to entity metadata. |
+| **Dual Provider Fallback** | `CareerIntelligenceService.js` | Cloud API timeouts (HTTP 429/503) or offline developer mode throwing unhandled errors. | Constructed 3-tier cascade: Groq primary $\to$ OpenRouter fallback $\to$ Local deterministic rule engine; return user-friendly error on simulated total failure. |
+| **Docling Parser Resilience** | `CareerIntelligenceService.js` | Applicant submitting null, empty, or object payloads instead of raw text. | Added polymorphic signature accepting string or applicant object, emitting graceful fallback markdown. |
+| **Blade ARIA Accessibility** | `cia.blade.php` | Asynchronous ATS score update not communicated to screen readers. | Wrapped `#docling-status-announcement` in `role="status"` and `aria-live="polite"`. |
+
+### Action Taken
+- Updated Frappe DocType schema and EspoCRM entity definitions.
+- Added polymorphic input parsing and keyword clamping in `CareerIntelligenceService.js`.
+- Integrated `#docling-resume-intelligence-section` in `resources/views/candidate/cia.blade.php`.
+- Created automated test suite [`tests/test_resume_intelligence_ats.js`](../tests/test_resume_intelligence_ats.js) (15/15 passing).
+- Verified full regression test suite with all 33 suites passing (`npm test`).
+
+
+---
+
+# Week 8 Day 2: Module 6 & 7: Placement Readiness Score + Interview Readiness Score
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w8d2-murali`  
+**Date:** November 27, 2026  
+**Lesson:** Week 8 Day 2 — Module 6 & 7: Placement Readiness Score + Interview Readiness Score  
+
+---
+
+## Interaction 1: CIA → Full Stack Mentor Mode
+
+### Prompt / Query
+> *"I am implementing Module 6 & 7 (Placement Readiness Score + Interview Readiness Score) for Week 8 Day 2. Placement Readiness combines project completion % (40%), assessment scores (30%), CIA usage hours (10%), and documentation quality (20%) and must be stored in DB. Interview Readiness combines viva scores (40%), code review scores (30%), demo communication clarity (20%), and Git workflow quality (10%). Both produce 0–100 scores, A/B/C/D grades, and improvement recommendations, plus an Admin table with CSV export and a Student scorecard with Top 3 AI-generated improvement actions. Could you review my architecture, database schema, and separation of concerns before I commit?"*
+
+### CIA Mentor Review & Feedback
+1. **Separation of Scoring Logic, AI Synthesis, and Persistence:**
+   - Isolate deterministic weighted calculations (`calculatePlacementReadiness`, `calculateInterviewReadiness`), grade mapping (`A/B/C/D`), and RFC 4180 CSV serialization into a pure module (`ReadinessScoringEngine.js`). This keeps the math 100% deterministic and testable without network dependencies.
+   - Compute exact 0–100 scores and component breakdowns *before* calling Groq (`llama-3.3-70b-versatile`) or OpenRouter (`meta-llama/llama-3.3-70b-instruct`), passing verified scores and ChromaDB vector benchmarks into the prompt so the LLM generates grounded Top 3 improvement actions rather than inventing numbers.
+2. **Database Schema & Atomic Persistence:**
+   - Provision a dedicated `intern_readiness_scores` table with `UNIQUE KEY uk_intern_id (intern_id)` and secondary indexes on `placement_readiness_score` and `interview_readiness_score`.
+   - Use parameterized prepared statements (`?`) inside a transaction (`beginTransaction` / `commit` / `rollback`) in `ReadinessRepository` so score upserts and `audit_logs` writes succeed or roll back atomically.
+3. **Admin & Student Views:**
+   - Expose distinct REST endpoints (`/api/cia/readiness/admin`, `/api/cia/readiness/student/:internId`, `/api/cia/readiness/calculate`, `/api/cia/readiness/export-csv`) and mirror them across both Express (`readiness.html` + `ciaRouter.js`) and Laravel (`CiaController.php` + `cia.blade.php`).
+
+### Action Taken
+- Created `intern_readiness_scores` table and seed cohort in [`backend/database/schema.sql`](../backend/database/schema.sql) and [`backend/database/readinessRepository.js`](../backend/database/readinessRepository.js).
+- Built pure scoring & CSV engine in [`backend/modules/ai/ReadinessScoringEngine.js`](../backend/modules/ai/ReadinessScoringEngine.js) and wired vector + multi-tier LLM pipeline into [`backend/modules/ai/CareerIntelligenceService.js`](../backend/modules/ai/CareerIntelligenceService.js).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review my Placement & Interview Readiness scoring engine, DB repository, API routes, and CSV export implementation. What edge cases, security risks, or boundary bugs could I have missed?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Layer | Component Inspected | Identified Risk / Edge Case | Architectural Mitigation Applied |
+|---|---|---|---|
+| **CIA Hours Normalization** | `ReadinessScoringEngine.js` | Unbounded `cia_usage_hours` (e.g., `35` hours) pushing the weighted Placement score above `100`. | Normalized `cia_usage_hours` against a `20`-hour benchmark and clamped `cia_usage_normalized` and final scores strictly to `[0, 100]`. |
+| **Input Validation** | `ReadinessScoringEngine.js` & `ciaRouter.js` | Non-numeric strings (`"abc"`, `"NaN"`) silently coercing to `NaN` and corrupting DB rows. | Implemented `parseClampedMetric()` throwing explicit `Invalid numeric value` errors mapped to HTTP `400 Bad Request`. |
+| **CSV Formula Injection** | `ReadinessScoringEngine.js` | Intern names or target roles starting with `=`, `+`, `-`, or `@` executing as formulas in Excel/Sheets on CSV export. | Added `escapeCsvCell()` prefixing formula characters with `'` and enforcing RFC 4180 double-quote escaping. |
+| **Dual LLM Outage** | `CareerIntelligenceService.js` | Simulated or real dual outage (`Groq` + `OpenRouter`) crashing the request handler. | Returned structured HTTP `502` payload with clear diagnostic message when `simulateBothFailure` is active, and deterministic Top 3 fallback in offline mode. |
+| **Route Parameter Safety** | `ciaRouter.js` | Non-integer `:internId` (e.g., `/student/abc` or `/student/-1`) returning misleading `404` or querying invalid IDs. | Validated `Number.isInteger(internId) && internId >= 1`, returning HTTP `400` on malformed IDs and `404` when not found. |
+
+### Action Taken
+- Added strict metric clamping, non-numeric validation, RFC 4180 + formula-injection CSV sanitization, and positive-integer route checks.
+- Built [`tests/test_readiness_scores.js`](../tests/test_readiness_scores.js) (16/16 assertions passing) and verified full regression suite via `npm test` (34/34 suites passing).
+
+
+---
+
+# Week 8 Day 3: Career Intelligence Report — Archetype Map + Employability Score
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w8d3-murali`  
+**Date:** November 27, 2026  
+**Lesson:** Week 8 Day 3 — Career Intelligence Report — Archetype Map + Employability Score  
+
+---
+
+## Interaction 1: CIA → Full Stack Mentor Mode
+
+### Prompt / Query
+> *"I am building the Career Intelligence Report (Archetype Map + Employability Score) for Week 8 Day 3. It defines 6 archetypes (Builder, Analyst, Leader, Innovator, Specialist, Generalist) with 10 trait attributes (0–10), maps intern skills + learning style + project performance to match scores, computes Employability / AI Readiness / Placement Readiness scores, generates a Groq narrative (with OpenRouter fallback), stores the result in `candidate_reports`, and exports PDF via Laravel dompdf. Could you review this architecture before I commit?"*
+
+### CIA Mentor Review & Feedback
+1. **Archetype Vector Similarity Design:**
+   - Combining cosine similarity (direction/shape of the 10-trait vector) with Euclidean proximity (overall trait magnitude) avoids the pitfall where an intern scoring 4/10 uniformly matches an 8/10 archetype at 100%.
+2. **Reuse Module 6 Helpers:**
+   - Reuse `parseClampedMetric`, `assignReadinessGrade`, and `calculatePlacementReadiness` from `ReadinessScoringEngine.js` inside `CareerReportEngine.js` so Placement Readiness math is never duplicated.
+3. **Database & PDF Parity:**
+   - Store structured JSON columns (`archetype_scores`, `trait_profile`, `recommendations`) alongside indexed numeric scores in `candidate_reports`. Provide `Barryvdh\DomPDF\Facade\Pdf` + `report_pdf.blade.php` in Laravel and a zero-dependency `%PDF-1.4` binary renderer in Express.
+
+### Action Taken
+- Created [`backend/modules/ai/CareerReportEngine.js`](../backend/modules/ai/CareerReportEngine.js) and [`backend/database/candidateReportRepository.js`](../backend/database/candidateReportRepository.js).
+- Added `candidate_reports` DDL to [`backend/database/schema.sql`](../backend/database/schema.sql) and wired DomPDF export in [`app/Http/Controllers/Web/CiaController.php`](../app/Http/Controllers/Web/CiaController.php).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review my archetype trait mapping, composite score formulas, PDF generator, and `candidate_reports` persistence. What edge cases should I guard against?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Layer | Component Inspected | Identified Edge Case | Mitigation Applied |
+|---|---|---|---|
+| **Trait Vector Clamping** | `CareerReportEngine.js` | Learning style boosts pushing traits above `10.0` or non-numeric skill values causing `NaN`. | Clamped every trait strictly to `[0.0, 10.0]` via `clampTrait()` and defaulted invalid inputs safely. |
+| **Skill Scale Variance** | `CareerReportEngine.js` | Callers passing skills on `0–5` scale vs `0–100` scale. | Auto-normalized values `<= 5` (`* 2`) and `> 5` (`/ 10`) onto the `0–10` trait scale. |
+| **PDF Character Escaping** | `CareerReportEngine.js` | Parentheses `(`, `)`, backslashes `\`, or non-ASCII glyphs breaking PDF Type1 text streams. | Added `escapePdfText()` escaping `\\`, `\(`, `\)` and normalizing non-ASCII characters before building `%PDF-1.4` streams. |
+| **Dual Provider Outage** | `CiaController.php` & `CareerIntelligenceService.js` | Unhandled exceptions when both Groq and OpenRouter fail or timeout. | Caught provider errors cleanly and returned HTTP `502` with diagnostic `errors_bypassed` payload. |
+
+### Action Taken
+- Hardened `clampTrait()`, scale normalization, `escapePdfText()`, and dual-failure error boundaries.
+- Verified with [`tests/test_career_intelligence_report.js`](../tests/test_career_intelligence_report.js) (8/8 passing) and full `npm test` (35/35 suites passing).
+
+
+
+
+
+
+
+
+
