@@ -100,6 +100,29 @@ CREATE TABLE IF NOT EXISTS `intern_readiness_scores` (
   INDEX `idx_interview_score` (`interview_readiness_score`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 6. Candidate Career Intelligence Reports Table (Week 8 Day 3)
+CREATE TABLE IF NOT EXISTS `candidate_reports` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `candidate_id` INT NOT NULL,
+  `candidate_name` VARCHAR(150) NOT NULL,
+  `target_role` VARCHAR(150) NOT NULL DEFAULT 'Senior Full Stack Engineer',
+  `primary_archetype` VARCHAR(50) NOT NULL,
+  `secondary_archetype` VARCHAR(50) NOT NULL,
+  `archetype_scores` JSON NOT NULL,
+  `trait_profile` JSON NOT NULL,
+  `employability_score` DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+  `ai_readiness_score` DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+  `placement_readiness_score` DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+  `report_narrative` TEXT NOT NULL,
+  `recommendations` JSON NOT NULL,
+  `ai_provider` VARCHAR(100) NOT NULL DEFAULT 'Groq',
+  `ai_model` VARCHAR(120) NOT NULL DEFAULT 'llama-3.3-70b-versatile',
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX `idx_candidate_reports_candidate` (`candidate_id`),
+  INDEX `idx_candidate_reports_archetype` (`primary_archetype`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ==============================================================================
 -- Initial Seed Data
 -- ==============================================================================

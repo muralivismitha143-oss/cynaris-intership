@@ -21,7 +21,7 @@ async function main() {
     console.log(`\n[SUCCESS] Migrations completed successfully!`);
     console.log(`Statements Executed: ${result.appliedStatements}`);
     console.log(`Database Driver: ${result.driver}`);
-    console.log(`Tables Migrated: job_applicant, automation_rules, smart_reminders, audit_logs, intern_readiness_scores`);
+    console.log(`Tables Migrated: job_applicant, automation_rules, smart_reminders, audit_logs, intern_readiness_scores, candidate_reports`);
     console.log('================================================================\n');
     return result;
   } catch (err) {

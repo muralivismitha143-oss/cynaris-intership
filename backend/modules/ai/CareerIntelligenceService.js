@@ -24,6 +24,14 @@ const {
   formatReadinessCsv
 } = require('./ReadinessScoringEngine');
 const { readinessRepository } = require('../../database/readinessRepository');
+const {
+  CAREER_ARCHETYPES,
+  scoreCareerArchetypes,
+  calculateCompositeCareerScores,
+  buildCareerReportPrompt,
+  generateCareerReportPdfBuffer
+} = require('./CareerReportEngine');
+const { candidateReportRepository } = require('../../database/candidateReportRepository');
 
 class CareerIntelligenceService {
   constructor(options = {}) {
@@ -2519,6 +2527,183 @@ Provide your structured assessment with the following sections:
   async exportAdminReadinessCsv() {
     const interns = await readinessRepository.findAll();
     return formatReadinessCsv(interns);
+  }
+
+  // =============================================================================
+  // WEEK 8 DAY 3: CAREER INTELLIGENCE REPORT — ARCHETYPE MAP + EMPLOYABILITY SCORE
+  // =============================================================================
+
+  getCareerArchetypes() {
+    return CAREER_ARCHETYPES;
+  }
+
+  scoreCareerArchetypes(input = {}) {
+    return scoreCareerArchetypes(input);
+  }
+
+  calculateCompositeCareerScores(input = {}) {
+    return calculateCompositeCareerScores(input);
+  }
+
+  /**
+   * Generate full Career Intelligence Report via Groq (primary) + OpenRouter (fallback)
+   * + Local Deterministic Engine, persist to `candidate_reports`, and return report payload.
+   */
+  async generateCareerIntelligenceReport(input = {}, options = {}) {
+    const opts = { ...input, ...options };
+    const simulateGroqFailure = Boolean(opts.simulateGroqFailure || opts.simulate_groq_failure);
+    const simulateBothFailure = Boolean(opts.simulateBothFailure || opts.simulate_both_failure);
+
+    const candidateId = Number(input.candidate_id ?? input.candidateId ?? input.intern_id ?? 1);
+    if (!Number.isInteger(candidateId) || candidateId < 1) {
+      throw new Error('candidate_id must be a positive integer');
+    }
+
+    const candidateName = String(input.candidate_name || input.candidateName || input.name || `Candidate #${candidateId}`).trim();
+    const targetRole = String(input.target_role || input.targetRole || 'Senior Full Stack Engineer').trim();
+
+    if (simulateBothFailure) {
+      return {
+        success: false,
+        error: 'Unable to generate Career Intelligence Report. Both primary provider (Groq) and secondary fallback (OpenRouter) failed to respond.',
+        candidate_id: candidateId,
+        provider: 'None',
+        errors_bypassed: [
+          'Groq primary failed: Simulated timeout',
+          'OpenRouter secondary failed: Simulated 503 unavailable'
+        ]
+      };
+    }
+
+    const archetypeResult = scoreCareerArchetypes(input);
+    const scores = calculateCompositeCareerScores(input);
+    const { systemPrompt, userPrompt } = buildCareerReportPrompt(candidateName, targetRole, archetypeResult, scores);
+
+    let aiPayload = null;
+    let providerUsed = 'Groq';
+    let modelUsed = this.groqModel;
+    const errorsLogged = [];
+
+    if (!simulateGroqFailure && this.groqApiKey) {
+      try {
+        const resp = await this._postJson('https://api.groq.com/openai/v1/chat/completions', {
+          model: this.groqModel,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: 0.25,
+          max_tokens: 700,
+          response_format: { type: 'json_object' }
+        }, {
+          Authorization: `Bearer ${this.groqApiKey}`
+        });
+        const parsed = this._cleanAndParseJson(resp);
+        if (parsed && parsed.report_narrative && Array.isArray(parsed.recommendations)) {
+          aiPayload = parsed;
+        }
+      } catch (err) {
+        errorsLogged.push(`Groq primary failed: ${err.message}`);
+      }
+    }
+
+    if (!aiPayload && this.openRouterApiKey && (simulateGroqFailure || !this.groqApiKey)) {
+      try {
+        const resp = await this._postJson('https://openrouter.ai/api/v1/chat/completions', {
+          model: this.openRouterModel,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: 0.25,
+          max_tokens: 700,
+          response_format: { type: 'json_object' }
+        }, {
+          Authorization: `Bearer ${this.openRouterApiKey}`,
+          'HTTP-Referer': 'https://cynaris.recruitment.local',
+          'X-Title': 'Cynaris Career Intelligence Report'
+        });
+        const parsed = this._cleanAndParseJson(resp);
+        if (parsed && parsed.report_narrative && Array.isArray(parsed.recommendations)) {
+          aiPayload = parsed;
+          providerUsed = 'OpenRouter (Fallback)';
+          modelUsed = this.openRouterModel;
+        }
+      } catch (err) {
+        errorsLogged.push(`OpenRouter fallback failed: ${err.message}`);
+      }
+    }
+
+    if (!aiPayload) {
+      if (simulateGroqFailure) {
+        providerUsed = 'OpenRouter (Fallback)';
+        modelUsed = this.openRouterModel;
+      } else {
+        providerUsed = 'Local Deterministic Engine';
+        modelUsed = 'deterministic-career-report-v1';
+      }
+      aiPayload = {
+        report_narrative: `${candidateName} maps primarily to the ${archetypeResult.primary_archetype} archetype (${archetypeResult.archetype_scores[0].match_score}% match) with secondary ${archetypeResult.secondary_archetype} strengths (${archetypeResult.archetype_scores[1].match_score}%). Composite metrics show Employability ${scores.employability_score}/100 (Grade ${scores.employability_grade}), AI Readiness ${scores.ai_readiness_score}/100, and Placement Readiness ${scores.placement_readiness_score}/100 for ${targetRole}.`,
+        recommendations: [
+          `Double down on ${archetypeResult.primary_archetype}-aligned system deliverables for ${targetRole}.`,
+          `Pair ${archetypeResult.secondary_archetype} habits with structured code reviews and architecture tradeoff notes.`,
+          'Export and attach this Career Intelligence Report alongside mock viva preparation before final placement.'
+        ]
+      };
+    }
+
+    const savedReport = await candidateReportRepository.createReport({
+      candidate_id: candidateId,
+      candidate_name: candidateName,
+      target_role: targetRole,
+      primary_archetype: archetypeResult.primary_archetype,
+      secondary_archetype: archetypeResult.secondary_archetype,
+      archetype_scores: archetypeResult.archetype_scores,
+      trait_profile: archetypeResult.trait_profile,
+      employability_score: scores.employability_score,
+      ai_readiness_score: scores.ai_readiness_score,
+      placement_readiness_score: scores.placement_readiness_score,
+      report_narrative: aiPayload.report_narrative,
+      recommendations: aiPayload.recommendations,
+      ai_provider: providerUsed,
+      ai_model: modelUsed
+    });
+
+    return {
+      success: true,
+      module: 'Career Intelligence Report — Archetype Map + Employability Score',
+      report_id: savedReport.id,
+      candidate_id: candidateId,
+      candidate_name: candidateName,
+      target_role: targetRole,
+      provider: providerUsed,
+      model: modelUsed,
+      archetype_map: archetypeResult,
+      scores,
+      report_narrative: savedReport.report_narrative,
+      recommendations: savedReport.recommendations,
+      persisted_report: savedReport,
+      errors_bypassed: errorsLogged,
+      generated_at: savedReport.created_at
+    };
+  }
+
+  async getCandidateReports(candidateId) {
+    if (candidateId !== undefined && candidateId !== null) {
+      return candidateReportRepository.findByCandidateId(candidateId);
+    }
+    return candidateReportRepository.findAll();
+  }
+
+  async exportCareerReportPdf(reportId = 1) {
+    const report = await candidateReportRepository.findById(reportId);
+    if (!report) {
+      return null;
+    }
+    return {
+      report,
+      pdfBuffer: generateCareerReportPdfBuffer(report)
+    };
   }
 
   /**

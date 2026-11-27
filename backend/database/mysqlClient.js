@@ -411,9 +411,53 @@ class InMemoryMySQLEngine {
           updated_at: new Date(Date.now() - 3600000 * 24).toISOString(),
         },
       ],
+      candidate_reports: [
+        {
+          id: 1,
+          candidate_id: 1,
+          candidate_name: 'Murali V',
+          target_role: 'Senior Full Stack Engineer',
+          primary_archetype: 'Builder',
+          secondary_archetype: 'Innovator',
+          archetype_scores: JSON.stringify([
+            { archetype: 'Builder', match_score: 92.4 },
+            { archetype: 'Innovator', match_score: 88.1 },
+            { archetype: 'Specialist', match_score: 84.5 },
+            { archetype: 'Leader', match_score: 81.2 },
+            { archetype: 'Analyst', match_score: 79.8 },
+            { archetype: 'Generalist', match_score: 77.6 },
+          ]),
+          trait_profile: JSON.stringify({
+            system_architecture: 8.8,
+            hands_on_execution: 9.4,
+            analytical_rigor: 8.2,
+            strategic_leadership: 8.0,
+            cross_team_communication: 8.4,
+            creative_experimentation: 8.9,
+            domain_depth: 8.5,
+            cross_functional_adaptability: 8.3,
+            ai_tooling_fluency: 9.2,
+            quality_reliability_focus: 8.9,
+          }),
+          employability_score: 91.6,
+          ai_readiness_score: 94.0,
+          placement_readiness_score: 93.1,
+          report_narrative: 'Murali V exhibits a strong Builder + Innovator archetype profile with high end-to-end execution velocity, multi-tier LLM resilience engineering, and disciplined database optimization.',
+          recommendations: JSON.stringify([
+            'Lead end-to-end architecture reviews on multi-service Docker & MySQL deployments.',
+            'Benchmark Groq/OpenRouter P95 latency under concurrent load for production observability.',
+            'Document system tradeoffs in structured viva walkthroughs to maximize placement conversion.',
+          ]),
+          ai_provider: 'Groq',
+          ai_model: 'llama-3.3-70b-versatile',
+          created_at: new Date(Date.now() - 3600000 * 6).toISOString(),
+          updated_at: new Date(Date.now() - 3600000 * 2).toISOString(),
+        },
+      ],
     };
     this.nextApplicantId = 5;
     this.nextReadinessId = 6;
+    this.nextCandidateReportId = 2;
     this.inTransaction = false;
     this.transactionSnapshot = null;
   }
@@ -451,7 +495,7 @@ class InMemoryMySQLEngine {
     }
 
     // 3. SELECT * FROM job_applicant WHERE id = ?
-    if (upper.startsWith('SELECT') && (upper.includes('WHERE `ID` = ?') || upper.includes('WHERE ID = ?'))) {
+    if (upper.startsWith('SELECT') && upper.includes('JOB_APPLICANT') && (upper.includes('WHERE `ID` = ?') || upper.includes('WHERE ID = ?'))) {
       const targetId = Number(params[0]);
       const found = this.tables.job_applicant.filter((a) => a.id === targetId);
       return Promise.resolve([found, []]);
@@ -618,6 +662,56 @@ class InMemoryMySQLEngine {
         created_at: new Date().toISOString(),
       });
       return Promise.resolve([{ insertId: this.tables.audit_logs.length, affectedRows: 1 }, []]);
+    }
+
+    // 9. candidate_reports queries (Week 8 Day 3: Career Intelligence Report)
+    if (upper.startsWith('SELECT') && upper.includes('CANDIDATE_REPORTS')) {
+      if (upper.includes('WHERE `ID` = ?') || upper.includes('WHERE ID = ?')) {
+        const targetId = Number(params[0]);
+        return Promise.resolve([this.tables.candidate_reports.filter((r) => r.id === targetId), []]);
+      }
+      if (upper.includes('WHERE `CANDIDATE_ID` = ?') || upper.includes('WHERE CANDIDATE_ID = ?')) {
+        const targetCandidateId = Number(params[0]);
+        const matched = this.tables.candidate_reports
+          .filter((r) => r.candidate_id === targetCandidateId)
+          .sort((a, b) => b.id - a.id);
+        return Promise.resolve([matched, []]);
+      }
+      const all = [...this.tables.candidate_reports].sort((a, b) => b.id - a.id);
+      return Promise.resolve([all, []]);
+    }
+
+    if (upper.startsWith('INSERT INTO `CANDIDATE_REPORTS`') || upper.startsWith('INSERT INTO CANDIDATE_REPORTS')) {
+      const [
+        candidateId, candidateName, targetRole,
+        primaryArchetype, secondaryArchetype,
+        archetypeScores, traitProfile,
+        employabilityScore, aiReadinessScore, placementReadinessScore,
+        reportNarrative, recommendations, aiProvider, aiModel
+      ] = params;
+      const newId = this.nextCandidateReportId++;
+      const now = new Date().toISOString();
+      const row = {
+        id: newId,
+        candidate_id: Number(candidateId),
+        candidate_name: candidateName,
+        target_role: targetRole || 'Senior Full Stack Engineer',
+        primary_archetype: primaryArchetype,
+        secondary_archetype: secondaryArchetype,
+        archetype_scores: archetypeScores,
+        trait_profile: traitProfile,
+        employability_score: Number(employabilityScore),
+        ai_readiness_score: Number(aiReadinessScore),
+        placement_readiness_score: Number(placementReadinessScore),
+        report_narrative: reportNarrative,
+        recommendations,
+        ai_provider: aiProvider || 'Groq',
+        ai_model: aiModel || 'llama-3.3-70b-versatile',
+        created_at: now,
+        updated_at: now,
+      };
+      this.tables.candidate_reports.push(row);
+      return Promise.resolve([{ insertId: newId, affectedRows: 1 }, []]);
     }
 
     
