@@ -2028,6 +2028,59 @@
 - Verified with [`tests/test_career_intelligence_report.js`](../tests/test_career_intelligence_report.js) (8/8 passing) and full `npm test` (35/35 suites passing).
 
 
+---
+
+# Week 8 Day 4: CIA Memory Layer — ChromaDB Persistent Intern Profile
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w8d4-murali`  
+**Date:** November 27, 2026  
+**Lesson:** Week 8 Day 4 — CIA Memory Layer — ChromaDB Persistent Intern Profile  
+
+---
+
+## Interaction 1: CIA → Full Stack Mentor Mode
+
+### Prompt / Query
+> *"I am implementing Week 8 Day 4: CIA Memory Layer — ChromaDB Persistent Intern Profile. Previously our ChromaDB storage in `CareerIntelligenceService.js` used an in-memory `Map`, which lost intern progress and memory across restarts. How should I design persistent ChromaDB collections for `cynaris_intern_profiles`, `cynaris_intern_memory_events`, and `cynaris_internship_roles` (20 roles) while integrating cleanly with `POST /candidate/cia/career/match-internships`?"*
+
+### CIA Mentor Review & Feedback
+1. **Separate Persistent Vector Store Module:**
+   - Extract persistence into `ChromaPersistentStore.js` using atomic file writes (temp file + `fs.renameSync`) so collection writes never leave corrupt JSON on disk.
+   - Support dependency injection (`options.persistentStore`) in `CareerIntelligenceService` so tests can verify true disk reload across separate instances in isolated temp directories.
+2. **Three Complementary Collections:**
+   - `cynaris_internship_roles`: Cache the 20 role documents and their 384-dim `all-MiniLM-L6-v2` embeddings on disk.
+   - `cynaris_intern_profiles`: Retain latest verified skills, progress %, completed modules, and rolling history per candidate ID.
+   - `cynaris_intern_memory_events`: Store timestamped semantic event chunks so cosine similarity queries recall relevant milestones for LLM reasoning.
+3. **Memory-Aware Internship Matching:**
+   - Enhance `matchInternshipsWithChromaDB` to auto-recall skills from `cynaris_intern_profiles` if `candidateSkills` is omitted and log match runs as memory events.
+
+### Action Taken
+- Created [`backend/modules/ai/ChromaPersistentStore.js`](../backend/modules/ai/ChromaPersistentStore.js) and wired it into [`backend/modules/ai/CareerIntelligenceService.js`](../backend/modules/ai/CareerIntelligenceService.js).
+- Added `/api/cia/memory/profile`, `/api/cia/memory/profile/:candidateId`, and `/api/cia/memory/query` across Express and Laravel.
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review `ChromaPersistentStore.js`, `upsertInternMemoryProfile`, `queryInternMemoryAndReason`, and `matchInternshipsWithChromaDB`. What edge cases or concurrency/data-isolation bugs should I safeguard against?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Layer | Component Inspected | Identified Edge Case | Mitigation Applied |
+|---|---|---|---|
+| **Candidate Isolation** | `queryInternMemoryAndReason` | Semantic query across `cynaris_intern_memory_events` returning another candidate's memory chunks. | Filtered query results strictly by `Number(e.metadata.candidate_id) === candidateId` before passing context to LLM. |
+| **Unbounded History Growth** | `upsertInternMemoryProfile` | Repeated profile updates inflating `history` array endlessly. | Capped rolling `history` array to the most recent 20 snapshots (`slice(0, 20)`) while keeping semantic events indexed separately. |
+| **Atomic Persistence** | `ChromaPersistentStore.js` | Partial disk write corrupting `chromadb_store.json` on crash. | Wrote to `${storePath}.${process.pid}.tmp` and atomically replaced via `fs.renameSync`. |
+| **Progress Bounds & Bad IDs** | `ciaRouter.js` & `CareerIntelligenceService.js` | Invalid `candidate_id` (`"abc"`, `-5`) or out-of-bounds `progress_pct` (`150`). | Validated positive integer `candidate_id` (HTTP `400`) and clamped `progress_pct` strictly to `[0, 100]`. |
+
+### Action Taken
+- Enforced candidate namespace/ID filtering, rolling history cap, atomic temp-file writes, and strict bounds checking.
+- Verified with [`tests/test_cia_memory_layer.js`](../tests/test_cia_memory_layer.js) (6/6 passing) and `npm test` (36/36 suites passing).
+
+
+
 
 
 

@@ -2,7 +2,7 @@
 
 [![Live Deployment: Railway](https://img.shields.io/badge/Railway-Live%20Production-0B0D0E?style=for-the-badge&logo=railway)](https://cynaris-recruitment-production.up.railway.app)
 [![Live Staging: Render](https://img.shields.io/badge/Render-Staging%20Mirror-46E3B7?style=for-the-badge&logo=render)](https://cynaris-recruitment.onrender.com)
-[![Build Status](https://img.shields.io/badge/Tests-All%2035%20Suites%20Passing-success?style=for-the-badge)](tests/)
+[![Build Status](https://img.shields.io/badge/Tests-All%2036%20Suites%20Passing-success?style=for-the-badge)](tests/)
 [![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen?style=for-the-badge&logo=github-actions)](.github/workflows/ci-cd.yml)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](package.json)
 
@@ -57,6 +57,8 @@
 - **Week 8 Day 2 Submission Report:** [`docs/WEEK8_DAY2_SUBMISSION.md`](docs/WEEK8_DAY2_SUBMISSION.md)
 - **Career Intelligence Report Architecture:** [`docs/CAREER_INTELLIGENCE_REPORT_ARCHITECTURE.md`](docs/CAREER_INTELLIGENCE_REPORT_ARCHITECTURE.md)
 - **Week 8 Day 3 Submission Report:** [`docs/WEEK8_DAY3_SUBMISSION.md`](docs/WEEK8_DAY3_SUBMISSION.md)
+- **CIA Memory Layer (ChromaDB) Architecture:** [`docs/CIA_MEMORY_LAYER_CHROMADB.md`](docs/CIA_MEMORY_LAYER_CHROMADB.md)
+- **Week 8 Day 4 Submission Report:** [`docs/WEEK8_DAY4_SUBMISSION.md`](docs/WEEK8_DAY4_SUBMISSION.md)
 - **Production Health Check:** `https://cynaris-recruitment-production.up.railway.app/api/health`
 
 ---
@@ -409,6 +411,20 @@
   - Architecture Blueprint: [`docs/CAREER_INTELLIGENCE_REPORT_ARCHITECTURE.md`](docs/CAREER_INTELLIGENCE_REPORT_ARCHITECTURE.md).
   - Official Submission Report: [`docs/WEEK8_DAY3_SUBMISSION.md`](docs/WEEK8_DAY3_SUBMISSION.md).
 
+### Week 8 Day 4 — CIA Memory Layer: ChromaDB Persistent Intern Profile
+
+- **Disk-Backed Persistent ChromaDB Store (`ChromaPersistentStore.js`):**
+  - Persists vector collections (`cynaris_intern_profiles`, `cynaris_intern_memory_events`, `cynaris_internship_roles`) atomically on disk using temp-file + rename semantics so intern progress, skills, and history survive restarts.
+- **20 Seeded Role Embeddings & Memory-Aware Internship Matching:**
+  - Seeds all 20 role profiles from [`data/internship_roles.json`](data/internship_roles.json) with 384-dim `sentence-transformers` embeddings into `cynaris_internship_roles`.
+  - `POST /candidate/cia/career/match-internships` auto-recalls persisted intern skills from `cynaris_intern_profiles` if omitted, ranks Top 5 matches via cosine similarity, displays match % and missing skills, and logs match events to persistent memory.
+- **Semantic Memory Recall & Reasoning UI:**
+  - Interactive Express view [`backend/public/chromadb-memory.html`](backend/public/chromadb-memory.html) and Laravel Blade parity [`resources/views/candidate/cia.blade.php`](resources/views/candidate/cia.blade.php) (`#chromadb-memory-layer-section`) with Groq/OpenRouter memory reasoning (`/api/cia/memory/query`).
+- **Automated Test Suite & Documentation:**
+  - [`tests/test_cia_memory_layer.js`](tests/test_cia_memory_layer.js): 6 tests covering disk rehydration across restarts, 20-role seeding, memory-backed matching, semantic reasoning + fallbacks, Express API, and Laravel/UI parity.
+  - Architecture Blueprint: [`docs/CIA_MEMORY_LAYER_CHROMADB.md`](docs/CIA_MEMORY_LAYER_CHROMADB.md).
+  - Official Submission Report: [`docs/WEEK8_DAY4_SUBMISSION.md`](docs/WEEK8_DAY4_SUBMISSION.md).
+
 ---
 
 ## ⏰ Week 4: Node.js Architecture, Microservices & Smart Automation
@@ -630,7 +646,9 @@ docker compose -f docker-compose.espocrm.yml up -d
 
 ```powershell
 npm test
-# Runs all 35 unit test suites across Career Intelligence Report & Archetypes, Placement & Interview Readiness Scores, Docling + Groq ATS Resume Intelligence, LangGraph Workflow Learning Path Generator, ChromaDB Vector Search Internship Matching, CrewAI Career Recommendation Engine, LlamaIndex + Groq Skill Gap RAG Pipeline, Career Intelligence (CIA Mode) Architecture & Contracts, Moodle Deployment & Capstone Architecture, Moodle Database Performance Audit & Index Optimization, Moodle AI Learning Recommendations (Groq + OpenRouter + 5 Core Tables), Moodle AI Quiz Generation, Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+# Runs all 36 unit test suites across CIA Persistent ChromaDB Memory, Career Intelligence Report & Archetypes, Placement & Interview Readiness Scores, Docling + Groq ATS Resume Intelligence, LangGraph Workflow Learning Path Generator, ChromaDB Vector Search Internship Matching, CrewAI Career Recommendation Engine, LlamaIndex + Groq Skill Gap RAG Pipeline, Career Intelligence (CIA Mode) Architecture & Contracts, Moodle Deployment & Capstone Architecture, Moodle Database Performance Audit & Index Optimization, Moodle AI Learning Recommendations (Groq + OpenRouter + 5 Core Tables), Moodle AI Quiz Generation, Moodle AI Tutor, Moodle Assessment & UI Bug Fixes, Moodle Chart.js Dashboards, Moodle Block Plugins (block_cynaris_stats), Moodle Core Tables & Queries, Moodle Setup, CI/CD, Docker, Stateless JWT Auth, MySQL CRUD, Express Routing, Preferences, Node.js Architecture, Smart Reminders, EspoCRM, React Router, Workflows, and Virtual DOM
+npm run test:w8d4
+# Runs Week 8 Day 4 CIA Memory Layer (ChromaDB Persistent Intern Profile) test suite individually
 npm run test:w8d3
 # Runs Week 8 Day 3 Career Intelligence Report & Archetype Map test suite individually
 npm run test:w8d2
