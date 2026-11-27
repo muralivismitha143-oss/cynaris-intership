@@ -1927,6 +1927,59 @@
 - Verified full regression test suite with all 33 suites passing (`npm test`).
 
 
+---
+
+# Week 8 Day 2: Module 6 & 7: Placement Readiness Score + Interview Readiness Score
+
+**Student Name:** Murali  
+**Branch:** `feat/cynaris-w8d2-murali`  
+**Date:** November 27, 2026  
+**Lesson:** Week 8 Day 2 — Module 6 & 7: Placement Readiness Score + Interview Readiness Score  
+
+---
+
+## Interaction 1: CIA → Full Stack Mentor Mode
+
+### Prompt / Query
+> *"I am implementing Module 6 & 7 (Placement Readiness Score + Interview Readiness Score) for Week 8 Day 2. Placement Readiness combines project completion % (40%), assessment scores (30%), CIA usage hours (10%), and documentation quality (20%) and must be stored in DB. Interview Readiness combines viva scores (40%), code review scores (30%), demo communication clarity (20%), and Git workflow quality (10%). Both produce 0–100 scores, A/B/C/D grades, and improvement recommendations, plus an Admin table with CSV export and a Student scorecard with Top 3 AI-generated improvement actions. Could you review my architecture, database schema, and separation of concerns before I commit?"*
+
+### CIA Mentor Review & Feedback
+1. **Separation of Scoring Logic, AI Synthesis, and Persistence:**
+   - Isolate deterministic weighted calculations (`calculatePlacementReadiness`, `calculateInterviewReadiness`), grade mapping (`A/B/C/D`), and RFC 4180 CSV serialization into a pure module (`ReadinessScoringEngine.js`). This keeps the math 100% deterministic and testable without network dependencies.
+   - Compute exact 0–100 scores and component breakdowns *before* calling Groq (`llama-3.3-70b-versatile`) or OpenRouter (`meta-llama/llama-3.3-70b-instruct`), passing verified scores and ChromaDB vector benchmarks into the prompt so the LLM generates grounded Top 3 improvement actions rather than inventing numbers.
+2. **Database Schema & Atomic Persistence:**
+   - Provision a dedicated `intern_readiness_scores` table with `UNIQUE KEY uk_intern_id (intern_id)` and secondary indexes on `placement_readiness_score` and `interview_readiness_score`.
+   - Use parameterized prepared statements (`?`) inside a transaction (`beginTransaction` / `commit` / `rollback`) in `ReadinessRepository` so score upserts and `audit_logs` writes succeed or roll back atomically.
+3. **Admin & Student Views:**
+   - Expose distinct REST endpoints (`/api/cia/readiness/admin`, `/api/cia/readiness/student/:internId`, `/api/cia/readiness/calculate`, `/api/cia/readiness/export-csv`) and mirror them across both Express (`readiness.html` + `ciaRouter.js`) and Laravel (`CiaController.php` + `cia.blade.php`).
+
+### Action Taken
+- Created `intern_readiness_scores` table and seed cohort in [`backend/database/schema.sql`](../backend/database/schema.sql) and [`backend/database/readinessRepository.js`](../backend/database/readinessRepository.js).
+- Built pure scoring & CSV engine in [`backend/modules/ai/ReadinessScoringEngine.js`](../backend/modules/ai/ReadinessScoringEngine.js) and wired vector + multi-tier LLM pipeline into [`backend/modules/ai/CareerIntelligenceService.js`](../backend/modules/ai/CareerIntelligenceService.js).
+
+---
+
+## Interaction 2: CIA → Code Mode
+
+### Prompt / Query
+> *"Review my Placement & Interview Readiness scoring engine, DB repository, API routes, and CSV export implementation. What edge cases, security risks, or boundary bugs could I have missed?"*
+
+### CIA Code Mode Audit & Recommendations
+
+| Layer | Component Inspected | Identified Risk / Edge Case | Architectural Mitigation Applied |
+|---|---|---|---|
+| **CIA Hours Normalization** | `ReadinessScoringEngine.js` | Unbounded `cia_usage_hours` (e.g., `35` hours) pushing the weighted Placement score above `100`. | Normalized `cia_usage_hours` against a `20`-hour benchmark and clamped `cia_usage_normalized` and final scores strictly to `[0, 100]`. |
+| **Input Validation** | `ReadinessScoringEngine.js` & `ciaRouter.js` | Non-numeric strings (`"abc"`, `"NaN"`) silently coercing to `NaN` and corrupting DB rows. | Implemented `parseClampedMetric()` throwing explicit `Invalid numeric value` errors mapped to HTTP `400 Bad Request`. |
+| **CSV Formula Injection** | `ReadinessScoringEngine.js` | Intern names or target roles starting with `=`, `+`, `-`, or `@` executing as formulas in Excel/Sheets on CSV export. | Added `escapeCsvCell()` prefixing formula characters with `'` and enforcing RFC 4180 double-quote escaping. |
+| **Dual LLM Outage** | `CareerIntelligenceService.js` | Simulated or real dual outage (`Groq` + `OpenRouter`) crashing the request handler. | Returned structured HTTP `502` payload with clear diagnostic message when `simulateBothFailure` is active, and deterministic Top 3 fallback in offline mode. |
+| **Route Parameter Safety** | `ciaRouter.js` | Non-integer `:internId` (e.g., `/student/abc` or `/student/-1`) returning misleading `404` or querying invalid IDs. | Validated `Number.isInteger(internId) && internId >= 1`, returning HTTP `400` on malformed IDs and `404` when not found. |
+
+### Action Taken
+- Added strict metric clamping, non-numeric validation, RFC 4180 + formula-injection CSV sanitization, and positive-integer route checks.
+- Built [`tests/test_readiness_scores.js`](../tests/test_readiness_scores.js) (16/16 assertions passing) and verified full regression suite via `npm test` (34/34 suites passing).
+
+
+
 
 
 
