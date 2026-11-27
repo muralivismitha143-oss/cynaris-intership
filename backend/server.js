@@ -277,12 +277,27 @@ ${applicant.name} presents a well-rounded candidate profile for the ${applicant.
 
 // Check API health
 app.get("/api/health", (req, res) => {
+  const dbMetrics = mysqlClient.getMetrics();
   res.json({
     status: "ok",
-    message: "Interview API is running",
+    message: "Cynaris Recruitment & Career Intelligence API is running",
+    environment: process.env.NODE_ENV || "development",
     ai_providers: {
       primary: "Groq (llama-3.3-70b-versatile)",
       fallback: "OpenRouter (meta-llama/llama-3.3-70b-instruct)"
+    },
+    modules_ready: [
+      "recruitment_pipeline",
+      "smart_reminders",
+      "moodle_lms_bridge",
+      "career_intelligence_cia",
+      "placement_interview_readiness",
+      "career_report_archetypes",
+      "chromadb_persistent_memory"
+    ],
+    database: {
+      driver: dbMetrics.activeDriver,
+      isLiveConnected: dbMetrics.isLiveConnected
     },
     performance_telemetry: {
       totalRequests: performanceMetrics.totalRequests,
