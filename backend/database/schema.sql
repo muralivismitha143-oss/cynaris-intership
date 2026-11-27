@@ -72,6 +72,57 @@ CREATE TABLE IF NOT EXISTS `audit_logs` (
   INDEX `idx_event_entity` (`event_type`, `entity_type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 5. Intern Placement & Interview Readiness Scores Table (Week 8 Day 2: Module 6 & 7)
+CREATE TABLE IF NOT EXISTS `intern_readiness_scores` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `intern_id` INT NOT NULL,
+  `intern_name` VARCHAR(150) NOT NULL,
+  `intern_email` VARCHAR(150),
+  `target_role` VARCHAR(150) NOT NULL DEFAULT 'Full Stack Developer',
+  `project_completion_pct` DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+  `assessment_score` DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+  `cia_usage_hours` DECIMAL(6, 2) NOT NULL DEFAULT 0.00,
+  `documentation_quality` DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+  `placement_readiness_score` DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+  `placement_grade` CHAR(1) NOT NULL DEFAULT 'D',
+  `viva_score` DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+  `code_review_score` DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+  `demo_clarity_score` DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+  `git_workflow_score` DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+  `interview_readiness_score` DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+  `interview_grade` CHAR(1) NOT NULL DEFAULT 'D',
+  `improvement_recommendations` JSON,
+  `ai_provider` VARCHAR(100) DEFAULT 'Groq',
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY `uk_intern_id` (`intern_id`),
+  INDEX `idx_placement_score` (`placement_readiness_score`),
+  INDEX `idx_interview_score` (`interview_readiness_score`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 6. Candidate Career Intelligence Reports Table (Week 8 Day 3)
+CREATE TABLE IF NOT EXISTS `candidate_reports` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `candidate_id` INT NOT NULL,
+  `candidate_name` VARCHAR(150) NOT NULL,
+  `target_role` VARCHAR(150) NOT NULL DEFAULT 'Senior Full Stack Engineer',
+  `primary_archetype` VARCHAR(50) NOT NULL,
+  `secondary_archetype` VARCHAR(50) NOT NULL,
+  `archetype_scores` JSON NOT NULL,
+  `trait_profile` JSON NOT NULL,
+  `employability_score` DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+  `ai_readiness_score` DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+  `placement_readiness_score` DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+  `report_narrative` TEXT NOT NULL,
+  `recommendations` JSON NOT NULL,
+  `ai_provider` VARCHAR(100) NOT NULL DEFAULT 'Groq',
+  `ai_model` VARCHAR(120) NOT NULL DEFAULT 'llama-3.3-70b-versatile',
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX `idx_candidate_reports_candidate` (`candidate_id`),
+  INDEX `idx_candidate_reports_archetype` (`primary_archetype`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ==============================================================================
 -- Initial Seed Data
 -- ==============================================================================
@@ -87,3 +138,17 @@ VALUES
 (2, 'Priya Sharma', 'Backend Engineer', 'Technical Round 1', 3.5, 'Python, FastAPI, Django, PostgreSQL, Docker, Redis', 'M.Tech Software Engineering (2023)', 'Backend Developer specializing in high-throughput microservices using Python, FastAPI, and PostgreSQL.'),
 (3, 'Arun Kumar', 'Frontend Developer', 'HR Round', 1.5, 'Vue.js 3, TypeScript, Tailwind CSS, Vite', 'B.Sc Computer Science (2025)', 'Frontend Engineer passionate about responsive UX and state management.'),
 (4, 'Neha Gupta', 'Senior DevOps Specialist', 'Offered', 5.0, 'Kubernetes, Terraform, AWS, Prometheus', 'B.Tech IT (2021)', 'Cloud DevOps Engineer designing resilient multi-region infrastructure.');
+
+INSERT IGNORE INTO `intern_readiness_scores` (
+  `intern_id`, `intern_name`, `intern_email`, `target_role`,
+  `project_completion_pct`, `assessment_score`, `cia_usage_hours`, `documentation_quality`,
+  `placement_readiness_score`, `placement_grade`,
+  `viva_score`, `code_review_score`, `demo_clarity_score`, `git_workflow_score`,
+  `interview_readiness_score`, `interview_grade`, `ai_provider`
+)
+VALUES
+(1, 'Murali V', 'murali@cynaris.dev', 'Senior Full Stack Engineer', 94.00, 91.00, 19.50, 92.00, 93.10, 'A', 90.00, 92.00, 89.00, 95.00, 90.90, 'A', 'Groq'),
+(2, 'Priya Sharma', 'priya.sharma@cynaris.dev', 'Backend Systems Architect', 88.00, 86.00, 16.00, 84.00, 85.80, 'A', 84.00, 88.00, 82.00, 90.00, 85.40, 'A', 'Groq'),
+(3, 'Rahul Kumar', 'rahul.kumar@cynaris.dev', 'Full Stack Developer', 76.00, 74.00, 12.00, 70.00, 72.60, 'B', 72.00, 75.00, 74.00, 80.00, 74.10, 'B', 'Groq'),
+(4, 'Arun Kumar', 'arun.kumar@cynaris.dev', 'Frontend Engineer', 62.00, 65.00, 8.00, 58.00, 59.90, 'C', 60.00, 62.00, 65.00, 68.00, 62.40, 'C', 'OpenRouter (Fallback)'),
+(5, 'Vikram Nair', 'vikram.nair@cynaris.dev', 'Junior Cloud Intern', 48.00, 50.00, 5.00, 45.00, 45.70, 'D', 46.00, 48.00, 52.00, 55.00, 48.70, 'D', 'Local Deterministic Engine');

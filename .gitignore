@@ -22,3 +22,6 @@ Thumbs.db
 __pycache__/
 *.pyc
 *.pyo
+
+# Runtime ChromaDB vector store persistence
+backend/data/chromadb_store.json

@@ -24,6 +24,9 @@ const { authRouter } = require("./routes/authRouter");
 // Moodle LMS Integration (Week 5 Day 1 - Moodle LMS Docker Setup & Architecture)
 const moodleRouter = require("./routes/moodleRouter");
 
+// Career Intelligence Advisor CIA Mode (Week 7 Day 1 - CIA Mode & API Contracts)
+const ciaRouter = require("./routes/ciaRouter");
+
 const reminderStore = new ReminderStore();
 const ruleEngine = new RuleEngine(reminderStore);
 const aiTimingEngine = new AiTimingEngine();
@@ -111,6 +114,8 @@ app.use("/api/performance", diagnosticsRouter);
 app.use("/api/database", dbRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/moodle", moodleRouter);
+app.use("/api/cia", ciaRouter);
+app.use("/candidate/cia", ciaRouter);
 app.use("/static/preferences", express.static(path.join(__dirname, "public/preferences"), {
   maxAge: "1d",
   etag: true,
