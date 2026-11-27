@@ -24,6 +24,9 @@ const { authRouter } = require("./routes/authRouter");
 // Moodle LMS Integration (Week 5 Day 1 - Moodle LMS Docker Setup & Architecture)
 const moodleRouter = require("./routes/moodleRouter");
 
+// Career Intelligence Advisor CIA Mode (Week 7 Day 1 - CIA Mode & API Contracts)
+const ciaRouter = require("./routes/ciaRouter");
+
 const reminderStore = new ReminderStore();
 const ruleEngine = new RuleEngine(reminderStore);
 const aiTimingEngine = new AiTimingEngine();
@@ -111,6 +114,8 @@ app.use("/api/performance", diagnosticsRouter);
 app.use("/api/database", dbRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/moodle", moodleRouter);
+app.use("/api/cia", ciaRouter);
+app.use("/candidate/cia", ciaRouter);
 app.use("/static/preferences", express.static(path.join(__dirname, "public/preferences"), {
   maxAge: "1d",
   etag: true,
@@ -272,12 +277,27 @@ ${applicant.name} presents a well-rounded candidate profile for the ${applicant.
 
 // Check API health
 app.get("/api/health", (req, res) => {
+  const dbMetrics = mysqlClient.getMetrics();
   res.json({
     status: "ok",
-    message: "Interview API is running",
+    message: "Cynaris Recruitment & Career Intelligence API is running",
+    environment: process.env.NODE_ENV || "development",
     ai_providers: {
       primary: "Groq (llama-3.3-70b-versatile)",
       fallback: "OpenRouter (meta-llama/llama-3.3-70b-instruct)"
+    },
+    modules_ready: [
+      "recruitment_pipeline",
+      "smart_reminders",
+      "moodle_lms_bridge",
+      "career_intelligence_cia",
+      "placement_interview_readiness",
+      "career_report_archetypes",
+      "chromadb_persistent_memory"
+    ],
+    database: {
+      driver: dbMetrics.activeDriver,
+      isLiveConnected: dbMetrics.isLiveConnected
     },
     performance_telemetry: {
       totalRequests: performanceMetrics.totalRequests,

@@ -53,6 +53,7 @@ COPY --from=builder --chown=cynarisuser:cynarisgroup /app/backend/node_modules .
 
 # Copy essential application source code with non-root ownership
 COPY --chown=cynarisuser:cynarisgroup package.json ./
+COPY --chown=cynarisuser:cynarisgroup data ./data
 COPY --chown=cynarisuser:cynarisgroup backend ./backend
 COPY --chown=cynarisuser:cynarisgroup client ./client
 COPY --chown=cynarisuser:cynarisgroup application ./application
