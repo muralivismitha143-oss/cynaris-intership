@@ -755,6 +755,93 @@ timeline
             </div>
         </div>
 
+        <!-- Week 8 Day 2: Module 6 & 7: Placement Readiness Score + Interview Readiness Score -->
+        <div class="card" id="readiness-scores-section" style="margin-bottom: 2rem; border-top: 4px solid #4f46e5;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                <div>
+                    <h3 style="margin: 0; color: #1e293b; font-size: 1.15rem;">🎓 Module 6 &amp; 7: Placement Readiness + Interview Readiness Scores</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0.25rem 0 0 0;">
+                        Student Personal Score Card (0&ndash;100, Grade A/B/C/D, Top 3 AI Actions) &bull; Admin Cohort Table &amp; CSV Export
+                    </p>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn" id="btn-calculate-readiness" type="button" style="background: #4f46e5; color: #ffffff; border: none; padding: 0.45rem 0.9rem; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                        ⚡ Recalculate Readiness
+                    </button>
+                    <button class="btn" id="btn-export-readiness-csv" type="button" style="background: #059669; color: #ffffff; border: none; padding: 0.45rem 0.9rem; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                        📥 Export CSV
+                    </button>
+                </div>
+            </div>
+
+            <div id="readiness-status-announcement" role="status" aria-live="polite" style="font-size: 0.82rem; color: #4338ca; margin-bottom: 0.75rem; font-weight: 600;">
+                Placement Readiness: 93.1/100 (Grade A) &bull; Interview Readiness: 90.9/100 (Grade A) &bull; Stored in MySQL.
+            </div>
+
+            <!-- Student Personal Score Card View -->
+            <div id="student-readiness-view" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
+                <div style="background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 8px; padding: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong>📊 Placement Readiness Score</strong>
+                        <span id="student-placement-grade" class="badge" style="background: #059669; color: #ffffff;">93.1 / 100 (Grade A)</span>
+                    </div>
+                    <ul style="font-size: 0.82rem; color: #334155; margin: 0.5rem 0 0 0; padding-left: 1.15rem;">
+                        <li>Project Completion % (40%): 94%</li>
+                        <li>Assessment Scores (30%): 91%</li>
+                        <li>CIA Usage Hours (10%): 19.5h</li>
+                        <li>Documentation Quality (20%): 92%</li>
+                    </ul>
+                </div>
+
+                <div style="background: #ecfeff; border: 1px solid #a5f3fc; border-radius: 8px; padding: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong>🎤 Interview Readiness Score</strong>
+                        <span id="student-interview-grade" class="badge" style="background: #059669; color: #ffffff;">90.9 / 100 (Grade A)</span>
+                    </div>
+                    <ul style="font-size: 0.82rem; color: #334155; margin: 0.5rem 0 0 0; padding-left: 1.15rem;">
+                        <li>Viva Scores (40%): 90%</li>
+                        <li>Code Review Scores (30%): 92%</li>
+                        <li>Communication Clarity in Demos (20%): 89%</li>
+                        <li>Git Workflow Quality (10%): 95%</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Top 3 AI-Generated Improvement Actions -->
+            <div id="readiness-top3-actions" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; margin-bottom: 1.25rem;">
+                <h4 style="margin: 0 0 0.5rem 0; font-size: 0.95rem; color: #0f172a;">🤖 Top 3 AI-Generated Improvement Actions</h4>
+                <ol style="margin: 0; padding-left: 1.25rem; font-size: 0.84rem; color: #334155;">
+                    <li><strong>Polish Live System Architecture Demo Pacing</strong> (Medium &bull; ~2h)</li>
+                    <li><strong>Complete Remaining 0.5h CIA Edge-Case Reviews</strong> (Low &bull; ~1h)</li>
+                    <li><strong>Practice High-Scale Viva Tradeoff Drills</strong> (Low &bull; ~2h)</li>
+                </ol>
+            </div>
+
+            <!-- Admin Cohort Table View -->
+            <div id="admin-readiness-view">
+                <h4 style="margin: 0 0 0.5rem 0; font-size: 0.95rem; color: #0f172a;">🛡️ Admin View: All Interns Readiness Cohort</h4>
+                <table id="admin-readiness-table">
+                    <thead>
+                        <tr>
+                            <th>Intern</th>
+                            <th>Role</th>
+                            <th>Placement Score</th>
+                            <th>Placement Grade</th>
+                            <th>Interview Score</th>
+                            <th>Interview Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-readiness-tbody">
+                        <tr><td>Murali V</td><td>Senior Full Stack Engineer</td><td>93.1</td><td>A</td><td>90.9</td><td>A</td></tr>
+                        <tr><td>Priya Sharma</td><td>Backend Systems Architect</td><td>85.8</td><td>A</td><td>85.4</td><td>A</td></tr>
+                        <tr><td>Rahul Kumar</td><td>Full Stack Developer</td><td>72.6</td><td>B</td><td>74.1</td><td>B</td></tr>
+                        <tr><td>Arun Kumar</td><td>Frontend Engineer</td><td>59.9</td><td>C</td><td>62.4</td><td>C</td></tr>
+                        <tr><td>Vikram Nair</td><td>Junior Cloud Intern</td><td>45.7</td><td>D</td><td>48.7</td><td>D</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- AI Recommendations Drawer (W3C ARIA compliant) -->
         <div class="ai-panel" id="cia-recommendations-drawer" role="region" aria-label="Career Intelligence Recommendations">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
@@ -1327,6 +1414,45 @@ timeline
             }
             if (doclingBtn) {
                 doclingBtn.addEventListener('click', triggerResumeIntelligenceATS);
+            }
+
+            const calcReadinessBtn = document.getElementById('btn-calculate-readiness');
+            const exportReadinessCsvBtn = document.getElementById('btn-export-readiness-csv');
+            const readinessStatusEl = document.getElementById('readiness-status-announcement');
+
+            async function triggerReadinessRecalculation() {
+                try {
+                    const resp = await fetch('/candidate/cia/career/readiness/calculate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ intern_id: 1 })
+                    });
+                    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                    const data = await resp.json();
+                    if (data && data.placement_readiness && data.interview_readiness) {
+                        const pg = document.getElementById('student-placement-grade');
+                        const ig = document.getElementById('student-interview-grade');
+                        if (pg) pg.textContent = data.placement_readiness.score + ' / 100 (Grade ' + data.placement_readiness.grade + ')';
+                        if (ig) ig.textContent = data.interview_readiness.score + ' / 100 (Grade ' + data.interview_readiness.grade + ')';
+                        if (readinessStatusEl) {
+                            readinessStatusEl.textContent = 'Placement: ' + data.placement_readiness.score + ' (' + data.placement_readiness.grade + ') • Interview: ' + data.interview_readiness.score + ' (' + data.interview_readiness.grade + ')';
+                        }
+                    }
+                } catch (err) {
+                    console.warn('Readiness calculation notice:', err.message);
+                }
+            }
+
+            if (calcReadinessBtn) {
+                calcReadinessBtn.addEventListener('click', triggerReadinessRecalculation);
+            }
+            if (exportReadinessCsvBtn) {
+                exportReadinessCsvBtn.addEventListener('click', function () {
+                    window.location.href = '/candidate/cia/career/readiness/export-csv';
+                });
             }
         });
     </script>

@@ -47,6 +47,12 @@ Route::prefix('candidate/cia')->name('candidate.cia.')->group(function () {
     // Module 5: Resume Intelligence (Docling + Groq ATS Scoring) Endpoint (Week 8 Day 1)
     Route::post('/career/resume-intelligence', [CiaController::class, 'resumeIntelligence'])->name('career.resume-intelligence');
 
+    // Module 6 & 7: Placement & Interview Readiness Score Endpoints (Week 8 Day 2)
+    Route::post('/career/readiness/calculate', [CiaController::class, 'calculateReadiness'])->name('career.readiness.calculate');
+    Route::get('/career/readiness/admin', [CiaController::class, 'adminReadiness'])->name('career.readiness.admin');
+    Route::get('/career/readiness/student/{id?}', [CiaController::class, 'studentReadiness'])->name('career.readiness.student');
+    Route::get('/career/readiness/export-csv', [CiaController::class, 'exportReadinessCsv'])->name('career.readiness.export-csv');
+
     // Health & Provider Diagnostics
     Route::get('/health', [CiaController::class, 'health'])->name('health');
 });

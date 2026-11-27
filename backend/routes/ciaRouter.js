@@ -314,4 +314,97 @@ router.post('/career/resume-intelligence', async (req, res) => {
   }
 });
 
+// =============================================================================
+// WEEK 8 DAY 2: MODULE 6 & 7 — PLACEMENT & INTERVIEW READINESS SCORES
+// =============================================================================
+
+async function handleCalculateReadiness(req, res) {
+  try {
+    const body = req.body || {};
+    const options = {
+      simulateGroqFailure: Boolean(body.simulateGroqFailure || body.simulate_groq_failure || req.query.simulate_groq === 'true'),
+      simulateBothFailure: Boolean(body.simulateBothFailure || body.simulate_both_failure || req.query.simulate_both === 'true')
+    };
+
+    const result = await careerIntelligenceService.evaluateInternReadiness(body, options);
+    if (!result.success) {
+      return res.status(502).json(result);
+    }
+    res.status(200).json(result);
+  } catch (err) {
+    const status = err.message && (err.message.includes('Invalid') || err.message.includes('must be')) ? 400 : 500;
+    res.status(status).json({
+      success: false,
+      error: err.message
+    });
+  }
+}
+
+router.post('/readiness/calculate', handleCalculateReadiness);
+router.post('/career/readiness/calculate', handleCalculateReadiness);
+
+async function handleStudentReadiness(req, res) {
+  try {
+    const rawId = req.params.internId ?? req.query.intern_id ?? 1;
+    const internId = Number(rawId);
+    if (!Number.isInteger(internId) || internId < 1) {
+      return res.status(400).json({
+        success: false,
+        error: `Invalid internId '${rawId}'. Must be a positive integer.`
+      });
+    }
+
+    const card = await careerIntelligenceService.getStudentReadinessCard(internId);
+    if (!card) {
+      return res.status(404).json({
+        success: false,
+        error: `Readiness scorecard not found for intern #${internId}`
+      });
+    }
+    res.status(200).json(card);
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+}
+
+router.get('/readiness/student', handleStudentReadiness);
+router.get('/readiness/student/:internId', handleStudentReadiness);
+router.get('/career/readiness/student/:internId', handleStudentReadiness);
+
+async function handleAdminReadiness(req, res) {
+  try {
+    const overview = await careerIntelligenceService.getAdminReadinessOverview();
+    res.status(200).json(overview);
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+}
+
+router.get('/readiness/admin', handleAdminReadiness);
+router.get('/readiness/interns', handleAdminReadiness);
+router.get('/career/readiness/admin', handleAdminReadiness);
+
+async function handleExportReadinessCsv(req, res) {
+  try {
+    const csv = await careerIntelligenceService.exportAdminReadinessCsv();
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="intern-readiness-scores.csv"');
+    res.status(200).send(csv);
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+}
+
+router.get('/readiness/export-csv', handleExportReadinessCsv);
+router.get('/career/readiness/export-csv', handleExportReadinessCsv);
+
 module.exports = router;

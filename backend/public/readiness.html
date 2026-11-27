@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 6 &amp; 7: Placement &amp; Interview Readiness Dashboard — Cynaris</title>
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --indigo: #4f46e5;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --grade-a: #059669;
+      --grade-b: #0284c7;
+      --grade-c: #d97706;
+      --grade-d: #dc2626;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 1.5rem;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .shell {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+    .topbar {
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #f8fafc;
+      border-radius: 12px;
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .topbar h1 { margin: 0.25rem 0 0 0; font-size: 1.55rem; }
+    .eyebrow { font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: #38bdf8; font-weight: 700; margin: 0; }
+    .sub { color: #cbd5e1; margin: 0.35rem 0 0 0; font-size: 0.88rem; }
+    .tabs {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .tab-btn {
+      padding: 0.65rem 1.25rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text);
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.35rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      margin-bottom: 1.5rem;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 1.25rem;
+    }
+    .score-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .score-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.65rem;
+      font-weight: 800;
+    }
+    .grade-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 1.1rem;
+    }
+    .grade-A { background: var(--grade-a); }
+    .grade-B { background: var(--grade-b); }
+    .grade-C { background: var(--grade-c); }
+    .grade-D { background: var(--grade-d); }
+    .bar-row { margin-bottom: 0.75rem; }
+    .bar-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.84rem;
+      margin-bottom: 0.25rem;
+      font-weight: 600;
+    }
+    .bar-track {
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 999px;
+    }
+    .action-card {
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--indigo);
+      border-radius: 8px;
+      padding: 0.9rem 1rem;
+      margin-bottom: 0.75rem;
+      background: #f8fafc;
+    }
+    .btn {
+      padding: 0.55rem 1.05rem;
+      border-radius: 6px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.88rem;
+    }
+    .btn-primary { background: var(--primary); color: #ffffff; }
+    .btn-success { background: #059669; color: #ffffff; }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+      gap: 0.85rem;
+      margin-bottom: 1rem;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.88rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    th, td {
+      padding: 0.7rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    th {
+      background: #f8fafc;
+      color: #475569;
+      font-weight: 700;
+    }
+    .badge-sm {
+      display: inline-block;
+      padding: 0.18rem 0.55rem;
+      border-radius: 999px;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.76rem;
+    }
+    .hidden { display: none; }
+    .status-line {
+      font-size: 0.84rem;
+      color: #0369a1;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">CYNARIS CAREER INTELLIGENCE &middot; WEEK 8 DAY 2</p>
+        <h1>Placement Readiness &amp; Interview Readiness</h1>
+        <p class="sub">Module 6 &amp; 7 &middot; Weighted 0&ndash;100 Scoring (A/B/C/D) &middot; DB Persistence &middot; Groq + OpenRouter AI Actions &middot; CSV Export</p>
+      </div>
+      <div>
+        <a href="/" style="color:#93c5fd; font-size:0.85rem; text-decoration:none;">&larr; Recruitment Pipeline</a>
+      </div>
+    </header>
+
+    <div class="tabs" role="tablist">
+      <button type="button" class="tab-btn active" id="tab-student-btn">🎓 Student Personal Score Card</button>
+      <button type="button" class="tab-btn" id="tab-admin-btn">🛡️ Admin Cohort View &amp; CSV Export</button>
+    </div>
+
+    <div id="readiness-status" class="status-line" role="status" aria-live="polite">
+      Loading readiness analytics from MySQL/In-Memory repository...
+    </div>
+
+    <!-- STUDENT VIEW -->
+    <section id="student-view-panel">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1rem;">
+          <div>
+            <h2 style="margin:0; font-size:1.15rem;">Student Selector &amp; Live Score Recalculation</h2>
+            <p style="margin:0.2rem 0 0 0; font-size:0.84rem; color:var(--muted);">Adjust metrics and recalculate to persist updated scores in DB and regenerate AI actions.</p>
+          </div>
+          <div style="display:flex; gap:0.6rem; align-items:center;">
+            <select id="student-select" style="padding:0.45rem 0.75rem; border-radius:6px; border:1px solid var(--border);"></select>
+            <button type="button" class="btn btn-primary" id="btn-recalculate-student">⚡ Recalculate &amp; Save to DB</button>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="inp-proj">Project Completion % (40%)</label>
+            <input id="inp-proj" type="number" min="0" max="100" step="0.5" value="94" />
+          </div>
+          <div class="form-group">
+            <label for="inp-assess">Assessment Score (30%)</label>
+            <input id="inp-assess" type="number" min="0" max="100" step="0.5" value="91" />
+          </div>
+          <div class="form-group">
+            <label for="inp-cia">CIA Usage Hours (10%, /20h)</label>
+            <input id="inp-cia" type="number" min="0" max="100" step="0.5" value="19.5" />
+          </div>
+          <div class="form-group">
+            <label for="inp-doc">Documentation Quality (20%)</label>
+            <input id="inp-doc" type="number" min="0" max="100" step="0.5" value="92" />
+          </div>
+          <div class="form-group">
+            <label for="inp-viva">Viva Score (40%)</label>
+            <input id="inp-viva" type="number" min="0" max="100" step="0.5" value="90" />
+          </div>
+          <div class="form-group">
+            <label for="inp-coderev">Code Review Score (30%)</label>
+            <input id="inp-coderev" type="number" min="0" max="100" step="0.5" value="92" />
+          </div>
+          <div class="form-group">
+            <label for="inp-demo">Demo Clarity (20%)</label>
+            <input id="inp-demo" type="number" min="0" max="100" step="0.5" value="89" />
+          </div>
+          <div class="form-group">
+            <label for="inp-git">Git Workflow Quality (10%)</label>
+            <input id="inp-git" type="number" min="0" max="100" step="0.5" value="95" />
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card" id="student-placement-card">
+          <div class="score-header">
+            <div>
+              <h3 style="margin:0;">📊 Placement Readiness Score</h3>
+              <span style="font-size:0.8rem; color:var(--muted);">Module 6 &middot; Weighted 40/30/10/20%</span>
+            </div>
+            <div class="score-pill">
+              <span id="placement-score-val">--</span>
+              <span id="placement-grade-badge" class="grade-badge grade-A">-</span>
+            </div>
+          </div>
+          <div id="placement-breakdown-bars"></div>
+        </div>
+
+        <div class="card" id="student-interview-card">
+          <div class="score-header">
+            <div>
+              <h3 style="margin:0;">🎤 Interview Readiness Score</h3>
+              <span style="font-size:0.8rem; color:var(--muted);">Module 7 &middot; Weighted 40/30/20/10%</span>
+            </div>
+            <div class="score-pill">
+              <span id="interview-score-val">--</span>
+              <span id="interview-grade-badge" class="grade-badge grade-A">-</span>
+            </div>
+          </div>
+          <div id="interview-breakdown-bars"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+          <h3 style="margin:0;">🤖 Top 3 AI-Generated Improvement Actions</h3>
+          <span id="student-ai-provider" style="font-size:0.78rem; background:#e0f2fe; color:#0369a1; padding:0.25rem 0.65rem; border-radius:999px; font-weight:700;">Groq</span>
+        </div>
+        <p id="student-exec-summary" style="font-size:0.88rem; color:#334155; margin-top:0;"></p>
+        <div id="top3-actions-list"></div>
+      </div>
+    </section>
+
+    <!-- ADMIN VIEW -->
+    <section id="admin-view-panel" class="hidden">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1rem;">
+          <div>
+            <h2 style="margin:0; font-size:1.15rem;">Admin Cohort Readiness Matrix (All Interns)</h2>
+            <p id="admin-cohort-summary" style="margin:0.25rem 0 0 0; font-size:0.85rem; color:var(--muted);">Loading cohort summary...</p>
+          </div>
+          <button type="button" class="btn btn-success" id="btn-export-csv">📥 Export as CSV</button>
+        </div>
+
+        <div style="overflow-x:auto;">
+          <table id="admin-cohort-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Intern Name</th>
+                <th>Target Role</th>
+                <th>Placement Score</th>
+                <th>Placement Grade</th>
+                <th>Project % / Assess / CIA h / Docs</th>
+                <th>Interview Score</th>
+                <th>Interview Grade</th>
+                <th>Viva / CodeRev / Demo / Git</th>
+              </tr>
+            </thead>
+            <tbody id="admin-cohort-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const statusEl = document.getElementById('readiness-status');
+      const tabStudentBtn = document.getElementById('tab-student-btn');
+      const tabAdminBtn = document.getElementById('tab-admin-btn');
+      const studentPanel = document.getElementById('student-view-panel');
+      const adminPanel = document.getElementById('admin-view-panel');
+      const studentSelect = document.getElementById('student-select');
+      const recalcBtn = document.getElementById('btn-recalculate-student');
+      const exportCsvBtn = document.getElementById('btn-export-csv');
+
+      let currentInterns = [];
+
+      function gradeClass(g) {
+        if (g === 'A') return 'grade-A';
+        if (g === 'B') return 'grade-B';
+        if (g === 'C') return 'grade-C';
+        return 'grade-D';
+      }
+
+      function renderBars(containerId, breakdown) {
+        const el = document.getElementById(containerId);
+        el.innerHTML = '';
+        (breakdown || []).forEach(function (item) {
+          const row = document.createElement('div');
+          row.className = 'bar-row';
+          const extra = item.raw_hours !== undefined ? ' (' + item.raw_hours + 'h / ' + item.benchmark_hours + 'h)' : '';
+          row.innerHTML =
+            '<div class="bar-label"><span>' + item.label + ' (' + item.weight_pct + '%)</span><span>' + item.raw_score + '%' + extra + '</span></div>' +
+            '<div class="bar-track"><div class="bar-fill" style="width:' + Math.min(100, item.raw_score) + '%"></div></div>';
+          el.appendChild(row);
+        });
+      }
+
+      function renderStudentCard(card) {
+        document.getElementById('placement-score-val').textContent = card.placement_readiness.score.toFixed(1);
+        const pg = document.getElementById('placement-grade-badge');
+        pg.textContent = card.placement_readiness.grade;
+        pg.className = 'grade-badge ' + gradeClass(card.placement_readiness.grade);
+
+        document.getElementById('interview-score-val').textContent = card.interview_readiness.score.toFixed(1);
+        const ig = document.getElementById('interview-grade-badge');
+        ig.textContent = card.interview_readiness.grade;
+        ig.className = 'grade-badge ' + gradeClass(card.interview_readiness.grade);
+
+        renderBars('placement-breakdown-bars', card.placement_readiness.breakdown);
+        renderBars('interview-breakdown-bars', card.interview_readiness.breakdown);
+
+        document.getElementById('student-ai-provider').textContent = card.provider || card.ai_provider || 'Groq';
+        document.getElementById('student-exec-summary').textContent = card.executive_summary || '';
+
+        const listEl = document.getElementById('top3-actions-list');
+        listEl.innerHTML = '';
+        (card.top_3_improvement_actions || []).forEach(function (act) {
+          const div = document.createElement('div');
+          div.className = 'action-card';
+          div.innerHTML =
+            '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">' +
+              '<strong>#' + act.rank + ' &middot; ' + act.title + '</strong>' +
+              '<span style="font-size:0.75rem; font-weight:700; color:#4f46e5;">' + (act.priority || 'High') + ' &middot; ~' + (act.estimated_hours || 3) + 'h</span>' +
+            '</div>' +
+            '<div style="font-size:0.84rem; color:#334155;">' + act.action_plan + '</div>';
+          listEl.appendChild(div);
+        });
+
+        // Sync inputs
+        const pi = card.placement_readiness.inputs;
+        const ii = card.interview_readiness.inputs;
+        if (pi) {
+          document.getElementById('inp-proj').value = pi.project_completion_pct;
+          document.getElementById('inp-assess').value = pi.assessment_score;
+          document.getElementById('inp-cia').value = pi.cia_usage_hours;
+          document.getElementById('inp-doc').value = pi.documentation_quality;
+        }
+        if (ii) {
+          document.getElementById('inp-viva').value = ii.viva_score;
+          document.getElementById('inp-coderev').value = ii.code_review_score;
+          document.getElementById('inp-demo').value = ii.demo_clarity_score;
+          document.getElementById('inp-git').value = ii.git_workflow_score;
+        }
+      }
+
+      function renderAdminTable(overview) {
+        const metrics = overview.cohort_metrics || {};
+        document.getElementById('admin-cohort-summary').textContent =
+          'Total Interns: ' + overview.total_interns +
+          ' | Avg Placement: ' + metrics.average_placement_score +
+          ' | Avg Interview: ' + metrics.average_interview_score;
+
+        const tbody = document.getElementById('admin-cohort-tbody');
+        tbody.innerHTML = '';
+        (overview.interns || []).forEach(function (row) {
+          const tr = document.createElement('tr');
+          tr.innerHTML =
+            '<td>#' + row.intern_id + '</td>' +
+            '<td><strong>' + row.intern_name + '</strong><br><span style="font-size:0.76rem;color:#64748b;">' + (row.intern_email || '') + '</span></td>' +
+            '<td>' + row.target_role + '</td>' +
+            '<td><strong>' + Number(row.placement_readiness_score).toFixed(1) + '</strong> / 100</td>' +
+            '<td><span class="badge-sm ' + gradeClass(row.placement_grade) + '">Grade ' + row.placement_grade + '</span></td>' +
+            '<td style="font-size:0.8rem;">' + row.project_completion_pct + '% / ' + row.assessment_score + '% / ' + row.cia_usage_hours + 'h / ' + row.documentation_quality + '%</td>' +
+            '<td><strong>' + Number(row.interview_readiness_score).toFixed(1) + '</strong> / 100</td>' +
+            '<td><span class="badge-sm ' + gradeClass(row.interview_grade) + '">Grade ' + row.interview_grade + '</span></td>' +
+            '<td style="font-size:0.8rem;">' + row.viva_score + '% / ' + row.code_review_score + '% / ' + row.demo_clarity_score + '% / ' + row.git_workflow_score + '%</td>';
+          tbody.appendChild(tr);
+        });
+      }
+
+      async function loadAll(selectedId) {
+        const res = await fetch('/api/cia/readiness/admin');
+        const overview = await res.json();
+        currentInterns = overview.interns || [];
+        renderAdminTable(overview);
+
+        studentSelect.innerHTML = '';
+        currentInterns.forEach(function (r) {
+          const opt = document.createElement('option');
+          opt.value = r.intern_id;
+          opt.textContent = '#' + r.intern_id + ' — ' + r.intern_name + ' (' + r.target_role + ')';
+          studentSelect.appendChild(opt);
+        });
+
+        const idToLoad = selectedId || (currentInterns[0] && currentInterns[0].intern_id) || 1;
+        studentSelect.value = String(idToLoad);
+
+        const sRes = await fetch('/api/cia/readiness/student/' + idToLoad);
+        const card = await sRes.json();
+        renderStudentCard(card);
+        statusEl.textContent = 'Loaded DB-backed readiness scorecards for ' + currentInterns.length + ' interns.';
+      }
+
+      tabStudentBtn.addEventListener('click', function () {
+        tabStudentBtn.classList.add('active');
+        tabAdminBtn.classList.remove('active');
+        studentPanel.classList.remove('hidden');
+        adminPanel.classList.add('hidden');
+      });
+
+      tabAdminBtn.addEventListener('click', function () {
+        tabAdminBtn.classList.add('active');
+        tabStudentBtn.classList.remove('active');
+        adminPanel.classList.remove('hidden');
+        studentPanel.classList.add('hidden');
+      });
+
+      studentSelect.addEventListener('change', async function () {
+        const sRes = await fetch('/api/cia/readiness/student/' + studentSelect.value);
+        const card = await sRes.json();
+        renderStudentCard(card);
+      });
+
+      recalcBtn.addEventListener('click', async function () {
+        const internId = Number(studentSelect.value || 1);
+        const current = currentInterns.find(function (r) { return r.intern_id === internId; }) || {};
+        statusEl.textContent = 'Calculating Placement & Interview scores and generating AI Top 3 actions...';
+
+        const resp = await fetch('/api/cia/readiness/calculate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            intern_id: internId,
+            intern_name: current.intern_name || 'Murali V',
+            intern_email: current.intern_email || 'murali@cynaris.dev',
+            target_role: current.target_role || 'Senior Full Stack Engineer',
+            project_completion_pct: Number(document.getElementById('inp-proj').value),
+            assessment_score: Number(document.getElementById('inp-assess').value),
+            cia_usage_hours: Number(document.getElementById('inp-cia').value),
+            documentation_quality: Number(document.getElementById('inp-doc').value),
+            viva_score: Number(document.getElementById('inp-viva').value),
+            code_review_score: Number(document.getElementById('inp-coderev').value),
+            demo_clarity_score: Number(document.getElementById('inp-demo').value),
+            git_workflow_score: Number(document.getElementById('inp-git').value)
+          })
+        });
+        const data = await resp.json();
+        if (data.success) {
+          renderStudentCard(data);
+          await loadAll(internId);
+          statusEl.textContent = 'Saved updated scores to DB for ' + data.intern_name + ' (Placement: ' + data.placement_readiness.score + ' [' + data.placement_readiness.grade + '], Interview: ' + data.interview_readiness.score + ' [' + data.interview_readiness.grade + ']).';
+        }
+      });
+
+      exportCsvBtn.addEventListener('click', function () {
+        window.location.href = '/api/cia/readiness/export-csv';
+        statusEl.textContent = 'Exported intern-readiness-scores.csv from /api/cia/readiness/export-csv.';
+      });
+
+      loadAll(1).catch(function (err) {
+        statusEl.textContent = 'Error loading readiness data: ' + err.message;
+      });
+    })();
+  </script>
+</body>
+</html>
