@@ -129,8 +129,291 @@ class InMemoryMySQLEngine {
       ],
       smart_reminders: [],
       audit_logs: [],
+      intern_readiness_scores: [
+        {
+          id: 1,
+          intern_id: 1,
+          intern_name: 'Murali V',
+          intern_email: 'murali@cynaris.dev',
+          target_role: 'Senior Full Stack Engineer',
+          project_completion_pct: 94.0,
+          assessment_score: 91.0,
+          cia_usage_hours: 19.5,
+          documentation_quality: 92.0,
+          placement_readiness_score: 93.1,
+          placement_grade: 'A',
+          viva_score: 90.0,
+          code_review_score: 92.0,
+          demo_clarity_score: 89.0,
+          git_workflow_score: 95.0,
+          interview_readiness_score: 90.9,
+          interview_grade: 'A',
+          improvement_recommendations: JSON.stringify({
+            top_3_improvement_actions: [
+              {
+                rank: 1,
+                title: 'Polish Live System Architecture Demo Pacing',
+                target_metric: 'demo_clarity_score',
+                current_score: 89.0,
+                target_score: 95.0,
+                priority: 'Medium',
+                estimated_hours: 2,
+                action_plan: 'Structure 3-minute walkthroughs using Problem -> Architecture -> Tradeoffs -> Metrics.'
+              },
+              {
+                rank: 2,
+                title: 'Complete Remaining 0.5h CIA Edge-Case Reviews',
+                target_metric: 'cia_usage_hours',
+                current_score: 97.5,
+                target_score: 100.0,
+                priority: 'Low',
+                estimated_hours: 1,
+                action_plan: 'Log final CIA Code Mode session reviewing distributed concurrency edge cases.'
+              },
+              {
+                rank: 3,
+                title: 'Practice High-Scale Viva Tradeoff Drills',
+                target_metric: 'viva_score',
+                current_score: 90.0,
+                target_score: 96.0,
+                priority: 'Low',
+                estimated_hours: 2,
+                action_plan: 'Rehearse multi-region failover and MySQL composite index cardinality explanations.'
+              }
+            ]
+          }),
+          ai_provider: 'Groq',
+          created_at: new Date(Date.now() - 86400000 * 3).toISOString(),
+          updated_at: new Date(Date.now() - 3600000 * 4).toISOString(),
+        },
+        {
+          id: 2,
+          intern_id: 2,
+          intern_name: 'Priya Sharma',
+          intern_email: 'priya.sharma@cynaris.dev',
+          target_role: 'Backend Systems Architect',
+          project_completion_pct: 88.0,
+          assessment_score: 86.0,
+          cia_usage_hours: 16.0,
+          documentation_quality: 84.0,
+          placement_readiness_score: 85.8,
+          placement_grade: 'A',
+          viva_score: 84.0,
+          code_review_score: 88.0,
+          demo_clarity_score: 82.0,
+          git_workflow_score: 90.0,
+          interview_readiness_score: 85.4,
+          interview_grade: 'A',
+          improvement_recommendations: JSON.stringify({
+            top_3_improvement_actions: [
+              {
+                rank: 1,
+                title: 'Boost CIA Usage Hours to 20h Benchmark',
+                target_metric: 'cia_usage_hours',
+                current_score: 80.0,
+                target_score: 100.0,
+                priority: 'Medium',
+                estimated_hours: 4,
+                action_plan: 'Schedule 2 focused CIA Mentor & Code Mode reviews on FastAPI async pooling.'
+              },
+              {
+                rank: 2,
+                title: 'Refine Demo Communication Storytelling',
+                target_metric: 'demo_clarity_score',
+                current_score: 82.0,
+                target_score: 90.0,
+                priority: 'Medium',
+                estimated_hours: 2,
+                action_plan: 'Add concise latency benchmarks and failure recovery live demos.'
+              },
+              {
+                rank: 3,
+                title: 'Expand Architecture Sequence Diagrams in Docs',
+                target_metric: 'documentation_quality',
+                current_score: 84.0,
+                target_score: 92.0,
+                priority: 'Low',
+                estimated_hours: 2,
+                action_plan: 'Document Redis cache invalidation flows with Mermaid sequence diagrams.'
+              }
+            ]
+          }),
+          ai_provider: 'Groq',
+          created_at: new Date(Date.now() - 86400000 * 3).toISOString(),
+          updated_at: new Date(Date.now() - 3600000 * 6).toISOString(),
+        },
+        {
+          id: 3,
+          intern_id: 3,
+          intern_name: 'Rahul Kumar',
+          intern_email: 'rahul.kumar@cynaris.dev',
+          target_role: 'Full Stack Developer',
+          project_completion_pct: 76.0,
+          assessment_score: 74.0,
+          cia_usage_hours: 12.0,
+          documentation_quality: 70.0,
+          placement_readiness_score: 72.6,
+          placement_grade: 'B',
+          viva_score: 72.0,
+          code_review_score: 75.0,
+          demo_clarity_score: 74.0,
+          git_workflow_score: 80.0,
+          interview_readiness_score: 74.1,
+          interview_grade: 'B',
+          improvement_recommendations: JSON.stringify({
+            top_3_improvement_actions: [
+              {
+                rank: 1,
+                title: 'Increase CIA Usage Hours from 12h to 18h+',
+                target_metric: 'cia_usage_hours',
+                current_score: 60.0,
+                target_score: 90.0,
+                priority: 'High',
+                estimated_hours: 6,
+                action_plan: 'Use CIA Mentor Mode before every PR to validate REST error handling.'
+              },
+              {
+                rank: 2,
+                title: 'Upgrade Technical Documentation & API Specs',
+                target_metric: 'documentation_quality',
+                current_score: 70.0,
+                target_score: 85.0,
+                priority: 'High',
+                estimated_hours: 3,
+                action_plan: 'Add request/response JSON contracts, setup steps, and viva notes to docs.'
+              },
+              {
+                rank: 3,
+                title: 'Practice Mock Technical Viva Questions',
+                target_metric: 'viva_score',
+                current_score: 72.0,
+                target_score: 85.0,
+                priority: 'Medium',
+                estimated_hours: 4,
+                action_plan: 'Drill JWT stateless auth, SQL prepared statements, and React state flow.'
+              }
+            ]
+          }),
+          ai_provider: 'Groq',
+          created_at: new Date(Date.now() - 86400000 * 4).toISOString(),
+          updated_at: new Date(Date.now() - 3600000 * 10).toISOString(),
+        },
+        {
+          id: 4,
+          intern_id: 4,
+          intern_name: 'Arun Kumar',
+          intern_email: 'arun.kumar@cynaris.dev',
+          target_role: 'Frontend Engineer',
+          project_completion_pct: 62.0,
+          assessment_score: 65.0,
+          cia_usage_hours: 8.0,
+          documentation_quality: 58.0,
+          placement_readiness_score: 59.9,
+          placement_grade: 'C',
+          viva_score: 60.0,
+          code_review_score: 62.0,
+          demo_clarity_score: 65.0,
+          git_workflow_score: 68.0,
+          interview_readiness_score: 62.4,
+          interview_grade: 'C',
+          improvement_recommendations: JSON.stringify({
+            top_3_improvement_actions: [
+              {
+                rank: 1,
+                title: 'Ramp CIA Usage Hours from 8h to 16h',
+                target_metric: 'cia_usage_hours',
+                current_score: 40.0,
+                target_score: 80.0,
+                priority: 'Critical',
+                estimated_hours: 8,
+                action_plan: 'Pair daily with CIA Code Mode to catch edge cases and accessibility gaps.'
+              },
+              {
+                rank: 2,
+                title: 'Remediate Documentation Quality Gaps',
+                target_metric: 'documentation_quality',
+                current_score: 58.0,
+                target_score: 80.0,
+                priority: 'High',
+                estimated_hours: 4,
+                action_plan: 'Complete README setup guides, component prop tables, and submission checklists.'
+              },
+              {
+                rank: 3,
+                title: 'Strengthen Core Viva Fundamentals',
+                target_metric: 'viva_score',
+                current_score: 60.0,
+                target_score: 80.0,
+                priority: 'High',
+                estimated_hours: 5,
+                action_plan: 'Review Virtual DOM reconciliation, async AbortController cleanup, and REST codes.'
+              }
+            ]
+          }),
+          ai_provider: 'OpenRouter (Fallback)',
+          created_at: new Date(Date.now() - 86400000 * 5).toISOString(),
+          updated_at: new Date(Date.now() - 3600000 * 14).toISOString(),
+        },
+        {
+          id: 5,
+          intern_id: 5,
+          intern_name: 'Vikram Nair',
+          intern_email: 'vikram.nair@cynaris.dev',
+          target_role: 'Junior Cloud Intern',
+          project_completion_pct: 48.0,
+          assessment_score: 50.0,
+          cia_usage_hours: 5.0,
+          documentation_quality: 45.0,
+          placement_readiness_score: 45.7,
+          placement_grade: 'D',
+          viva_score: 46.0,
+          code_review_score: 48.0,
+          demo_clarity_score: 52.0,
+          git_workflow_score: 55.0,
+          interview_readiness_score: 48.7,
+          interview_grade: 'D',
+          improvement_recommendations: JSON.stringify({
+            top_3_improvement_actions: [
+              {
+                rank: 1,
+                title: 'Adopt Daily CIA Mentorship Workflow (5h -> 15h)',
+                target_metric: 'cia_usage_hours',
+                current_score: 25.0,
+                target_score: 75.0,
+                priority: 'Critical',
+                estimated_hours: 10,
+                action_plan: 'Log 2 structured CIA sessions per day for architecture review and debugging.'
+              },
+              {
+                rank: 2,
+                title: 'Complete Pending Milestone Project Tasks',
+                target_metric: 'project_completion_pct',
+                current_score: 48.0,
+                target_score: 80.0,
+                priority: 'Critical',
+                estimated_hours: 12,
+                action_plan: 'Finish container healthchecks, unit tests, and database migration scripts.'
+              },
+              {
+                rank: 3,
+                title: 'Intensive Viva & Code Review Coaching',
+                target_metric: 'viva_score',
+                current_score: 46.0,
+                target_score: 75.0,
+                priority: 'Critical',
+                estimated_hours: 6,
+                action_plan: 'Conduct mock viva walkthroughs focusing on explaining code line-by-line.'
+              }
+            ]
+          }),
+          ai_provider: 'Local Deterministic Engine',
+          created_at: new Date(Date.now() - 86400000 * 6).toISOString(),
+          updated_at: new Date(Date.now() - 3600000 * 24).toISOString(),
+        },
+      ],
     };
     this.nextApplicantId = 5;
+    this.nextReadinessId = 6;
     this.inTransaction = false;
     this.transactionSnapshot = null;
   }
@@ -223,6 +506,118 @@ class InMemoryMySQLEngine {
       this.tables.job_applicant = this.tables.job_applicant.filter((a) => a.id !== targetId);
       const affected = initLen - this.tables.job_applicant.length;
       return Promise.resolve([{ affectedRows: affected }, []]);
+    }
+
+    // 8. intern_readiness_scores queries (Week 8 Day 2: Module 6 & 7)
+    if (upper.startsWith('SELECT') && upper.includes('INTERN_READINESS_SCORES')) {
+      if (upper.includes('WHERE `INTERN_ID` = ?') || upper.includes('WHERE INTERN_ID = ?')) {
+        const targetInternId = Number(params[0]);
+        const found = this.tables.intern_readiness_scores.filter((r) => r.intern_id === targetInternId);
+        return Promise.resolve([found, []]);
+      }
+      const sorted = [...this.tables.intern_readiness_scores].sort(
+        (a, b) => Number(b.placement_readiness_score) - Number(a.placement_readiness_score)
+      );
+      return Promise.resolve([sorted, []]);
+    }
+
+    if (upper.startsWith('INSERT INTO `INTERN_READINESS_SCORES`') || upper.startsWith('INSERT INTO INTERN_READINESS_SCORES')) {
+      const [
+        internId, internName, internEmail, targetRole,
+        projectCompletionPct, assessmentScore, ciaUsageHours, documentationQuality,
+        placementReadinessScore, placementGrade,
+        vivaScore, codeReviewScore, demoClarityScore, gitWorkflowScore,
+        interviewReadinessScore, interviewGrade,
+        improvementRecommendations, aiProvider
+      ] = params;
+
+      const numInternId = Number(internId);
+      const existingIdx = this.tables.intern_readiness_scores.findIndex((r) => r.intern_id === numInternId);
+      const now = new Date().toISOString();
+
+      const row = {
+        id: existingIdx !== -1 ? this.tables.intern_readiness_scores[existingIdx].id : this.nextReadinessId++,
+        intern_id: numInternId,
+        intern_name: internName,
+        intern_email: internEmail || '',
+        target_role: targetRole || 'Full Stack Developer',
+        project_completion_pct: Number(projectCompletionPct),
+        assessment_score: Number(assessmentScore),
+        cia_usage_hours: Number(ciaUsageHours),
+        documentation_quality: Number(documentationQuality),
+        placement_readiness_score: Number(placementReadinessScore),
+        placement_grade: placementGrade,
+        viva_score: Number(vivaScore),
+        code_review_score: Number(codeReviewScore),
+        demo_clarity_score: Number(demoClarityScore),
+        git_workflow_score: Number(gitWorkflowScore),
+        interview_readiness_score: Number(interviewReadinessScore),
+        interview_grade: interviewGrade,
+        improvement_recommendations: improvementRecommendations,
+        ai_provider: aiProvider || 'Groq',
+        created_at: existingIdx !== -1 ? this.tables.intern_readiness_scores[existingIdx].created_at : now,
+        updated_at: now,
+      };
+
+      if (existingIdx !== -1) {
+        this.tables.intern_readiness_scores[existingIdx] = row;
+        return Promise.resolve([{ insertId: row.id, affectedRows: 1 }, []]);
+      }
+      this.tables.intern_readiness_scores.push(row);
+      return Promise.resolve([{ insertId: row.id, affectedRows: 1 }, []]);
+    }
+
+    if (upper.startsWith('UPDATE `INTERN_READINESS_SCORES`') || upper.startsWith('UPDATE INTERN_READINESS_SCORES')) {
+      const targetInternId = Number(params[params.length - 1]);
+      const idx = this.tables.intern_readiness_scores.findIndex((r) => r.intern_id === targetInternId);
+      if (idx === -1) {
+        return Promise.resolve([{ affectedRows: 0, changedRows: 0 }, []]);
+      }
+      const [
+        internName, internEmail, targetRole,
+        projectCompletionPct, assessmentScore, ciaUsageHours, documentationQuality,
+        placementReadinessScore, placementGrade,
+        vivaScore, codeReviewScore, demoClarityScore, gitWorkflowScore,
+        interviewReadinessScore, interviewGrade,
+        improvementRecommendations, aiProvider, updatedAt
+      ] = params;
+
+      this.tables.intern_readiness_scores[idx] = {
+        ...this.tables.intern_readiness_scores[idx],
+        intern_name: internName,
+        intern_email: internEmail || this.tables.intern_readiness_scores[idx].intern_email,
+        target_role: targetRole || this.tables.intern_readiness_scores[idx].target_role,
+        project_completion_pct: Number(projectCompletionPct),
+        assessment_score: Number(assessmentScore),
+        cia_usage_hours: Number(ciaUsageHours),
+        documentation_quality: Number(documentationQuality),
+        placement_readiness_score: Number(placementReadinessScore),
+        placement_grade: placementGrade,
+        viva_score: Number(vivaScore),
+        code_review_score: Number(codeReviewScore),
+        demo_clarity_score: Number(demoClarityScore),
+        git_workflow_score: Number(gitWorkflowScore),
+        interview_readiness_score: Number(interviewReadinessScore),
+        interview_grade: interviewGrade,
+        improvement_recommendations: improvementRecommendations,
+        ai_provider: aiProvider || 'Groq',
+        updated_at: updatedAt || new Date().toISOString(),
+      };
+      return Promise.resolve([{ affectedRows: 1, changedRows: 1 }, []]);
+    }
+
+    if (upper.startsWith('INSERT INTO `AUDIT_LOGS`') || upper.startsWith('INSERT INTO AUDIT_LOGS')) {
+      const [eventType, action, entityType, entityId, details] = params;
+      this.tables.audit_logs.push({
+        id: this.tables.audit_logs.length + 1,
+        event_type: eventType,
+        action,
+        entity_type: entityType,
+        entity_id: entityId,
+        details,
+        created_at: new Date().toISOString(),
+      });
+      return Promise.resolve([{ insertId: this.tables.audit_logs.length, affectedRows: 1 }, []]);
     }
 
     
