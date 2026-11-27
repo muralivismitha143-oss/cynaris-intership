@@ -59,6 +59,11 @@ Route::prefix('candidate/cia')->name('candidate.cia.')->group(function () {
     Route::get('/career/reports/{candidateId?}', [CiaController::class, 'getCandidateReports'])->name('career.reports');
     Route::get('/career/report/pdf/{id?}', [CiaController::class, 'exportCareerReportPdf'])->name('career.report.pdf');
 
+    // Week 8 Day 4: CIA Memory Layer — ChromaDB Persistent Intern Profile
+    Route::post('/memory/profile', [CiaController::class, 'upsertInternMemoryProfile'])->name('memory.profile.upsert');
+    Route::get('/memory/profile/{candidateId?}', [CiaController::class, 'getInternMemoryProfile'])->name('memory.profile.show');
+    Route::post('/memory/query', [CiaController::class, 'queryInternMemory'])->name('memory.query');
+
     // Health & Provider Diagnostics
     Route::get('/health', [CiaController::class, 'health'])->name('health');
 });

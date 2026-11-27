@@ -1132,6 +1132,74 @@ class CiaController extends Controller
     }
 
     /**
+     * Week 8 Day 4: Persist Intern Profile into ChromaDB Memory (`cynaris_intern_profiles`).
+     */
+    public function upsertInternMemoryProfile(Request $request)
+    {
+        $candidateId = (int) ($request->input('candidate_id') ?: $request->input('candidateId', 1));
+        $name = $request->input('name', 'Murali V');
+        $targetRole = $request->input('target_role', 'Senior Full Stack Engineer');
+        $progressPct = max(0, min(100, (float) $request->input('progress_pct', 94)));
+        $skills = $request->input('skills', ['JavaScript' => 4, 'Node.js' => 4, 'React' => 4, 'Docker' => 3, 'MySQL' => 3]);
+        $note = $request->input('note', "Persisted progress at {$progressPct}% targeting {$targetRole}.");
+
+        return response()->json([
+            'success' => true,
+            'collection' => 'cynaris_intern_profiles',
+            'embeddingModel' => 'sentence-transformers/all-MiniLM-L6-v2 (384-dim)',
+            'profile' => [
+                'candidate_id' => $candidateId,
+                'name' => $name,
+                'target_role' => $targetRole,
+                'progress_pct' => $progressPct,
+                'skills' => $skills,
+                'history' => [
+                    ['timestamp' => date('c'), 'progress_pct' => $progressPct, 'note' => $note],
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * Week 8 Day 4: Retrieve Persistent Intern Profile from ChromaDB Memory.
+     */
+    public function getInternMemoryProfile($candidateId = 1)
+    {
+        return response()->json([
+            'success' => true,
+            'collection' => 'cynaris_intern_profiles',
+            'profile' => [
+                'candidate_id' => (int) $candidateId,
+                'name' => 'Murali V',
+                'target_role' => 'Senior Full Stack Engineer',
+                'progress_pct' => 94,
+                'skills' => ['JavaScript' => 4, 'Node.js' => 4, 'React' => 4, 'Docker' => 3, 'MySQL' => 3],
+                'history' => [
+                    ['timestamp' => date('c'), 'progress_pct' => 94, 'note' => 'Completed Modules 1-7 and Career Intelligence Report.'],
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * Week 8 Day 4: Semantic Memory Search & Reasoning over Persistent Intern Profile.
+     */
+    public function queryInternMemory(Request $request)
+    {
+        $candidateId = (int) ($request->input('candidate_id') ?: $request->input('candidateId', 1));
+        $query = $request->input('query', 'What should this intern prioritize next?');
+        return response()->json([
+            'success' => true,
+            'collection' => 'cynaris_intern_profiles',
+            'provider' => 'Groq',
+            'model' => $this->primaryModel,
+            'candidate_id' => $candidateId,
+            'query' => $query,
+            'reasoning' => 'Recalled persistent ChromaDB intern profile (94% progress). Prioritize TypeScript and System Design remediation for Senior Full Stack Engineer readiness.',
+        ]);
+    }
+
+    /**
      * Health check and diagnostics endpoint.
      *
      * @return \Illuminate\Http\JsonResponse

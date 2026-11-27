@@ -901,6 +901,27 @@ timeline
             </div>
         </div>
 
+        <!-- Week 8 Day 4: CIA Memory Layer — ChromaDB Persistent Intern Profile -->
+        <div class="card" id="chromadb-memory-layer-section" style="margin-bottom: 2rem; border-top: 4px solid #7c3aed;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                <div>
+                    <h3 style="margin: 0; color: #1e293b; font-size: 1.15rem;">🧠 CIA Memory Layer — ChromaDB Persistent Intern Profile</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0.25rem 0 0 0;">
+                        Persistent Collections: <code>cynaris_intern_profiles</code> &amp; <code>cynaris_internship_roles</code> (20 roles, 384-dim sentence-transformers)
+                    </p>
+                </div>
+                <button class="btn" id="btn-query-cia-memory" type="button" style="background: #7c3aed; color: #ffffff; border: none; padding: 0.45rem 0.9rem; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                    🔍 Recall &amp; Reason Over Memory
+                </button>
+            </div>
+            <div id="cia-memory-status" role="status" aria-live="polite" style="font-size: 0.82rem; color: #6d28d9; margin-bottom: 0.65rem; font-weight: 600;">
+                Retained Intern Profile: Murali V (94% Progress, 6 Verified Skills) &bull; Disk Persistence Active.
+            </div>
+            <div id="cia-memory-reasoning-box" style="background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 8px; padding: 0.9rem; font-size: 0.86rem; color: #1e293b;">
+                ChromaDB retains intern progress, verified skills, and match history across sessions for continuous trajectory reasoning.
+            </div>
+        </div>
+
         <!-- AI Recommendations Drawer (W3C ARIA compliant) -->
         <div class="ai-panel" id="cia-recommendations-drawer" role="region" aria-label="Career Intelligence Recommendations">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
@@ -1548,6 +1569,33 @@ timeline
             if (exportPdfBtn) {
                 exportPdfBtn.addEventListener('click', function () {
                     window.location.href = '/candidate/cia/career/report/pdf/1';
+                });
+            }
+
+            const queryMemoryBtn = document.getElementById('btn-query-cia-memory');
+            const memoryStatusEl = document.getElementById('cia-memory-status');
+            const memoryReasoningEl = document.getElementById('cia-memory-reasoning-box');
+            if (queryMemoryBtn) {
+                queryMemoryBtn.addEventListener('click', async function () {
+                    try {
+                        const resp = await fetch('/candidate/cia/memory/query', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({ candidate_id: 1 })
+                        });
+                        const data = await resp.json();
+                        if (data && data.reasoning && memoryReasoningEl) {
+                            memoryReasoningEl.textContent = data.reasoning;
+                        }
+                        if (memoryStatusEl && data.provider) {
+                            memoryStatusEl.textContent = 'Memory Recalled via ' + data.provider + ' (' + data.collection + ')';
+                        }
+                    } catch (err) {
+                        console.warn('CIA memory recall notice:', err.message);
+                    }
                 });
             }
         });

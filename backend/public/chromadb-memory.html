@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CIA Memory Layer — ChromaDB Persistent Intern Profile &amp; Internship Matching</title>
+  <style>
+    :root { --violet: #7c3aed; --primary: #0284c7; --bg: #f1f5f9; --card: #ffffff; --border: #e2e8f0; --text: #0f172a; --muted: #64748b; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 1.5rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); }
+    .shell { max-width: 1140px; margin: 0 auto; }
+    .topbar { background: linear-gradient(135deg, #2e1065, #6d28d9); color: #f8fafc; border-radius: 12px; padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.35rem; margin-bottom: 1.35rem; }
+    .btn { padding: 0.55rem 1rem; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 0.88rem; }
+    .btn-violet { background: var(--violet); color: #ffffff; }
+    .btn-primary { background: var(--primary); color: #ffffff; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+    .form-grid label { display: block; font-size: 0.78rem; color: var(--muted); font-weight: 600; margin-bottom: 0.25rem; }
+    .form-grid input { width: 100%; padding: 0.45rem 0.6rem; border: 1px solid var(--border); border-radius: 6px; }
+    .role-card { border: 1px solid var(--border); border-left: 5px solid var(--primary); border-radius: 8px; padding: 0.95rem; margin-bottom: 0.85rem; }
+    .pill { display: inline-block; padding: 0.2rem 0.55rem; border-radius: 999px; font-size: 0.76rem; font-weight: 600; margin-right: 0.3rem; }
+    .pill-match { background: #dcfce7; color: #166534; }
+    .pill-miss { background: #fee2e2; color: #991b1b; }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em; color:#ddd6fe; font-weight:700;">CYNARIS CIA MEMORY LAYER &middot; WEEK 8 DAY 4</div>
+        <h1 style="margin:0.2rem 0 0 0; font-size:1.5rem;">ChromaDB Persistent Intern Profile &amp; Role Matching</h1>
+      </div>
+      <div>
+        <a href="/career-report.html" style="color:#e9d5ff; font-size:0.86rem; text-decoration:none;">&larr; Career Report</a>
+      </div>
+    </header>
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1rem;">
+        <h2 style="margin:0; font-size:1.1rem;">Persistent Intern Profile (`cynaris_intern_profiles`)</h2>
+        <div style="display:flex; gap:0.6rem;">
+          <button type="button" class="btn btn-violet" id="btn-save-memory">💾 Persist Profile to ChromaDB</button>
+          <button type="button" class="btn btn-primary" id="btn-match-roles">🎯 Match Top 5 Internships</button>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div><label for="mem-id">Candidate ID</label><input id="mem-id" type="number" value="1" min="1" /></div>
+        <div><label for="mem-name">Name</label><input id="mem-name" value="Murali V" /></div>
+        <div><label for="mem-role">Target Role</label><input id="mem-role" value="Senior Full Stack Engineer" /></div>
+        <div><label for="mem-progress">Progress %</label><input id="mem-progress" type="number" value="94" min="0" max="100" /></div>
+        <div><label for="mem-note">Milestone Note</label><input id="mem-note" value="Completed ChromaDB persistent intern memory & matching" /></div>
+      </div>
+
+      <div id="mem-status" role="status" aria-live="polite" style="font-size:0.84rem; color:#6d28d9; font-weight:600;">Ready.</div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;">🧠 Retained History &amp; AI Memory Reasoning</h3>
+      <div style="display:flex; gap:0.6rem; margin-bottom:0.75rem;">
+        <input id="mem-query" value="What should this intern focus on next?" style="flex:1; padding:0.45rem 0.65rem; border:1px solid var(--border); border-radius:6px;" />
+        <button type="button" class="btn btn-violet" id="btn-reason-memory">🔍 Reason Over Memory</button>
+      </div>
+      <p id="mem-reasoning" style="font-size:0.9rem; color:#1e293b; background:#f5f3ff; padding:0.85rem; border-radius:8px; border:1px solid #ddd6fe;"></p>
+      <ul id="mem-history" style="font-size:0.84rem; color:#475569;"></ul>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;">🎯 Top 5 Ranked Internships (`cynaris_internship_roles` &mdash; 20 Seeded Roles)</h3>
+      <div id="ranked-roles"></div>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      function renderHistory(profile) {
+        const ul = document.getElementById('mem-history');
+        ul.innerHTML = '';
+        (profile.history || []).forEach(function (h) {
+          const li = document.createElement('li');
+          li.textContent = '[' + h.progress_pct + '%] ' + h.note + ' (' + h.timestamp + ')';
+          ul.appendChild(li);
+        });
+      }
+
+      async function loadMemory() {
+        const cid = document.getElementById('mem-id').value || 1;
+        const r = await fetch('/api/cia/memory/profile/' + cid);
+        const d = await r.json();
+        if (d.success && d.profile) {
+          document.getElementById('mem-name').value = d.profile.name;
+          document.getElementById('mem-role').value = d.profile.target_role;
+          document.getElementById('mem-progress').value = d.profile.progress_pct;
+          renderHistory(d.profile);
+        }
+      }
+
+      async function matchInternships() {
+        const cid = Number(document.getElementById('mem-id').value || 1);
+        const r = await fetch('/candidate/cia/career/match-internships', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ candidateId: cid, limit: 5 })
+        });
+        const d = await r.json();
+        const box = document.getElementById('ranked-roles');
+        box.innerHTML = '';
+        (d.matches || []).forEach(function (m, idx) {
+          const div = document.createElement('div');
+          div.className = 'role-card';
+          const matched = (m.matchedSkills || []).map(function (s) { return '<span class="pill pill-match">' + s + '</span>'; }).join('');
+          const missing = (m.missingSkills || []).map(function (s) { return '<span class="pill pill-miss">' + s + '</span>'; }).join('') || '<span class="pill pill-match">None</span>';
+          div.innerHTML =
+            '<div style="display:flex; justify-content:space-between; align-items:center;"><strong>#' + (idx + 1) + ' ' + m.role + '</strong><span style="font-weight:800; color:#0284c7;">' + m.matchPercentage + '% Match</span></div>' +
+            '<p style="font-size:0.84rem; color:#475569; margin:0.35rem 0;">' + m.description + '</p>' +
+            '<div style="font-size:0.8rem;"><strong>Matched:</strong> ' + matched + ' <strong style="margin-left:0.5rem;">Missing:</strong> ' + missing + '</div>';
+          box.appendChild(div);
+        });
+      }
+
+      document.getElementById('btn-save-memory').addEventListener('click', async function () {
+        const resp = await fetch('/api/cia/memory/profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            candidate_id: Number(document.getElementById('mem-id').value || 1),
+            name: document.getElementById('mem-name').value,
+            target_role: document.getElementById('mem-role').value,
+            progress_pct: Number(document.getElementById('mem-progress').value),
+            note: document.getElementById('mem-note').value
+          })
+        });
+        const d = await resp.json();
+        if (d.success) {
+          renderHistory(d.profile);
+          document.getElementById('mem-status').textContent = 'Persisted profile to ChromaDB on disk (384-dim embedding).';
+        }
+      });
+
+      document.getElementById('btn-reason-memory').addEventListener('click', async function () {
+        const resp = await fetch('/api/cia/memory/query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            candidate_id: Number(document.getElementById('mem-id').value || 1),
+            query: document.getElementById('mem-query').value
+          })
+        });
+        const d = await resp.json();
+        document.getElementById('mem-reasoning').textContent = d.reasoning || d.error;
+      });
+
+      document.getElementById('btn-match-roles').addEventListener('click', matchInternships);
+
+      loadMemory().then(matchInternships);
+    })();
+  </script>
+</body>
+</html>

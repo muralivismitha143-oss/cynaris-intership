@@ -494,4 +494,51 @@ async function handleExportCareerReportPdf(req, res) {
 router.get('/career/report/pdf', handleExportCareerReportPdf);
 router.get('/career/report/:reportId/pdf', handleExportCareerReportPdf);
 
+// =============================================================================
+// WEEK 8 DAY 4: CIA MEMORY LAYER — CHROMADB PERSISTENT INTERN PROFILE
+// =============================================================================
+
+router.post('/memory/profile', (req, res) => {
+  try {
+    const result = careerIntelligenceService.upsertInternMemoryProfile(req.body || {});
+    res.status(200).json(result);
+  } catch (err) {
+    const status = err.message && err.message.includes('must be') ? 400 : 500;
+    res.status(status).json({ success: false, error: err.message });
+  }
+});
+
+router.get('/memory/profile/:candidateId', (req, res) => {
+  const candidateId = Number(req.params.candidateId);
+  if (!Number.isInteger(candidateId) || candidateId < 1) {
+    return res.status(400).json({ success: false, error: 'Invalid candidateId' });
+  }
+  const profile = careerIntelligenceService.getInternMemoryProfile(candidateId);
+  if (!profile) {
+    return res.status(404).json({ success: false, error: `No persistent profile found for candidate #${candidateId}` });
+  }
+  res.status(200).json({
+    success: true,
+    collection: 'cynaris_intern_profiles',
+    profile
+  });
+});
+
+router.post('/memory/query', async (req, res) => {
+  try {
+    const body = req.body || {};
+    const options = {
+      simulateGroqFailure: Boolean(body.simulateGroqFailure || body.simulate_groq_failure),
+      simulateBothFailure: Boolean(body.simulateBothFailure || body.simulate_both_failure)
+    };
+    const result = await careerIntelligenceService.queryInternMemoryAndReason(body, options);
+    if (!result.success) {
+      return res.status(result.provider === 'None' ? 502 : 404).json(result);
+    }
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 module.exports = router;
